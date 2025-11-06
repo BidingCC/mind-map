@@ -4,7 +4,7 @@ import { HttpErrorFactory } from "@buildingai/errors";
 import { buildWhere } from "@buildingai/utils";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { In, Not, Repository } from "typeorm";
+import { FindManyOptions, In, Not, Repository } from "typeorm";
 
 import { MindMapAiChatMessage } from "../../../db/entities/mind-map-ai-chat-message.entity";
 import { MindMapAiChatRecord } from "../../../db/entities/mind-map-ai-chat-record.entity";
@@ -195,7 +195,10 @@ export class CreateService extends BaseService<MindMapRecord> {
     ): Promise<MindMapAiChatRecord> {
         try {
             // 构建 where 条件
-            const whereCondition: any = { id: conversationId, isDeleted: false };
+            const whereCondition: Partial<MindMapAiChatRecord> = {
+                id: conversationId,
+                isDeleted: false,
+            };
 
             // 如果不是管理员操作，需要验证用户权限
             if (userId && userId.trim() !== "") {
@@ -355,7 +358,7 @@ export class CreateService extends BaseService<MindMapRecord> {
      */
     async findMessages(paginationDto: PaginationDto, queryDto?: { conversationId?: string }) {
         // 构建查询选项
-        const options: any = {
+        const options: FindManyOptions<MindMapAiChatMessage> = {
             order: { sequence: "DESC" as const },
             where: { status: Not("failed") },
         };

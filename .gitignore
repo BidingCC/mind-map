@@ -24,3 +24,6 @@ node_modules
 .output/
 build/
 dist
+
+# ESLint cache
+.eslintcache

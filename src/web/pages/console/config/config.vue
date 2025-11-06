@@ -22,7 +22,7 @@ const formData = reactive<MindMapConfig>({
 // 存储选中的模型ID，用于ModelSelect的v-model绑定
 const selectedModelId = shallowRef<string>("");
 // 选中的模型信息
-const selectedModel = shallowRef<any>(null);
+const selectedModel = ref<any>(null);
 // 用于强制刷新ModelSelect组件的key
 const modelSelectKey = shallowRef<number>(0);
 // 存储所有供应商信息

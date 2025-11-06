@@ -11,6 +11,7 @@ import { Body, Post, Res } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { Response } from "express";
 import type {
+    ChatCompletion,
     ChatCompletionCreateParams,
     ChatCompletionMessageParam,
 } from "openai/resources/index";
@@ -280,6 +281,7 @@ export class AiChatMessageController extends BaseController {
    - 增量更新时，必须以要更新的节点作为根节点
 3. 目前只支持单个节点增量更新，如果用户要求修改多个节点需要提示不支持更新多个节点，并提示生成的思维导图将只包含第一个要修改的一个节点，其他节点将丢失
    - 比如用户要求"修改节点1和节点2"，则提示不支持修改多个节点，并返回节点1的思维导图
+   - 注意！！必须要提示用户不支持更新多个节点以及生成的思维导图将只包含第一个要修改的一个节点，不然用户会不了解为什么只更新了第一个节点
 
 返回内容结构：
 提示语 + <template>思维导图Markdown数据</template> + 总结
@@ -288,6 +290,8 @@ export class AiChatMessageController extends BaseController {
 "好的，我正在为您生成关于"游戏"的思维导图。以下是结构化的思维导图内容：\n\n<template>\n# 游戏\n## 游戏类型\n### 动作游戏\n### 角色扮演游戏（RPG）\n### 策略游戏\n### 射击游戏\n### 冒险解谜\n## 游戏平台\n### PC端\n### 主机（PlayStation/Xbox）\n### 移动端\n### 云游戏\n## 游戏文化\n### 电子竞技\n### 游戏直播\n### 社区与玩家社群\n### 衍生周边（动漫/手办）\n</template>\n\n思维导图已创建完成，包含游戏类型、平台和文化三个核心分支，并细化了常见的子分类。您可以通过添加具体游戏案例、技术细节或文化现象等内容进一步扩展。"
 增量更新输出样例：
 "好的，我将针对「周目标设定」模块进行优化升级，增强目标制定的科学性和可执行性：\n\n\n<template>\n## 周目标设定\n### 目标制定框架\n#### SMART原则应用\n- Specific（具体性）\n- Measurable（可衡量）\n- Achievable（可实现）\n- Relevant（相关性）\n- Time-bound（时限性）\n#### 目标分类体系\n- 工作目标（建议占比40-50%）\n- 学习目标（建议占比20-30%）\n- 健康目标（建议占比15-20%）\n- 个人发展（建议占比5-10%）\n### 目标拆解工具\n#### 时间块分配法\n- 按优先级划分时间占比\n- 设置关键里程碑节点\n#### 优先级矩阵\n- 紧急重要 quadrant\n- 重要不紧急 quadrant\n- 紧急不重要 quadrant\n- 不紧急不重要 quadrant\n### 目标校准机制\n#### 基准参考系\n- 上周完成率对比\n- 个人能力成长曲线\n- 环境变化因素评估\n#### 风险预案\n- 时间缓冲区设置（建议20%冗余）\n- 替代方案准备\n- 资源保障清单\n</template>\n\n思维导图已优化目标设定模块，新增SMART目标制定框架、时间分配比例建议和风险预案机制。通过引入优先级矩阵和目标拆解工具，帮助更科学地分配时间和资源。建议在使用时结合PDCA循环，在周复盘环节持续优化目标设定策略。"
+增量更新多个节点输出样例：
+由于目前只支持单个节点的增量更新，我将优先处理「游戏类型」的详细扩展。以下是更新后的内容：+ <template>思维导图Markdown数据</template> + 思维导图已更新，对游戏类型进行了全面细化，新增了各类型的子分类、核心特点、代表作品和游戏机制。内容涵盖了从动作到休闲的广泛谱系，突出了玩法多样性和用户体验差异。建议结合具体平台或文化背景，进一步补充案例分析和趋势洞察。
 
 当前思维导图数据：
 ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图数据"}
@@ -335,7 +339,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
 
             // 初始化消息列表，用于处理工具调用
             const currentMessages = limitedMessages;
-            let finalChatCompletion: any = null;
+            let finalChatCompletion: ChatCompletion | undefined;
             let reasoningContent = ""; // 收集深度思考内容
             let reasoningStartTime: number | null = null; // 深度思考开始时间
             let reasoningEndTime: number | null = null; // 深度思考结束时间
@@ -461,7 +465,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                     this.logger.debug(`🤖 AI replies: ${fullResponse}`);
 
                     // 准备 metadata，包含深度思考数据
-                    const metadata: Record<string, any> = {};
+                    const metadata: Record<string, unknown> = {};
                     if (reasoningContent && reasoningStartTime && reasoningEndTime) {
                         metadata.reasoning = {
                             content: reasoningContent,
@@ -485,11 +489,11 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                         userConsumedPower,
                         processingTime: Date.now() - startTime,
                         tokens: {
-                            prompt_tokens: finalChatCompletion.usage?.prompt_tokens,
-                            completion_tokens: finalChatCompletion.usage?.completion_tokens,
-                            total_tokens: finalChatCompletion.usage?.total_tokens,
+                            prompt_tokens: finalChatCompletion?.usage?.prompt_tokens,
+                            completion_tokens: finalChatCompletion?.usage?.completion_tokens,
+                            total_tokens: finalChatCompletion?.usage?.total_tokens,
                         },
-                        rawResponse: finalChatCompletion,
+                        rawResponse: finalChatCompletion || {},
                         metadata: metadata,
                     });
 

@@ -1,0 +1,38 @@
+{
+    "title": "思维导图创建",
+    "description": "使用AI技术生成思维导图并编辑",
+    "drawer": {
+        "title": "与思维导图对话",
+        "try": "试一试",
+        "send": "发送消息",
+        "sendEmpty": "请输入内容后再发送",
+        "saveTitleError": "修改失败",
+        "downloadError": "下载失败",
+        "saveError": "保存失败",
+        "review": "点击回顾"
+    },
+    "toolbar": {
+        "back": "返回",
+        "undo": "撤回",
+        "redo": "还原",
+        "download": "下载",
+        "addSibling": "添加同级节点",
+        "addChild": "添加子节点",
+        "delete": "删除节点",
+        "center": "居中根节点",
+        "backgroundColor": "背景颜色",
+        "borderColor": "边框颜色",
+        "textColor": "字体颜色"
+    },
+    "contextMenu": {
+        "copy": "复制节点",
+        "cut": "剪切节点",
+        "paste": "粘贴节点"
+    },
+    "toast": {
+        "loadFailed": "获取配置失败",
+        "sendError": "发送失败",
+        "noData": "当前没有可下载的思维导图",
+        "loadMindMapFailed": "获取思维导图失败"
+    }
+}

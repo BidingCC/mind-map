@@ -1,0 +1,54 @@
+{
+    "title": "思维导图",
+    "description": "使用AI技术生成思维导图",
+    "header": {
+        "costDescription": "费用说明",
+        "free": "免费",
+        "per100Chars": "提示：每100字符消耗",
+        "points": "100个字符内（含100个）记为消耗",
+        "within100Chars": "提示：每100字符消耗",
+        "eachGenerationFree": "提示：每次生成免费",
+        "score": "积分"
+    },
+    "main": {
+        "createTitle": "快速创建，立即使用",
+        "blank": "创建思维导图",
+        "right": "向右逻辑思维导图",
+        "leftRight": "左右结构思维导图",
+        "under": "向下逻辑思维导图",
+        "fishbone": "鱼骨图",
+        "recently": "最近更新",
+        "createdTip": "暂无思维导图，快去创建吧～",
+        "create": "创建空白思维导图",
+        "rename": "重命名",
+        "delete": "删除",
+        "download": "下载",
+        "previewAlt": "思维导图预览",
+        "untitled": "未命名导图",
+        "backToTop": "回到顶部"
+    },
+    "toast": {
+        "fetchListError": "获取思维导图列表失败",
+        "deleteSuccess": "删除成功",
+        "deleteError": "删除失败",
+        "downloadError": "下载失败",
+        "updateTitleSuccess": "修改成功",
+        "updateTitleError": "修改失败",
+        "createError": "创建失败"
+    },
+    "time": {
+        "justNow": "刚刚更新",
+        "minutesAgo": "{0}分钟前",
+        "hoursAgo": "{0}小时前",
+        "daysAgo": "{0}天前",
+        "monthsAgo": "{0}月前",
+        "yearsAgo": "{0}年前"
+    },
+    "confirm_delete": {
+        "title": "确认删除",
+        "single_message": "确定要删除这个思维导图吗？",
+        "warning": "此操作不可撤销！",
+        "confirm": "确认删除",
+        "cancel": "取消"
+    }
+}

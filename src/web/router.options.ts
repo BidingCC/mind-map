@@ -14,9 +14,9 @@ import { defineRoutesConfig } from "@buildingai/nuxt/router";
 export const consoleMenu: PluginMenuItem[] = [
     {
         name: "生成记录",
-        path: "/",
+        path: "",
         icon: "i-lucide-list-video",
-        component: () => import("~/pages/console/record.vue"),
+        component: () => import("~/pages/console/index.vue"),
         sort: 2,
     },
     {

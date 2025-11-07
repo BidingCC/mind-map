@@ -1,8 +1,16 @@
-# Nuxt dev/build outputs
+# Build outputs
+.output
 .data
 .nuxt
+.turbo
 .nitro
 .cache
+dist
+build
+
+# Storage
+storage/*
+!storage/static
 
 # Node dependencies
 node_modules
@@ -14,16 +22,9 @@ node_modules
 .DS_Store
 .fleet
 .idea
+.eslintcache
 
 # Local env files
 .env
 .env.*
 !.env.example
-
-# Build Outputs
-.output/
-build/
-dist
-
-# ESLint cache
-.eslintcache

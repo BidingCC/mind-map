@@ -13,7 +13,7 @@ export class SearchMindMapRecordDto extends PaginationDto {
      */
     @IsOptional()
     @IsString()
-    username?: string;
+    userName?: string;
 
     /**
      * 用户ID

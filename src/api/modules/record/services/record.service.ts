@@ -61,25 +61,26 @@ export class RecordService extends BaseService<MindMapRecord> {
 
     /**
      * 搜索思维导图记录
-     * @param searchDto 搜索DTO
+     * @param queryDto 查询参数
      * @returns 分页思维导图记录列表
      */
-    async search(searchDto: SearchMindMapRecordDto): Promise<PaginationResult<MindMapRecord>> {
+    async search(queryDto: SearchMindMapRecordDto): Promise<PaginationResult<MindMapRecord>> {
         const {
-            username,
+            page = 1,
+            pageSize = 10,
+            userName,
             userId,
             description,
             startDate,
             endDate,
-            page = 1,
-            pageSize = 10,
-        } = searchDto;
+        } = queryDto;
 
         const queryBuilder = this.MindMapRecordRepository.createQueryBuilder("mindMapRecord");
 
-        if (username) {
-            queryBuilder.andWhere("mindMapRecord.userName LIKE :username", {
-                username: `%${username}%`,
+        // 只在参数不为空时添加对应的where条件
+        if (userName) {
+            queryBuilder.andWhere("mindMapRecord.userName LIKE :userName", {
+                userName: `%${userName}%`,
             });
         }
 
@@ -95,37 +96,45 @@ export class RecordService extends BaseService<MindMapRecord> {
             });
         }
 
-        if (startDate) {
+        // 时间范围查询 - 支持单独的开始时间或结束时间
+        if (startDate && endDate) {
+            queryBuilder.andWhere("mindMapRecord.createdAt BETWEEN :startDate AND :endDate", {
+                startDate,
+                endDate,
+            });
+        } else if (startDate) {
             queryBuilder.andWhere("mindMapRecord.createdAt >= :startDate", { startDate });
-        }
-
-        if (endDate) {
+        } else if (endDate) {
             queryBuilder.andWhere("mindMapRecord.createdAt <= :endDate", { endDate });
         }
 
-        // 添加排序
-        queryBuilder.orderBy("mindMapRecord.createdAt", "DESC");
-
-        // 计算总数
+        // 先获取总数（在应用分页之前）
         const total = await queryBuilder.getCount();
 
-        // 添加分页
-        const skip = (page - 1) * pageSize;
-        queryBuilder.skip(skip).take(pageSize);
+        // 然后应用分页和排序
+        queryBuilder
+            .orderBy("mindMapRecord.createdAt", "DESC")
+            .skip((page - 1) * pageSize)
+            .take(pageSize);
 
-        // 获取分页数据
-        const items = await queryBuilder.getMany();
+        const { entities } = await queryBuilder.getRawAndEntities();
+
+        const data = entities.map((entity) => {
+            return {
+                ...entity,
+            };
+        });
 
         // 计算总页数
         const totalPages = Math.ceil(total / pageSize);
 
-        // 返回分页结果
+        // 返回统一格式的对象
         return {
-            items,
-            total,
-            page,
-            pageSize,
-            totalPages,
+            items: data,
+            total: total,
+            page: page,
+            pageSize: pageSize,
+            totalPages: totalPages,
         };
     }
 

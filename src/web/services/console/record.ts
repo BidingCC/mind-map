@@ -33,13 +33,13 @@ export const apiBatchDeleteMindMapConsole = (ids: string[]) => {
 
 /**
  * 搜索思维导图记录（后台管理）
- * @param data 搜索参数
+ * @param params 搜索参数
  * @returns 分页思维导图记录列表
  */
 export const apiSearchMindMapRecordsConsole = (
-    data: SearchMindMapRecordDto,
+    params: SearchMindMapRecordDto,
 ): Promise<MindMapListResponse> => {
-    return usePluginConsolePost("/record/search", data);
+    return usePluginConsoleGet("/record", params);
 };
 
 /**

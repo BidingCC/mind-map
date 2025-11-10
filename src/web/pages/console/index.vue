@@ -56,13 +56,11 @@ const isBatchDelete = shallowRef(false);
 
 // 列表查询参数
 const searchForm = reactive({
-    keyword: "",
-    userName: "",
-    userId: "",
-    startDate: "",
-    endDate: "",
-    pageSize: 10,
-    page: 1,
+    description: undefined,
+    userName: undefined,
+    userId: undefined,
+    startDate: undefined as string | undefined,
+    endDate: undefined as string | undefined,
 });
 const isOpen = shallowRef(false);
 // 添加对话详情相关状态
@@ -239,51 +237,38 @@ const columns: TableColumn<any>[] = [
  * 获取表格数据
  */
 const { paging, getLists, resetPage } = usePaging({
-    fetchFun: (params: any) => {
-        // 格式化日期为不带时区的本地日期时间字符串
-        const formatLocalDateTime = (date: string | Date, isEndDate = false) => {
-            if (!date) return undefined;
-            const d = new Date(date);
-            if (isNaN(d.getTime())) return undefined;
-            // 如果是结束日期，设置时间为当天最后一秒
-            if (isEndDate) {
-                d.setHours(23, 59, 59, 999);
-            }
-            return (
-                d.getFullYear() +
-                "-" +
-                String(d.getMonth() + 1).padStart(2, "0") +
-                "-" +
-                String(d.getDate()).padStart(2, "0") +
-                " " +
-                String(d.getHours()).padStart(2, "0") +
-                ":" +
-                String(d.getMinutes()).padStart(2, "0") +
-                ":" +
-                String(d.getSeconds()).padStart(2, "0")
-            );
-        };
-
-        // 构建搜索参数
-        const searchParams = {
-            username: searchForm.userName || undefined,
-            userId: searchForm.userId || undefined,
-            description: searchForm.keyword || undefined,
-            startDate: formatLocalDateTime(searchForm.startDate) || undefined,
-            endDate: formatLocalDateTime(searchForm.endDate, true) || undefined,
-            page: params.page || 1,
-            pageSize: params.pageSize || 10,
-        };
-        return apiSearchMindMapRecordsConsole(searchParams).catch((error) => {
-            toast.error(t("console.records.fetchFailed"));
-            throw error;
-        });
-    },
+    fetchFun: apiSearchMindMapRecordsConsole,
     params: searchForm,
 });
 
+// 格式化日期为不带时区的本地日期时间字符串
+const formatLocalDateTime = (date: string | undefined, isEndDate = false) => {
+    if (!date) return undefined;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return undefined;
+    // 如果是结束日期，设置时间为当天最后一秒
+    if (isEndDate) {
+        d.setHours(23, 59, 59, 999);
+    }
+    return (
+        d.getFullYear() +
+        "-" +
+        String(d.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(d.getDate()).padStart(2, "0") +
+        " " +
+        String(d.getHours()).padStart(2, "0") +
+        ":" +
+        String(d.getMinutes()).padStart(2, "0") +
+        ":" +
+        String(d.getSeconds()).padStart(2, "0")
+    );
+};
+
 // 搜索处理
 const handleSearch = useDebounceFn(() => {
+    searchForm.startDate = formatLocalDateTime(searchForm.startDate);
+    searchForm.endDate = formatLocalDateTime(searchForm.endDate, true);
     resetPage();
     getLists();
 }, 300);
@@ -714,7 +699,7 @@ onUnmounted(() => {
                 @keyup.enter="handleSearch"
             />
             <UInput
-                v-model="searchForm.keyword"
+                v-model="searchForm.description"
                 :placeholder="t('console.placeholders.key')"
                 icon="i-heroicons-magnifying-glass"
                 @keyup.enter="handleSearch"

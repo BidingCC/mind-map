@@ -1,7 +1,7 @@
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
 import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
 import { BuildFileUrl } from "@buildingai/decorators/file-url.decorator";
-import { Body, Delete, Param, Post } from "@nestjs/common";
+import { Body, Delete, Get, Param, Query } from "@nestjs/common";
 
 import { BatchDeleteMindMapRecordDto } from "../../dto/delete-mind-map-record.dto";
 import { SearchMindMapRecordDto } from "../../dto/search-mind-map-record.dto";
@@ -38,9 +38,9 @@ export class RecordController extends BaseController {
      * @param searchDto 搜索DTO
      * @returns 分页思维导图记录列表
      */
-    @Post("search")
+    @Get()
     @BuildFileUrl(["**.userAvatar"])
-    async searchMindMapRecords(@Body() searchDto: SearchMindMapRecordDto) {
+    async searchMindMapRecords(@Query() searchDto: SearchMindMapRecordDto) {
         return await this.recordService.search(searchDto);
     }
 }

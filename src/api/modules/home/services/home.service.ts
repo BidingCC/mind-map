@@ -1,4 +1,5 @@
 import { BaseService } from "@buildingai/core/modules/base/services/base.service";
+import { HttpErrorFactory } from "@buildingai/errors";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -45,6 +46,15 @@ export class HomeService extends BaseService<MindMapHome> {
      * @returns 保存后的配置
      */
     async saveHomeConfig(data: Partial<MindMapHome>): Promise<MindMapHome> {
+        // 校验字段长度
+        if (data.name !== undefined && data.name.length > 15) {
+            throw HttpErrorFactory.badRequest(`插件显示名称不能超过15个字符。`);
+        }
+
+        if (data.description !== undefined && data.description.length > 25) {
+            throw HttpErrorFactory.badRequest(`宣传语副标题不能超过25个字符。`);
+        }
+
         // 查找现有配置或创建新配置
         let config = await this.mindMapHomeRepository.findOne({
             where: {},

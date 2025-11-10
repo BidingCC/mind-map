@@ -724,23 +724,28 @@ onUnmounted(() => {
     >
         <header class="relative h-46 shrink-0">
             <div class="absolute inset-0 flex items-center justify-between px-2">
-                <div class="mt-2 self-start text-[18px] text-gray-600 dark:text-gray-300">
+                <div
+                    class="mt-2 w-1/4 self-start truncate overflow-hidden text-[18px] text-gray-600 dark:text-gray-300"
+                >
                     {{ config.name }}
                 </div>
-                <div class="text-center">
-                    <h1 class="text-3xl font-bold" v-dompurify-html="config.publicLanguage"></h1>
+                <div class="flex-1 px-4 text-center">
+                    <h1
+                        class="truncate text-3xl font-bold"
+                        v-dompurify-html="config.publicLanguage"
+                    ></h1>
                     <p
                         v-if="config.enabledDescription"
-                        class="mt-2 text-sm text-gray-600 dark:text-gray-300"
+                        class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
                     >
                         {{ config.description }}
                     </p>
                 </div>
-                <div class="mt-2 self-start text-sm text-gray-600 dark:text-gray-300">
-                    <div class="group relative p-3 pt-0">
+                <div class="mt-2 w-1/4 self-start text-sm text-gray-600 dark:text-gray-300">
+                    <div class="group relative float-right p-3 pt-0">
                         <div class="flex items-center">
                             <UIcon name="i-lucide-info" class="mr-1 h-4 w-4" />
-                            <span>{{ t("index.header.costDescription") }}</span>
+                            <span class="truncate">{{ t("index.header.costDescription") }}</span>
                         </div>
                         <div
                             class="absolute top-full right-0 z-100 mt-1 hidden w-56 rounded-2xl bg-(--secondary-foreground) p-3 text-sm text-(--background) shadow-lg group-hover:block"

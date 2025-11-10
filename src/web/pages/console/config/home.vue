@@ -156,7 +156,12 @@ onMounted(async () => {
                 <h3 class="mb-4 text-lg font-semibold">{{ t("console.home.title") }}</h3>
                 <div class="flex flex-col gap-6">
                     <UFormField :label="t('console.home.name')" class="flex flex-col gap-2">
-                        <UInput v-model="formData.name" class="w-full" :ui="{ base: 'p-3' }" />
+                        <UInput
+                            v-model="formData.name"
+                            maxlength="15"
+                            class="w-full"
+                            :ui="{ base: 'p-3' }"
+                        />
                     </UFormField>
 
                     <UFormField
@@ -238,6 +243,7 @@ onMounted(async () => {
                             v-if="formData.enabledDescription"
                             v-model="formData.description"
                             class="w-full"
+                            maxlength="25"
                             :ui="{ base: 'p-3' }"
                         />
                     </UFormField>

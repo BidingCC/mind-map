@@ -1,4 +1,5 @@
 import { BaseService } from "@buildingai/core/modules/base/services/base.service";
+import { HttpErrorFactory } from "@buildingai/errors";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -46,6 +47,16 @@ export class ExamplesService extends BaseService<MindMapExample> {
      * @returns 保存后的配置
      */
     async saveConfig(data: Partial<MindMapExample>): Promise<MindMapExample> {
+        if (data.try && Array.isArray(data.try)) {
+            for (const item of data.try) {
+                if (item.content && typeof item.content === "string" && item.content.length > 35) {
+                    throw HttpErrorFactory.badRequest(
+                        `示例内容不能超过35个字符，当前长度：${item.content.length}`,
+                    );
+                }
+            }
+        }
+
         // 查找现有配置或创建新配置
         let config = await this.mindMapExampleRepository.findOne({
             where: {},

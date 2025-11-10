@@ -179,6 +179,7 @@ onMounted(async () => {
                                                         <UInput
                                                             v-model="editingContent"
                                                             class="flex-1"
+                                                            maxlength="35"
                                                             @keyup.enter="saveEditing(element)"
                                                             @keyup.esc="cancelEditing"
                                                             autofocus

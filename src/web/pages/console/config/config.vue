@@ -5,7 +5,7 @@ import type { MindMapConfig } from "../../../models/record";
 import { apiGetMindMapConfig, apiSaveMindMapConfig } from "../../../services/console/config";
 
 const { t } = useI18n();
-const message = useMessage();
+const toast = useMessage();
 
 // 表单数据
 const formData = reactive<MindMapConfig>({
@@ -66,7 +66,7 @@ const { lockFn: getPluginConfig, isLock: detailLoading } = useLockFn(async () =>
         console.log("处理后的表单数据:", formData);
     } catch (error) {
         console.error("获取配置失败:", error);
-        message.error(t("console.config.loadFailed"));
+        toast.error(t("console.config.loadFailed"));
     }
 });
 
@@ -75,18 +75,18 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
     try {
         // 验证必填项
         if (!selectedModel.value?.name?.trim()) {
-            message.error(t("console.config.modelRequired"));
+            toast.error(t("console.config.modelRequired"));
             return;
         }
         // if (!formData.bindKeyConfigId.trim()) {
-        //     message.error(t("console.config.keyRequired"));
+        //     toast.error(t("console.config.keyRequired"));
         //     return;
         // }
 
         // 验证计费设置（免费模式不需要验证）
         if (formData.billingType !== 2) {
             if (!formData.billingSetting || formData.billingSetting < 1) {
-                message.error(t("console.config.validBilling"));
+                toast.error(t("console.config.validBilling"));
                 return;
             }
         }
@@ -99,10 +99,10 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
         };
 
         await apiSaveMindMapConfig(formData.id, updateData);
-        message.success(t("console.config.saveSuccess"));
+        toast.success(t("console.config.saveSuccess"));
     } catch (error) {
         console.error("更新配置失败:", error);
-        message.error(t("console.config.saveFailed"));
+        toast.error(t("console.config.saveFailed"));
     }
 });
 
@@ -132,11 +132,11 @@ const handleModelChange = (model: any) => {
 //         if (provider && provider.websiteUrl) {
 //             window.open(provider.websiteUrl, "_blank");
 //         } else {
-//             message.warning(t("console.config.noWebsiteUrl"));
+//             toast.warning(t("console.config.noWebsiteUrl"));
 //         }
 //     } else if (selectedModel.value) {
 //         // 如果没有缓存数据但仍选择了模型，显示提示信息
-//         message.warning(t("console.config.noProviderInfo"));
+//         toast.warning(t("console.config.noProviderInfo"));
 //     }
 // };
 

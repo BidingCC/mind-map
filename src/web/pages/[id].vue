@@ -123,6 +123,7 @@ interface AiConfigResponse {
     enabledTry?: boolean;
     enabledDialog?: boolean;
 }
+
 // 加载AI对话框配置
 const loadAiConfig = async () => {
     try {
@@ -134,6 +135,7 @@ const loadAiConfig = async () => {
         aiConfig.value.enabledDialog = config.enabledDialog ?? aiConfig.value.enabledDialog;
     } catch (error) {
         console.error("加载AI配置失败:", error);
+        toast.error(t("create.toast.loadFailed"));
     }
 };
 
@@ -758,6 +760,7 @@ const loadMoreMessages = async () => {
         }
     } catch (error) {
         console.error("加载更多消息失败:", error);
+        toast.error(t("create.toast.loadMoreFailed"));
         queryPaging.page--;
     }
 };
@@ -1107,6 +1110,7 @@ const initializeMindMap = (mindData: any, layoutType: string) => {
         }, 1000);
     } else {
         console.error("MindMap constructor is not available");
+        toast.error(t("create.toast.loadInitMindMapFailed"));
     }
 };
 

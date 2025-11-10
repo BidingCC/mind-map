@@ -87,9 +87,12 @@ export const apiGetMindMapHomeConfigUser = () => {
 };
 
 /**
- * 获取思维导图插件配置（前台用户使用）
+ * 获取思维导图插件配置
  * @returns 思维导图插件配置
  */
-export function apiGetMindMapConfigUser() {
+export function apiGetMindMapConfigUser(): Promise<{
+    billingType: number;
+    billingSetting: number | string;
+}> {
     return usePluginWebGet("/config/plugin-user");
 }

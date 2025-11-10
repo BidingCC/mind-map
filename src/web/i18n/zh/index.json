@@ -34,7 +34,8 @@
         "downloadError": "下载失败",
         "updateTitleSuccess": "修改成功",
         "updateTitleError": "修改失败",
-        "createError": "创建失败"
+        "createError": "创建失败",
+        "fetchConfigError": "获取配置失败"
     },
     "time": {
         "justNow": "刚刚更新",

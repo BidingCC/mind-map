@@ -57,10 +57,15 @@ const showDeleteModal = shallowRef(false);
 const deletingItemId = shallowRef<string | null>(null);
 
 // 插件配置
-const pluginConfig = ref<any>({
+const pluginConfig = ref<{
+    billingType: number;
+    billingSetting: number | string;
+}>({
     billingType: 1, // 默认按字数计费
     billingSetting: 1,
 });
+
+const displayBillingSetting = ref<string | number>("-");
 
 // 控制回到顶部按钮显示
 const showBackToTop = shallowRef(false);
@@ -427,12 +432,17 @@ const fetchPluginConfig = async () => {
     try {
         const config = await apiGetMindMapConfigUser();
         pluginConfig.value = config;
+        // 只有获取成功时才更新显示值
+        displayBillingSetting.value = config.billingSetting;
     } catch (error) {
         console.error("获取插件配置失败:", error);
+        toast.error(t("index.toast.fetchConfigError"));
         pluginConfig.value = {
             billingType: 1,
             billingSetting: 1,
         };
+        // 发生错误时显示"-"
+        displayBillingSetting.value = "-";
     }
 };
 
@@ -443,7 +453,7 @@ const hasMindMaps = computed(() => {
 
 // 计算显示的费用说明文本
 const costDescriptionText = computed(() => {
-    const billingSetting = pluginConfig.value?.billingSetting || 1;
+    const billingSetting = displayBillingSetting.value;
     if (pluginConfig.value.billingType === 1) {
         // 按字数计费说明
         return `${t("index.header.per100Chars")}${billingSetting}${t("index.header.score")}; ${t("index.header.points")}${billingSetting}${t("index.header.score")}`;

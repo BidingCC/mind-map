@@ -33,6 +33,8 @@
         "loadFailed": "获取配置失败",
         "sendError": "发送失败",
         "noData": "当前没有可下载的思维导图",
-        "loadMindMapFailed": "获取思维导图失败"
+        "loadMindMapFailed": "获取思维导图失败",
+        "loadMoreFailed": "加载更多失败",
+        "loadInitMindMapFailed": "初始化思维导图失败"
     }
 }

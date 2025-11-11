@@ -8,6 +8,8 @@ import { Body, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 import { CreateMindMapDto } from "../../dto/create-mind-map.dto";
 import { PaginationDto } from "../../dto/pagination.dto";
 import { UpdateTitleDto } from "../../dto/update-title.dto";
+import { MindMapRecordPublicInterface } from "../../interfaces/mind-map-record.interface";
+import { PaginationResult } from "../../interfaces/pagination-result.interface";
 import { RecordService } from "../../services/record.service";
 
 @ExtensionWebController("index")
@@ -15,6 +17,7 @@ export class IndexController extends BaseController {
     constructor(private readonly indexService: RecordService) {
         super();
     }
+
     /**
      * 创建思维导图记录
      * @param createMindMapDto 创建思维导图DTO
@@ -34,7 +37,9 @@ export class IndexController extends BaseController {
      * @returns 分页思维导图记录列表
      */
     @Get("list")
-    async getMindMapRecordList(@Query() listDto: PaginationDto) {
+    async getMindMapRecordList(
+        @Query() listDto: PaginationDto,
+    ): Promise<PaginationResult<MindMapRecordPublicInterface>> {
         return await this.indexService.list(listDto);
     }
 

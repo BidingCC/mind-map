@@ -7,8 +7,8 @@ import { Body, Get, Param, Patch } from "@nestjs/common";
 
 import { SaveMindMapDto } from "../../dto/save-mind-map.dto";
 import { UpdateTitleDto } from "../../dto/update-title.dto";
+import { MindMapRecordPublicInterface } from "../../interfaces/mind-map-record.interface";
 import { CreateService } from "../../services/create.service";
-
 @ExtensionWebController("create")
 export class CreateController extends BaseController {
     constructor(private readonly createService: CreateService) {
@@ -22,7 +22,10 @@ export class CreateController extends BaseController {
      * @returns 思维导图记录
      */
     @Get("getDetail/:id")
-    async getMindMapDetail(@Param("id") id: string, @Playground() user: UserPlayground) {
+    async getMindMapDetail(
+        @Param("id", UUIDValidationPipe) id: string,
+        @Playground() user: UserPlayground,
+    ): Promise<MindMapRecordPublicInterface> {
         return await this.createService.getDetail(id, user.id);
     }
 

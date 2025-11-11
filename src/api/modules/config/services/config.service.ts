@@ -15,6 +15,10 @@ export class ConfigService extends BaseService<MindMapConfig> {
         super(mindMapConfigRepository);
     }
 
+    // =================================================================
+    // 后台用户服务
+    // =================================================================
+
     /**
      * 获取思维导图插件配置
      * @returns 思维导图插件配置
@@ -68,6 +72,10 @@ export class ConfigService extends BaseService<MindMapConfig> {
 
         return await this.mindMapConfigRepository.save(config);
     }
+
+    // =================================================================
+    // 前台用户服务
+    // =================================================================
 
     /**
      * 获取思维导图插件配置（前台用户使用）

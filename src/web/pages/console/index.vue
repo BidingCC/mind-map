@@ -15,13 +15,13 @@ const ConversationDetailModal = defineAsyncComponent(
 
 import type { MindMapRecord } from "../../models";
 import {
+    apiDeleteAiConversationConsole,
+    apiDeleteAiConversationConsoles,
     apiGetAiConversation,
     apiGetAiConversationDetail,
 } from "../../services/console/ai-conversation";
 import {
     apiBatchDeleteMindMapConsole,
-    apiDeleteAiConversationConsole,
-    apiDeleteAiConversationConsoles,
     apiDeleteMindMapConsole,
     apiSearchMindMapRecordsConsole,
 } from "../../services/console/record";

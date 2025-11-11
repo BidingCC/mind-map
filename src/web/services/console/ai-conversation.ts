@@ -23,3 +23,21 @@ export function apiGetAiConversation(
 ): Promise<PaginationResult<AiMessage>> {
     return usePluginConsoleGet(`/ai-chat-record/${id}/messages`, params);
 }
+
+/**
+ * 删除记录
+ * @param id 记录ID
+ * @returns 删除结果
+ */
+export function apiDeleteAiConversationConsole(id: string): Promise<void> {
+    return usePluginConsoleDelete(`/ai-chat-record/${id}`);
+}
+
+/**
+ * 批量删除记录
+ * @param ids 记录ID数组
+ * @returns 删除结果
+ */
+export function apiDeleteAiConversationConsoles(ids: string[]): Promise<void> {
+    return usePluginConsoleDelete(`/ai-chat-record`, ids);
+}

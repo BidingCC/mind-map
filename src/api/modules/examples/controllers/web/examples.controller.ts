@@ -2,7 +2,7 @@ import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import { Get } from "@nestjs/common";
 
-import { MindMapExample } from "../../../../db/entities/mind-map-example.entity";
+import { MindMapExampleResponse } from "../../interfaces/mind-map-example.interface";
 import { ExamplesService } from "../../services/examples.service";
 
 @ExtensionWebController("examples")
@@ -16,7 +16,7 @@ export class ExamplesWebController extends BaseController {
      * @returns 思维导图示例配置
      */
     @Get()
-    async getExamplesConfig(): Promise<MindMapExample> {
+    async getExamplesConfig(): Promise<MindMapExampleResponse> {
         return await this.examplesService.getConfigUser();
     }
 }

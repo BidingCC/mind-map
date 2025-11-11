@@ -102,6 +102,13 @@ export class AiChatMessageController extends BaseController {
             );
         }
 
+        const provider = await this.aiModelService.getProvider(pluginConfig.bindModelId, [
+            "apiKey",
+            "baseUrl",
+        ]);
+
+        const model = await this.aiModelService.getModelInfo(pluginConfig.bindModelId);
+
         const hasSufficientPower = await this.extensionBillingService.hasSufficientPower(
             user.id,
             pluginConfig.billingSetting,
@@ -190,11 +197,6 @@ export class AiChatMessageController extends BaseController {
                     this.logger.warn(`Failed to obtain the mind map data: ${error.message}`);
                 }
             }
-
-            const provider = await this.aiModelService.getProvider(pluginConfig.bindModelId, [
-                "apiKey",
-                "baseUrl",
-            ]);
 
             const client = new TextGenerator(provider);
 
@@ -343,8 +345,6 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
             let reasoningContent = ""; // 收集深度思考内容
             let reasoningStartTime: number | null = null; // 深度思考开始时间
             let reasoningEndTime: number | null = null; // 深度思考结束时间
-
-            const model = await this.aiModelService.getModelInfo(pluginConfig.bindModelId);
 
             const chatCompletionCreateParams: ChatCompletionCreateParams = {
                 model: model.model,

@@ -5,9 +5,8 @@ import { Playground } from "@buildingai/decorators/playground.decorator";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
-import { Body, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import { Delete, Get, Param, Query } from "@nestjs/common";
 
-import { CreateAIChatRecordDto, UpdateAIChatRecordDto } from "../../dto/ai-chat-record.dto";
 import { CreateService } from "../../services/create.service";
 
 /**
@@ -22,40 +21,6 @@ export class AiChatRecordController extends BaseController {
     }
 
     /**
-     * 创建新对话
-     */
-    @Post()
-    async createConversation(
-        @Body() dto: CreateAIChatRecordDto,
-        @Playground() playground: UserPlayground,
-    ) {
-        return await this.createService.createConversation(playground.id, dto);
-    }
-
-    /**
-     * 获取对话详情（包含消息）
-     */
-    @Get(":id")
-    async getConversationDetail(
-        @Param("id", UUIDValidationPipe) conversationId: string | undefined,
-        @Playground() user: UserPlayground,
-    ) {
-        return await this.createService.getConversationWithMessages(conversationId, user.id);
-    }
-
-    /**
-     * 更新对话信息
-     */
-    @Patch(":id")
-    async updateConversation(
-        @Param("id", UUIDValidationPipe) conversationId: string,
-        @Body() dto: UpdateAIChatRecordDto,
-        @Playground() playground: UserPlayground,
-    ) {
-        return await this.createService.updateConversation(conversationId, playground.id, dto);
-    }
-
-    /**
      * 删除对话
      */
     @Delete(":id")
@@ -65,16 +30,6 @@ export class AiChatRecordController extends BaseController {
     ) {
         await this.createService.deleteConversation(conversationId, playground.id);
         return { message: "对话删除成功" };
-    }
-
-    /**
-     * 批量删除对话
-     * @param ids 对话ID数组
-     * @returns 是否成功
-     */
-    @Delete()
-    async deleteConversations(@Body() ids: string[], @Playground() playground: UserPlayground) {
-        return await this.createService.batchDeleteConversations(ids, playground.id);
     }
 
     /**
@@ -98,6 +53,6 @@ export class AiChatRecordController extends BaseController {
             );
         }
 
-        return await this.createService.getConversationMessages(conversationId, paginationDto);
+        return await this.createService.getConversationMessagesUser(conversationId, paginationDto);
     }
 }

@@ -33,14 +33,6 @@ export const apiSaveMindMap = (data: SaveMindMapDto) => {
 };
 
 /**
- * 获取对话消息
- * @returns 对话消息
- */
-export const apiGetAiMessage = (id: string | undefined) => {
-    return usePluginWebGet(`/ai-chat-record/${id}`);
-};
-
-/**
  * 获取思维导图示例配置（前台用户使用）
  * @returns 思维导图示例配置
  */

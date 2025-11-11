@@ -270,9 +270,9 @@ const { messages, input, handleSubmit, stop, status } = useChat({
         },
     },
     onError(err) {
-        const message = err?.message || "发送失败";
+        const message = err?.message;
         console.error("聊天错误:", message);
-        toast.error(message);
+        toast.error(t("create.toast.sendError") + ": " + message);
         // 隐藏AI正在输入状态
         isAiTyping.value = false;
     },

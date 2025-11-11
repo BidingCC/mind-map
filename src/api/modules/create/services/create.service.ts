@@ -19,6 +19,7 @@ import {
     UpdateMessageDto,
 } from "../dto/ai-chat-record.dto";
 import { SaveMindMapDto } from "../dto/save-mind-map.dto";
+import { MindMapRecordPublicInterface } from "../interfaces/mind-map-record.interface";
 
 @Injectable()
 export class CreateService extends BaseService<MindMapRecord> {
@@ -57,7 +58,7 @@ export class CreateService extends BaseService<MindMapRecord> {
      * @param userId 当前用户ID
      * @returns 思维导图记录
      */
-    async getDetail(id: string, userId: string): Promise<MindMapRecord> {
+    async getDetail(id: string, userId: string): Promise<MindMapRecordPublicInterface> {
         const mindMapRecord = await this.mindMapRecordRepository.findOne({
             where: { id },
         });
@@ -71,7 +72,15 @@ export class CreateService extends BaseService<MindMapRecord> {
             throw HttpErrorFactory.forbidden("There is no permission to view this mind map");
         }
 
-        return mindMapRecord;
+        // 返回公开接口数据结构
+        return {
+            id: mindMapRecord.id,
+            createdAt: mindMapRecord.createdAt,
+            updatedAt: mindMapRecord.updatedAt,
+            description: mindMapRecord.description,
+            mindMapData: mindMapRecord.mindMapData,
+            aiChatRecordId: mindMapRecord.aiChatRecordId,
+        };
     }
 
     /**
@@ -402,7 +411,46 @@ export class CreateService extends BaseService<MindMapRecord> {
      * @param paginationDto 分页参数
      */
     async getConversationMessages(conversationId: string, paginationDto: PaginationDto) {
+        if (!conversationId) {
+            throw HttpErrorFactory.notFound("The conversation does not exist.");
+        }
         return await this.findMessages(paginationDto, { conversationId });
+    }
+
+    /**
+     * 获取对话的消息列表(用于前台)
+     * @param conversationId 对话ID
+     * @param paginationDto 分页参数
+     */
+    async getConversationMessagesUser(conversationId: string, paginationDto: PaginationDto) {
+        if (!conversationId) {
+            throw HttpErrorFactory.notFound("The conversation does not exist.");
+        }
+
+        // 获取原始分页数据
+        const result = await this.findMessages(paginationDto, { conversationId });
+
+        const publicItems = result.items.map((item) => ({
+            id: item.id,
+            conversationId: item.conversationId,
+            role: item.role,
+            content: item.content,
+            messageType: item.messageType,
+            status: item.status,
+            errorMessage: item.errorMessage,
+            rawResponse: item.rawResponse,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+        }));
+
+        // 返回公共接口数据结构
+        return {
+            items: publicItems,
+            total: result.total,
+            page: result.page,
+            pageSize: result.pageSize,
+            totalPages: result.totalPages,
+        };
     }
 
     /**

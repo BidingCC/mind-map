@@ -5,6 +5,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { MindMapExample } from "../../../db/entities/mind-map-example.entity";
+import { MindMapExampleResponse } from "../interfaces/mind-map-example.interface";
 
 @Injectable()
 export class ExamplesService extends BaseService<MindMapExample> {
@@ -14,6 +15,10 @@ export class ExamplesService extends BaseService<MindMapExample> {
     ) {
         super(mindMapExampleRepository);
     }
+
+    // =================================================================
+    // 后台用户服务
+    // =================================================================
 
     /**
      * 获取思维导图示例配置
@@ -83,11 +88,15 @@ export class ExamplesService extends BaseService<MindMapExample> {
         return await this.mindMapExampleRepository.save(config);
     }
 
+    // =================================================================
+    // 前台用户服务
+    // =================================================================
+
     /**
      * 获取思维导图示例配置（前台用户使用）
      * @returns 思维导图示例配置
      */
-    async getConfigUser(): Promise<MindMapExample> {
+    async getConfigUser(): Promise<MindMapExampleResponse> {
         // 查找第一条配置记录，如果没有则创建默认配置
         let config = await this.mindMapExampleRepository.findOne({
             where: {},
@@ -105,6 +114,14 @@ export class ExamplesService extends BaseService<MindMapExample> {
             config.enabledDialog = true;
         }
 
-        return config;
+        // 构造不包含时间字段的响应对象
+        return {
+            id: config.id,
+            prologue: config.prologue,
+            dialogText: config.dialogText,
+            try: config.try,
+            enabledTry: config.enabledTry,
+            enabledDialog: config.enabledDialog,
+        };
     }
 }

@@ -12,6 +12,7 @@ import { CreateMindMapDto } from "../dto/create-mind-map.dto";
 import { BatchDeleteMindMapRecordDto } from "../dto/delete-mind-map-record.dto";
 import { PaginationDto } from "../dto/pagination.dto";
 import { SearchMindMapRecordDto } from "../dto/search-mind-map-record.dto";
+import { MindMapRecordPublicInterface } from "../interfaces/mind-map-record.interface";
 import { PaginationResult } from "../interfaces/pagination-result.interface";
 
 @Injectable()
@@ -23,6 +24,10 @@ export class RecordService extends BaseService<MindMapRecord> {
     ) {
         super(MindMapRecordRepository);
     }
+
+    // =================================================================
+    // 后台用户服务
+    // =================================================================
 
     /**
      * 删除思维导图记录
@@ -138,6 +143,10 @@ export class RecordService extends BaseService<MindMapRecord> {
         };
     }
 
+    // =================================================================
+    // 前台用户服务
+    // =================================================================
+
     /**
      * 创建思维导图记录
      * @param createMindMapDto 创建思维导图DTO
@@ -236,7 +245,7 @@ export class RecordService extends BaseService<MindMapRecord> {
      * @param listDto 列表DTO
      * @returns 分页思维导图记录列表
      */
-    async list(listDto: PaginationDto): Promise<PaginationResult<MindMapRecord>> {
+    async list(listDto: PaginationDto): Promise<PaginationResult<MindMapRecordPublicInterface>> {
         const { page = 1, pageSize = 10 } = listDto;
 
         // 创建查询构建器
@@ -258,9 +267,18 @@ export class RecordService extends BaseService<MindMapRecord> {
         // 计算总页数
         const totalPages = Math.ceil(total / pageSize);
 
+        const publicItems = items.map((item) => ({
+            id: item.id,
+            createdAt: item.createdAt,
+            updatedAt: item.updatedAt,
+            description: item.description,
+            mindMapData: item.mindMapData,
+            aiChatRecordId: item.aiChatRecordId,
+        }));
+
         // 返回分页结果
         return {
-            items,
+            items: publicItems,
             total,
             page,
             pageSize,

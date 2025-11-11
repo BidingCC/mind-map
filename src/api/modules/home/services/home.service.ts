@@ -5,6 +5,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { MindMapHome } from "../../../db/entities/mind-map-home.entity";
+import { MindMapHomePublicInterface } from "../interface/mind-map-home.interface";
 
 @Injectable()
 export class HomeService extends BaseService<MindMapHome> {
@@ -14,6 +15,10 @@ export class HomeService extends BaseService<MindMapHome> {
     ) {
         super(mindMapHomeRepository);
     }
+
+    // =================================================================
+    // 后台用户服务
+    // =================================================================
 
     /**
      * 获取思维导图首页配置
@@ -94,11 +99,15 @@ export class HomeService extends BaseService<MindMapHome> {
         return await this.mindMapHomeRepository.save(config);
     }
 
+    // =================================================================
+    // 前台用户服务
+    // =================================================================
+
     /**
      * 获取思维导图首页配置（前台用户使用）
      * @returns 思维导图首页配置
      */
-    async getHomeConfigUser(): Promise<MindMapHome> {
+    async getHomeConfigUser(): Promise<MindMapHomePublicInterface> {
         // 查找第一条配置记录，如果没有则创建默认配置
         let config = await this.mindMapHomeRepository.findOne({
             where: {},
@@ -115,6 +124,12 @@ export class HomeService extends BaseService<MindMapHome> {
             config.enabledDescription = true;
         }
 
-        return config;
+        return {
+            id: config.id,
+            name: config.name,
+            publicLanguage: config.publicLanguage,
+            description: config.description,
+            enabledDescription: config.enabledDescription,
+        };
     }
 }

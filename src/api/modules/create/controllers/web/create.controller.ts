@@ -1,5 +1,7 @@
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
+import { type UserPlayground } from "@buildingai/db/interfaces/context.interface";
+import { Playground } from "@buildingai/decorators/playground.decorator";
 import { Body, Get, Param, Patch } from "@nestjs/common";
 
 import { SaveMindMapDto } from "../../dto/save-mind-map.dto";
@@ -14,12 +16,13 @@ export class CreateController extends BaseController {
 
     /**
      * 获取思维导图详情
-     * @param createMindMapDto 创建思维导图DTO
-     * @returns 创建的思维导图记录
+     * @param id 思维导图ID
+     * @param user 当前用户
+     * @returns 思维导图记录
      */
     @Get("getDetail/:id")
-    async getMindMapDetail(@Param("id") id: string) {
-        return await this.createService.getDetail(id);
+    async getMindMapDetail(@Param("id") id: string, @Playground() user: UserPlayground) {
+        return await this.createService.getDetail(id, user.id);
     }
 
     /**

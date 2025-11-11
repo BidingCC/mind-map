@@ -53,15 +53,21 @@ export class CreateService extends BaseService<MindMapRecord> {
     /**
      * 获取思维导图详情
      * @param id 思维导图ID
+     * @param userId 当前用户ID
      * @returns 思维导图记录
      */
-    async getDetail(id: string): Promise<MindMapRecord> {
+    async getDetail(id: string, userId: string): Promise<MindMapRecord> {
         const mindMapRecord = await this.mindMapRecordRepository.findOne({
             where: { id },
         });
 
         if (!mindMapRecord) {
-            throw HttpErrorFactory.notFound("思维导图记录不存在");
+            throw HttpErrorFactory.notFound("The mind map record does not exist");
+        }
+
+        // 检查当前用户是否为思维导图的创建者
+        if (mindMapRecord.userId !== userId) {
+            throw HttpErrorFactory.forbidden("There is no permission to view this mind map");
         }
 
         return mindMapRecord;

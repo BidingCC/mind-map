@@ -128,7 +128,7 @@ const saveHomeConfig = useDebounceFn(async () => {
         const saveData = {
             name: formData.value.name,
             publicLanguage: formData.value.publicLanguage,
-            description: formData.value.description,
+            description: formData.value.enabledDescription ? formData.value.description : "",
             enabledDescription: formData.value.enabledDescription,
         };
 

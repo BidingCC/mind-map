@@ -37,12 +37,6 @@ const formData = ref({
 const tryValue = shallowRef(true);
 const dialogValue = shallowRef(true);
 
-watch(dialogValue, (newVal) => {
-    if (!newVal) {
-        formData.value.dialogText = "";
-    }
-});
-
 /**
  * 加载示例配置
  */
@@ -72,8 +66,8 @@ const batchSaveExamples = useDebounceFn(async () => {
     try {
         const saveData = {
             prologue: formData.value.prologue,
-            dialogText: formData.value.dialogText,
-            try: examples.value,
+            dialogText: dialogValue.value ? formData.value.dialogText : "",
+            try: tryValue.value ? examples.value : [],
             enabledTry: tryValue.value,
             enabledDialog: dialogValue.value,
         };
@@ -250,12 +244,11 @@ onMounted(async () => {
                                 <div><USwitch v-model="dialogValue" /></div>
                             </div>
                             <template v-if="dialogValue">
-                                <UTextarea
+                                <UInput
                                     id="ai-prompt"
                                     v-model="formData.dialogText"
-                                    :rows="4"
-                                    autoresize
-                                    :maxrows="6"
+                                    :maxlength="45"
+                                    :ui="{ base: 'p-3' }"
                                     class="w-full"
                                 />
                             </template>
@@ -327,7 +320,7 @@ onMounted(async () => {
                             autoresize
                             :maxrows="4"
                             class="w-full"
-                            :placeholder="formData.dialogText"
+                            :placeholder="dialogValue ? formData.dialogText : ''"
                             :ui="{
                                 base: 'py-3 pl-3 pr-12 text-[16px]',
                             }"

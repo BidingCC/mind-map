@@ -247,7 +247,7 @@ onMounted(async () => {
                                 <UInput
                                     id="ai-prompt"
                                     v-model="formData.dialogText"
-                                    :maxlength="45"
+                                    :maxlength="20"
                                     :ui="{ base: 'p-3' }"
                                     class="w-full"
                                 />

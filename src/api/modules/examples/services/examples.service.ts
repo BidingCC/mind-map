@@ -1,4 +1,4 @@
-import { BaseService } from "@buildingai/core/modules/base/services/base.service";
+import { BaseService } from "@buildingai/base/services/base.service";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";

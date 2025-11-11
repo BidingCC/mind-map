@@ -1,6 +1,6 @@
 import { TextGenerator } from "@buildingai/ai-sdk/core/generator/text";
+import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
-import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
 import { User } from "@buildingai/db/entities/user.entity";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";

@@ -1,4 +1,4 @@
-import { BaseService } from "@buildingai/core/modules/base/services/base.service";
+import { BaseService } from "@buildingai/base/services/base.service";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { buildWhere } from "@buildingai/utils";
@@ -8,6 +8,7 @@ import { FindManyOptions, In, Not, Repository } from "typeorm";
 
 import { MindMapAiChatMessage } from "../../../db/entities/mind-map-ai-chat-message.entity";
 import { MindMapAiChatRecord } from "../../../db/entities/mind-map-ai-chat-record.entity";
+import { MindMapConfig } from "../../../db/entities/mind-map-config.entity";
 import { MindMapRecord } from "../../../db/entities/mind-map-record.entity";
 import { ConfigService } from "../../config/services/config.service";
 import {
@@ -37,7 +38,7 @@ export class CreateService extends BaseService<MindMapRecord> {
      * 获取插件配置
      * @returns 插件配置
      */
-    async getConfig() {
+    async getConfig(): Promise<MindMapConfig> {
         return await this.configService.getConfig();
     }
 

@@ -1,7 +1,8 @@
+import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
-import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";
+import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Body, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 
 import { CreateMindMapDto } from "../../dto/create-mind-map.dto";
@@ -43,7 +44,7 @@ export class IndexController extends BaseController {
      * @returns 是否成功
      */
     @Delete("delete/:id")
-    async deleteMindMapRecord(@Param("id") id: string) {
+    async deleteMindMapRecord(@Param("id", UUIDValidationPipe) id: string) {
         return await this.indexService.deleteUser(id);
     }
 
@@ -53,7 +54,10 @@ export class IndexController extends BaseController {
      * @returns 是否成功
      */
     @Patch("update-title/:id")
-    async updateMindMapTitle(@Param("id") id: string, @Body() updateTitleDto: UpdateTitleDto) {
+    async updateMindMapTitle(
+        @Param("id", UUIDValidationPipe) id: string,
+        @Body() updateTitleDto: UpdateTitleDto,
+    ) {
         return await this.indexService.updateTitle(id, updateTitleDto.title);
     }
 }

@@ -1,7 +1,8 @@
+import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
-import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
 import { type UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";
+import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Body, Get, Param, Patch } from "@nestjs/common";
 
 import { SaveMindMapDto } from "../../dto/save-mind-map.dto";
@@ -31,7 +32,10 @@ export class CreateController extends BaseController {
      * @returns 是否成功
      */
     @Patch("update-title/:id")
-    async updateMindMapTitle(@Param("id") id: string, @Body() updateTitleDto: UpdateTitleDto) {
+    async updateMindMapTitle(
+        @Param("id", UUIDValidationPipe) id: string,
+        @Body() updateTitleDto: UpdateTitleDto,
+    ) {
         return await this.createService.updateTitle(id, updateTitleDto.title);
     }
 

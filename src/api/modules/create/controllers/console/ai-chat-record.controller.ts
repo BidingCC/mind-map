@@ -1,9 +1,10 @@
+import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
-import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { HttpErrorFactory } from "@buildingai/errors";
+import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Get, Param, Query } from "@nestjs/common";
 
 import { CreateService } from "../../services/create.service";
@@ -24,7 +25,7 @@ export class AiChatRecordConsoleController extends BaseController {
      */
     @Get(":id")
     async getConversationDetail(
-        @Param("id") conversationId: string | undefined,
+        @Param("id", UUIDValidationPipe) conversationId: string | undefined,
         @Playground() user: UserPlayground,
     ) {
         return await this.createService.getConversationWithMessages(conversationId, user.id);
@@ -35,7 +36,7 @@ export class AiChatRecordConsoleController extends BaseController {
      */
     @Get(":id/messages")
     async getConversationMessages(
-        @Param("id") conversationId: string,
+        @Param("id", UUIDValidationPipe) conversationId: string,
         @Query() paginationDto: PaginationDto,
         @Playground() playground: UserPlayground,
     ) {

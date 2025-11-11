@@ -54,6 +54,7 @@
         "@buildingai/ui": "workspace:*",
         "@buildingai/utils": "workspace:*",
         "@buildingai/types": "workspace:*",
+        "@buildingai/base": "workspace:*",
         "simple-mind-map": "0.14.0-fix.1",
         "openai": "^5.13.1",
         "uuid": "^13.0.0"

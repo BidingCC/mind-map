@@ -1,4 +1,4 @@
-import { BaseService } from "@buildingai/core/modules/base/services/base.service";
+import { BaseService } from "@buildingai/base/services/base.service";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { PublicUserService } from "@buildingai/extension-sdk/services/user.service";

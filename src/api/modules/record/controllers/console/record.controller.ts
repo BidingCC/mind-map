@@ -1,12 +1,14 @@
+import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
-import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
 import { BuildFileUrl } from "@buildingai/decorators/file-url.decorator";
+import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Body, Delete, Get, Param, Query } from "@nestjs/common";
 
+import { MindMapRecord } from "../../../../db/entities/mind-map-record.entity";
 import { BatchDeleteMindMapRecordDto } from "../../dto/delete-mind-map-record.dto";
 import { SearchMindMapRecordDto } from "../../dto/search-mind-map-record.dto";
+import { PaginationResult } from "../../interfaces/pagination-result.interface";
 import { RecordService } from "../../services/record.service";
-
 @ExtensionConsoleController("record", "思维导图管理")
 export class RecordController extends BaseController {
     constructor(private readonly recordService: RecordService) {
@@ -19,7 +21,7 @@ export class RecordController extends BaseController {
      * @returns 是否成功
      */
     @Delete("delete/:id")
-    async deleteMindMapRecord(@Param("id") id: string) {
+    async deleteMindMapRecord(@Param("id", UUIDValidationPipe) id: string) {
         return await this.recordService.delete(id);
     }
 
@@ -40,7 +42,9 @@ export class RecordController extends BaseController {
      */
     @Get()
     @BuildFileUrl(["**.userAvatar"])
-    async searchMindMapRecords(@Query() searchDto: SearchMindMapRecordDto) {
+    async searchMindMapRecords(
+        @Query() searchDto: SearchMindMapRecordDto,
+    ): Promise<PaginationResult<MindMapRecord>> {
         return await this.recordService.search(searchDto);
     }
 }

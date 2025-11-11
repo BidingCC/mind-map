@@ -1,5 +1,5 @@
+import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
-import { BaseController } from "@buildingai/core/modules/base/controllers/base.controller";
 import { Body, Get, Post } from "@nestjs/common";
 
 import { MindMapHome } from "../../../../db/entities/mind-map-home.entity";

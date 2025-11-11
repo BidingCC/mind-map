@@ -125,6 +125,20 @@ const loadHomeConfig = async () => {
 const saveHomeConfig = useDebounceFn(async () => {
     saveLoading.value = true;
     try {
+        // 校验publicLanguage内容是否超过四行
+        const publicLanguageContent = formData.value.publicLanguage;
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = publicLanguageContent;
+
+        const blockElements = tempDiv.querySelectorAll("p");
+        const lineCount = blockElements.length;
+
+        if (lineCount > 4) {
+            toast.error(t("console.home.publicLanguageTooLong"));
+            saveLoading.value = false;
+            return;
+        }
+
         const saveData = {
             name: formData.value.name,
             publicLanguage: formData.value.publicLanguage,

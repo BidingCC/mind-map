@@ -10,8 +10,8 @@ import { useDebounceFn } from "@vueuse/core";
 import fishboneImg from "../assets/icons/fishbone.png";
 import fishboneDarkImg from "../assets/icons/fishbone-dark.png";
 import mindMapImg from "../assets/icons/leftRight.png";
-import logicalStructureImg from "../assets/icons/leftRight.png";
 import mindMapDarkImg from "../assets/icons/leftRight-dark.png";
+import logicalStructureImg from "../assets/icons/right.png";
 import logicalStructureDarkImg from "../assets/icons/right-dark.png";
 import organizationStructureImg from "../assets/icons/under.png";
 import organizationStructureDarkImg from "../assets/icons/under-dark.png";
@@ -722,14 +722,14 @@ onUnmounted(() => {
         @scroll="handleScroll"
         ref="scrollContainer"
     >
-        <header class="relative h-46 shrink-0">
+        <header class="relative h-50 shrink-0">
             <div class="absolute inset-0 flex items-center justify-between px-2">
                 <div
-                    class="mt-2 w-1/4 self-start truncate overflow-hidden text-[18px] text-gray-600 dark:text-gray-300"
+                    class="mt-2 w-1/4 self-start truncate text-[18px] text-gray-600 dark:text-gray-300"
                 >
                     {{ config.name }}
                 </div>
-                <div class="flex-1 px-4 text-center">
+                <div class="flex-1 px-2 text-center">
                     <h1
                         class="truncate text-3xl font-bold"
                         v-dompurify-html="config.publicLanguage"

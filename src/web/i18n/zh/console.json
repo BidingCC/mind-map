@@ -96,6 +96,7 @@
         "loadFailed": "加载首页配置失败",
         "saveSuccess": "首页配置保存成功",
         "saveFailed": "首页配置保存失败",
+        "publicLanguageTooLong": "宣传语文案内容不能超过四行",
         "defaultName": "思维导图插件",
         "customColor": "自定义颜色",
         "clearColor": "清除颜色"

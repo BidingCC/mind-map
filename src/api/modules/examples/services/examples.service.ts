@@ -57,6 +57,10 @@ export class ExamplesService extends BaseService<MindMapExample> {
             }
         }
 
+        if (data.dialogText !== undefined && data.dialogText.length > 45) {
+            throw HttpErrorFactory.badRequest(`对话框文字不能超过45个字符。`);
+        }
+
         // 查找现有配置或创建新配置
         let config = await this.mindMapExampleRepository.findOne({
             where: {},

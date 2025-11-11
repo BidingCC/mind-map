@@ -55,6 +55,23 @@ export class HomeService extends BaseService<MindMapHome> {
             throw HttpErrorFactory.badRequest(`宣传语副标题不能超过25个字符。`);
         }
 
+        // 校验宣传语文案内容是否超过四行
+        if (data.publicLanguage !== undefined) {
+            const blockElementMatches = data.publicLanguage.match(
+                /<(p|h[1-6]|div|li|blockquote)\b[^>]*>/gi,
+            );
+            let lineCount = blockElementMatches ? blockElementMatches.length : 0;
+
+            // 如果没有任何块级元素但有内容，则至少算作一行
+            if (lineCount === 0 && data.publicLanguage.trim()) {
+                lineCount = 1;
+            }
+
+            if (lineCount > 4) {
+                throw HttpErrorFactory.badRequest(`宣传语文案内容不能超过四行。`);
+            }
+        }
+
         // 查找现有配置或创建新配置
         let config = await this.mindMapHomeRepository.findOne({
             where: {},

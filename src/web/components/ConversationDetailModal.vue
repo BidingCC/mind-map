@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import type { AiMessage } from "@buildingai/service/models/message";
+import type { MessageContent } from "@buildingai/types";
+
+import type { AiChatRecord } from "../models/ai-record";
+import type { MindMapRecord } from "../models/record";
+
 const emits = defineEmits<{
     close: [];
 }>();
 
 defineProps<{
-    conversationDetail: any;
-    conversationMessages: any[];
+    conversationDetail: AiChatRecord | null;
+    conversationMessages: AiMessage[];
     conversationMessagesLoading: boolean;
-    mindMap?: any;
+    mindMap?: MindMapRecord;
     hasMoreMessages: boolean;
     loadMoreMessages: () => void;
 }>();
@@ -50,6 +56,32 @@ const formatDate = (date: string | Date) => {
     const minute = dateObj.getMinutes().toString().padStart(2, "0");
     return `${year}-${month}-${day} ${hour}:${minute}`;
 };
+
+/**
+ * 将MessageContent转换为字符串
+ */
+function formatMessageContent(content: MessageContent): string {
+    // 如果是字符串，直接返回
+    if (typeof content === "string") {
+        return content;
+    }
+
+    // 如果是数组，处理每部分内容
+    if (Array.isArray(content)) {
+        return content
+            .map((part) => {
+                if (part.type === "text") {
+                    return part.text || "";
+                }
+                // 对于其他类型，返回类型的描述
+                return `[${part.type} content]`;
+            })
+            .join("\n");
+    }
+
+    // 其他情况，转换为JSON字符串
+    return JSON.stringify(content);
+}
 </script>
 
 <template>
@@ -174,7 +206,7 @@ const formatDate = (date: string | Date) => {
 
                                 <!-- 消息内容 -->
                                 <div class="prose prose-sm dark:prose-invert max-w-none">
-                                    <BdMarkdown :content="message.content" />
+                                    <BdMarkdown :content="formatMessageContent(message.content)" />
                                 </div>
 
                                 <!-- 元数据 -->

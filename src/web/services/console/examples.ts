@@ -17,6 +17,6 @@ export const apiGetMindMapExamples = () => {
  * @param data 配置数据
  * @returns 保存结果
  */
-export const apiSaveMindMapExamples = (data: any) => {
+export const apiSaveMindMapExamples = (data: MindMapExampleConfig) => {
     return usePluginConsolePost("/examples/save", data);
 };

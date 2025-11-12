@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { AiProvider } from "@buildingai/db/entities/ai-provider.entity";
+import type { AiModel } from "@buildingai/service/webapi/ai-conversation";
 import { apiGetAiProviders } from "@buildingai/service/webapi/ai-conversation";
 
 import type { MindMapConfig } from "../../../models/record";
@@ -22,18 +24,18 @@ const formData = reactive<MindMapConfig>({
 // 存储选中的模型ID，用于ModelSelect的v-model绑定
 const selectedModelId = shallowRef<string>("");
 // 选中的模型信息
-const selectedModel = ref<any>(null);
+const selectedModel = ref<AiModel | null>(null);
 // 用于强制刷新ModelSelect组件的key
 const modelSelectKey = shallowRef<number>(0);
 // 存储所有供应商信息
-const providersCache = ref<any[]>([]);
+const providersCache = ref<AiProvider[]>([]);
 // KeyPoolSelect 组件的 key，用于强制更新
 const keyPoolSelectKey = shallowRef(0);
 
 /** 获取插件配置详情 */
 const { lockFn: getPluginConfig, isLock: detailLoading } = useLockFn(async () => {
     try {
-        const response = (await apiGetMindMapConfig()) as any;
+        const response = await apiGetMindMapConfig();
         Object.assign(formData, response);
         // 如果有绑定的模型名称，需要找到对应的模型ID用于显示
         if (response.bindModel) {
@@ -98,7 +100,7 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
             bindModelId: selectedModelId.value,
         };
 
-        await apiSaveMindMapConfig(formData.id, updateData);
+        await apiSaveMindMapConfig(updateData, formData.id);
         toast.success(t("console.config.saveSuccess"));
     } catch (error) {
         console.error("更新配置失败:", error);
@@ -107,7 +109,7 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
 });
 
 // 处理模型选择变化
-const handleModelChange = (model: any) => {
+const handleModelChange = (model: AiModel | null) => {
     if (!model) {
         selectedModel.value = null;
         selectedModelId.value = "";
@@ -117,7 +119,6 @@ const handleModelChange = (model: any) => {
     // 直接设置选中的模型，无需验证厂商
     selectedModel.value = model;
     selectedModelId.value = model.id;
-    console.log("Selected model:", model);
 };
 
 // 跳转到模型平台官网

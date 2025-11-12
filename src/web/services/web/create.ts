@@ -2,14 +2,14 @@
  * 思维导图创建编辑服务
  * @description 思维导图创建编辑页面相关的API调用服务
  */
-import type { MindMapExampleConfig, SaveMindMapDto } from "../../models/record";
+import type { MindMapExampleConfig, MindMapRecord, SaveMindMapDto } from "../../models/record";
 
 /**
  * 获取思维导图记录详情
  * @param id 思维导图记录ID
  * @returns 思维导图记录详情
  */
-export const apiGetMindMapDetailUser = (id: string) => {
+export const apiGetMindMapDetailUser = (id: string): Promise<MindMapRecord> => {
     return usePluginWebGet(`/create/getDetail/${id}`);
 };
 
@@ -36,6 +36,6 @@ export const apiSaveMindMap = (data: SaveMindMapDto) => {
  * 获取思维导图示例配置（前台用户使用）
  * @returns 思维导图示例配置
  */
-export const apiGetMindMapExamplesUser = () => {
-    return usePluginWebGet("/examples") as Promise<MindMapExampleConfig>;
+export const apiGetMindMapExamplesUser = (): Promise<MindMapExampleConfig> => {
+    return usePluginWebGet("/examples");
 };

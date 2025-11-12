@@ -3,11 +3,13 @@
  * @description 提供后台思维导图插件配置相关的API调用服务
  */
 
+import type { MindMapConfig } from "../../models/record";
+
 /**
  * 获取思维导图插件配置
  * @returns 思维导图插件配置
  */
-export const apiGetMindMapConfig = () => {
+export const apiGetMindMapConfig = (): Promise<MindMapConfig> => {
     return usePluginConsoleGet("/config/plugin");
 };
 
@@ -17,6 +19,6 @@ export const apiGetMindMapConfig = () => {
  * @param data 配置数据
  * @returns 保存结果
  */
-export const apiSaveMindMapConfig = (id: string, data: any) => {
+export const apiSaveMindMapConfig = (data: MindMapConfig, id?: string) => {
     return usePluginConsolePost(`/config/save-plugin/${id}`, data);
 };

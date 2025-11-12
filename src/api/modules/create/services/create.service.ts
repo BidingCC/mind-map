@@ -438,7 +438,6 @@ export class CreateService extends BaseService<MindMapRecord> {
             messageType: item.messageType,
             status: item.status,
             errorMessage: item.errorMessage,
-            rawResponse: item.rawResponse,
             createdAt: item.createdAt,
             updatedAt: item.updatedAt,
         }));

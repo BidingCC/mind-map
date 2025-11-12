@@ -24,7 +24,13 @@ definePageMeta({
 // 响应式数据
 const loading = shallowRef(false);
 const saveLoading = shallowRef(false);
-const examples = ref<any[]>([]);
+
+interface TryItem {
+    id: string;
+    content: string;
+}
+
+const trys = ref<TryItem[]>([]);
 // 编辑状态管理
 const editingId = shallowRef<string | null>(null);
 const editingContent = shallowRef<string>("");
@@ -46,7 +52,7 @@ const loadExamples = async () => {
         const config = await apiGetMindMapExamples();
         formData.value.prologue = config.prologue || formData.value.prologue;
         formData.value.dialogText = config.dialogText || formData.value.dialogText;
-        examples.value = config.try || examples.value;
+        trys.value = config.try || trys.value;
         tryValue.value = config.enabledTry !== undefined ? config.enabledTry : tryValue.value;
         dialogValue.value =
             config.enabledDialog !== undefined ? config.enabledDialog : dialogValue.value;
@@ -67,7 +73,7 @@ const batchSaveExamples = useDebounceFn(async () => {
         const saveData = {
             prologue: formData.value.prologue,
             dialogText: dialogValue.value ? formData.value.dialogText : "",
-            try: tryValue.value ? examples.value : [],
+            try: tryValue.value ? trys.value : [],
             enabledTry: tryValue.value,
             enabledDialog: dialogValue.value,
         };
@@ -87,7 +93,7 @@ const batchSaveExamples = useDebounceFn(async () => {
 // 添加新示例
 const addExample = () => {
     const newId = Date.now().toString();
-    examples.value.push({ id: newId, content: "" });
+    trys.value.push({ id: newId, content: "" });
     nextTick(() => {
         editingId.value = newId;
         editingContent.value = "";
@@ -96,16 +102,16 @@ const addExample = () => {
 
 // 删除示例
 const removeExample = (index: number) => {
-    examples.value.splice(index, 1);
+    trys.value.splice(index, 1);
 };
 
 // 编辑相关方法
-const startEditing = (element: any) => {
+const startEditing = (element: TryItem) => {
     editingId.value = element.id;
     editingContent.value = element.content;
 };
 
-const saveEditing = (element: any) => {
+const saveEditing = (element: TryItem) => {
     element.content = editingContent.value;
     editingId.value = null;
 };
@@ -146,14 +152,14 @@ onMounted(async () => {
                                         color="primary"
                                         variant="ghost"
                                         size="xs"
-                                        :disabled="examples.length >= 5"
+                                        :disabled="trys.length >= 5"
                                         @click="addExample"
                                     >
                                         {{ t("console.examples.addExample") }}
                                     </UButton>
                                 </div>
                                 <Draggable
-                                    v-model="examples"
+                                    v-model="trys"
                                     tag="div"
                                     class="mt-2 mb-4 space-y-2"
                                     :animation="200"
@@ -304,7 +310,7 @@ onMounted(async () => {
 
                         <div class="mb-4 space-y-2 text-sm">
                             <div
-                                v-for="element in examples"
+                                v-for="element in trys"
                                 :key="element.id"
                                 class="w-fit cursor-pointer rounded-lg border border-(--border) p-2 transition-colors hover:border-(--color-primary)"
                             >

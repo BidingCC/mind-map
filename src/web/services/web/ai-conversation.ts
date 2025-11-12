@@ -18,7 +18,7 @@ export function apiDeleteAiConversation(id: string): Promise<void> {
  * @returns 流控制器
  */
 export function apiChatStream(
-    messages: AiMessage[] | any,
+    messages: AiMessage[],
     config?: Partial<ChatStreamConfig>,
 ): Promise<{ abort: () => void }> {
     return usePluginWebStream("/ai-chat-message/chat-stream", { ...config, messages });

@@ -15,7 +15,7 @@ import logicalStructureImg from "../assets/icons/right.png";
 import logicalStructureDarkImg from "../assets/icons/right-dark.png";
 import organizationStructureImg from "../assets/icons/under.png";
 import organizationStructureDarkImg from "../assets/icons/under-dark.png";
-import type { MindMapListResponse, MindMapRecord } from "../models/record";
+import type { MindMapRecord } from "../models/record";
 import { apiDeleteAiConversation } from "../services/web/ai-conversation";
 import {
     apiCreateMindMap,
@@ -25,6 +25,11 @@ import {
     apiGetMindMapList,
     apiUpdateMindMapTitle,
 } from "../services/web/index";
+
+// 定义思维导图实例接口
+interface MindMapInstance {
+    destroy(): void;
+}
 
 // 导入删除确认弹窗组件
 const DeleteConfirmModal = defineAsyncComponent(
@@ -118,7 +123,7 @@ const mindMapList = ref<MindMapRecord[]>([]);
 // 用于存储预览图片的映射
 const previewImages = ref<Record<string, string>>({});
 // 用于存储预览思维导图实例的映射
-const previewInstances = ref<Record<string, any>>({});
+const previewInstances = ref<Record<string, MindMapInstance | undefined>>({});
 // 用于跟踪预览图片加载状态
 const previewImageLoading = ref<Record<string, boolean>>({});
 // 用于控制并发生成预览图的数量
@@ -221,7 +226,7 @@ const fetchMindMapList = async (page: number = 1) => {
             page: page,
             pageSize: pageSize.value,
         };
-        const response = (await apiGetMindMapList(queryParams)) as MindMapListResponse;
+        const response = await apiGetMindMapList(queryParams);
         total.value = response.total || 0;
 
         if (page === 1) {
@@ -299,8 +304,9 @@ const generatePreviewImage = async (item: MindMapRecord) => {
         MindMap.usePlugin(Export);
 
         // 如果已经存在实例，先销毁它
-        if (previewInstances.value[item.id]) {
-            previewInstances.value[item.id].destroy();
+        const existingInstance = previewInstances.value[item.id];
+        if (existingInstance) {
+            existingInstance.destroy();
             delete previewInstances.value[item.id];
         }
 
@@ -510,7 +516,7 @@ const formatUpdateTime = (date: string | Date) => {
 };
 
 // 删除思维导图
-const deleteMindMap = async (item: any) => {
+const deleteMindMap = async (item: MindMapRecord) => {
     deletingItemId.value = item.id;
     handleDeleteModalOpen();
 };
@@ -562,7 +568,7 @@ const handleDeleteModalOpen = async () => {
 };
 
 // 下载思维导图
-const downloadMindMap = async (item: any) => {
+const downloadMindMap = async (item: MindMapRecord) => {
     let cleanupTimer: NodeJS.Timeout | null = null;
 
     try {
@@ -659,13 +665,13 @@ const downloadMindMap = async (item: any) => {
 };
 
 // 开始编辑标题
-const startEditingTitle = (item: any) => {
+const startEditingTitle = (item: MindMapRecord) => {
     editingItemId.value = item.id;
     editableTitle.value = item.description;
 };
 
 // 保存标题
-const saveTitle = async (item: any) => {
+const saveTitle = async (item: MindMapRecord) => {
     if (editableTitle.value.trim()) {
         const newTitle = editableTitle.value.trim();
         try {

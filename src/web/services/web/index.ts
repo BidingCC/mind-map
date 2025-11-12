@@ -5,40 +5,26 @@
 
 import type { Pagination } from "@buildingai/service/models/globals";
 
-import type { CreateMindMapDto, MindMapRecord } from "../../models/record";
-import type { MindMapHomeConfig } from "../console/home";
+import type {
+    CreateMindMapDto,
+    MindMapHomeConfig,
+    MindMapListResponse,
+    MindMapRecord,
+} from "../../models/record";
 
 /**
  * 获取思维导图记录列表
  * @param params 查询参数
  * @returns 分页思维导图记录列表
  */
-export const apiGetMindMapList = async (params?: Pagination) => {
+export const apiGetMindMapList = async (params?: Pagination): Promise<MindMapListResponse> => {
     // 构建查询参数对象
-    const queryParams: any = {
+    const queryParams = {
         page: params?.page || 1,
         pageSize: params?.pageSize || 10,
     };
 
-    // 直接将查询参数作为 URL 查询参数传递
-    const response = await usePluginWebGet("/index/list", queryParams);
-
-    // 如果后端返回[data, total]数组格式，则处理
-    if (Array.isArray(response) && response.length === 2) {
-        const [dataList, total] = response;
-        console.log("dataList", dataList);
-        console.log("total", total);
-
-        return {
-            items: dataList || [],
-            total: total || 0,
-            page: queryParams.page,
-            pageSize: queryParams.pageSize,
-        };
-    }
-
-    // 如果后端返回标准格式，直接返回
-    return response;
+    return await usePluginWebGet<MindMapListResponse>("/index/list", queryParams);
 };
 
 /**

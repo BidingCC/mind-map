@@ -12,8 +12,10 @@ const PreviewModal = defineAsyncComponent(() => import("../../components/Preview
 const ConversationDetailModal = defineAsyncComponent(
     () => import("../../components/ConversationDetailModal.vue"),
 );
+import type { AiMessage } from "@buildingai/service/models/message";
 
-import type { MindMapRecord } from "../../models";
+import type { AiChatRecord } from "../../models/ai-record";
+import type { MindMapRecord } from "../../models/record";
 import {
     apiDeleteAiConversationConsole,
     apiDeleteAiConversationConsoles,
@@ -25,7 +27,6 @@ import {
     apiDeleteMindMapConsole,
     apiSearchMindMapRecordsConsole,
 } from "../../services/console/record";
-
 const UCheckbox = resolveComponent("UCheckbox");
 const UButton = resolveComponent("UButton");
 const UIcon = resolveComponent("UIcon");
@@ -66,8 +67,8 @@ const isOpen = shallowRef(false);
 // 添加对话详情相关状态
 const isConversationDetailOpen = shallowRef(false);
 const currentConversationId = shallowRef<string | undefined>();
-const conversationDetail = shallowRef<any>(null);
-const conversationMessages = ref<any[]>([]);
+const conversationDetail = shallowRef<AiChatRecord | null>(null);
+const conversationMessages = ref<AiMessage[]>([]);
 const conversationMessagesLoading = shallowRef(false);
 const hasMoreMessages = shallowRef(false);
 const messagePagination = reactive({
@@ -84,7 +85,7 @@ const colorMode = useColorMode();
 // 用于存储预览思维导图实例的映射
 const previewInstances = ref<Record<string, any>>({});
 // 定义表格列
-const columns: TableColumn<any>[] = [
+const columns: TableColumn<MindMapRecord>[] = [
     {
         id: "select",
         header: () =>
@@ -148,11 +149,7 @@ const columns: TableColumn<any>[] = [
                           ],
                       ),
                 // 用户名
-                h(
-                    "span",
-                    { class: "text-sm font-medium" },
-                    row.original.username || row.original.userName || "-",
-                ),
+                h("span", { class: "text-sm font-medium" }, row.original.userName || "-"),
             ]);
         },
     },
@@ -276,7 +273,7 @@ const handleSearch = useDebounceFn(() => {
 /**
  * 获取操作菜单项
  */
-function getActionItems(row: Row<any>) {
+function getActionItems(row: Row<MindMapRecord>) {
     return [
         {
             label: t("console.records.mindMap"),
@@ -298,7 +295,7 @@ function getActionItems(row: Row<any>) {
 }
 
 // 查看思维导图
-const handleViewMindMap = async (item: any) => {
+const handleViewMindMap = async (item: MindMapRecord) => {
     // 即使已经有预览图，也重新生成以确保最新
     try {
         // 等待生成预览图
@@ -424,7 +421,7 @@ const loadMoreMessages = async () => {
 };
 
 // 删除单个记录
-const handleDelete = async (item: any) => {
+const handleDelete = async (item: MindMapRecord) => {
     deletingRecordId.value = item.id;
     isBatchDelete.value = false;
     handleDeleteModalOpen();
@@ -437,7 +434,9 @@ const confirmDelete = async () => {
     try {
         if (!isBatchDelete.value && deletingRecordId.value) {
             // 删除单个
-            const item = paging.items.find((item: any) => item.id === deletingRecordId.value);
+            const item = paging.items.find(
+                (item: MindMapRecord) => item.id === deletingRecordId.value,
+            );
             await apiDeleteMindMapConsole(deletingRecordId.value);
             if (item?.aiChatRecordId) {
                 await apiDeleteAiConversationConsole(item?.aiChatRecordId);
@@ -446,7 +445,9 @@ const confirmDelete = async () => {
         } else if (isBatchDelete.value && selectedRows.value.length > 0) {
             // 批量删除
             const ids = selectedRows.value.map((row) => row.id);
-            const aiChatRecordIds = selectedRows.value.map((row) => (row as any).aiChatRecordId);
+            const aiChatRecordIds: string[] = selectedRows.value
+                .map((row) => row.aiChatRecordId)
+                .filter((id): id is string => id != null);
             await apiBatchDeleteMindMapConsole(ids);
             await apiDeleteAiConversationConsoles(aiChatRecordIds);
             toast.success(t("console.records.batchDeleteSuccess"));
@@ -489,7 +490,7 @@ const handleBatchDelete = async () => {
 };
 
 // 生成预览图片
-const generatePreviewImage = async (item: any) => {
+const generatePreviewImage = async (item: MindMapRecord) => {
     try {
         const MindMapModule = await import("simple-mind-map");
         const MindMap = MindMapModule.default || MindMapModule;
@@ -588,7 +589,7 @@ const generatePreviewImage = async (item: any) => {
 };
 
 // 选中的行
-const selectedRows = ref<Row<any>[]>([]);
+const selectedRows = ref<MindMapRecord[]>([]);
 
 const updatePreviewThemes = () => {
     const isDarkMode =

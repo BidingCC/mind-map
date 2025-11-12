@@ -4,11 +4,12 @@
  * @description 和AI对话创建导图以及编辑导图
  */
 
+import type { AiMessage } from "@buildingai/service/models/message";
 import { useColorMode } from "@vueuse/core";
 import { useDebounceFn } from "@vueuse/core";
 
 import { uuid } from "../../../../../packages/web/buildingai-ui/app/utils";
-import type { MindMapRecord } from "../models/record";
+import type { MindMapData, MindMapDataNode, MindMapRecord } from "../models/record";
 import { apiChatStream, apiGetAiConversation } from "../services/web/ai-conversation";
 import {
     apiGetMindMapDetailUser,
@@ -91,7 +92,7 @@ let MindMapConstructor: any = null;
 let markdownParser: any = null;
 
 // 保存思维导图的初始状态，用于回退
-let mindMapInitialState: any = null;
+let mindMapInitialState: MindMapData | null = null;
 
 // 在开始新的AI对话前保存当前思维导图状态
 const saveMindMapState = () => {
@@ -110,24 +111,16 @@ const restoreMindMapState = () => {
         // 同步更新记录中的数据
         if (record.value) {
             record.value.mindMapData = {
-                root: mindMapInitialState,
+                root: mindMapInitialState.root,
             };
         }
     }
 };
 
-interface AiConfigResponse {
-    prologue?: string;
-    try?: Array<{ id: string; content: string }>;
-    dialogText?: string;
-    enabledTry?: boolean;
-    enabledDialog?: boolean;
-}
-
 // 加载AI对话框配置
 const loadAiConfig = async () => {
     try {
-        const config = (await apiGetMindMapExamplesUser()) as AiConfigResponse;
+        const config = await apiGetMindMapExamplesUser();
         aiConfig.value.prologue = config.prologue ?? aiConfig.value.prologue;
         aiConfig.value.try = config.try ?? aiConfig.value.try;
         aiConfig.value.dialogText = config.dialogText ?? aiConfig.value.dialogText;
@@ -472,7 +465,7 @@ const processMarkdownLine = async (line: string) => {
         }
 
         // 将当前累积的Markdown内容转换为思维导图数据
-        let mindMapData;
+        let mindMapData: MindMapDataNode;
         try {
             mindMapData = await markdownParser.transformMarkdownTo(currentContent);
             addUid(mindMapData);
@@ -538,12 +531,12 @@ const processMarkdownLine = async (line: string) => {
 };
 
 // 增量更新思维导图
-const incrementallyUpdateMindMap = async (newData: any) => {
+const incrementallyUpdateMindMap = async (newData: MindMapDataNode) => {
     if (!mindMapInstance || !newData) return;
 
     try {
         // 获取当前完整的思维导图数据
-        const currentData = mindMapInstance.getData();
+        const currentData: MindMapDataNode = mindMapInstance.getData();
 
         // 确保有根节点数据
         if (!currentData || !currentData.data) {
@@ -559,11 +552,15 @@ const incrementallyUpdateMindMap = async (newData: any) => {
         }
 
         // 获取第一层子节点作为要更新的内容
-        const updateNodes = newData.children || [];
+        const updateNodes: MindMapDataNode[] = newData.children || [];
 
         // 查找匹配的节点进行更新
         const targetNodeText = newData.data.text;
-        const updatedData = findAndUpdateNode(currentData, targetNodeText, updateNodes);
+        const updatedData: MindMapDataNode | null = findAndUpdateNode(
+            currentData,
+            targetNodeText,
+            updateNodes,
+        );
 
         if (updatedData) {
             // 使用更新后的数据更新思维导图
@@ -579,7 +576,11 @@ const incrementallyUpdateMindMap = async (newData: any) => {
 };
 
 // 在思维导图数据中查找并更新指定节点
-const findAndUpdateNode = (data: any, targetText: string, newChildren: any[]): any => {
+const findAndUpdateNode = (
+    data: MindMapDataNode,
+    targetText: string,
+    newChildren: MindMapDataNode[],
+): MindMapDataNode | null => {
     if (!data) return null;
 
     // 深拷贝当前数据以避免直接修改
@@ -616,7 +617,7 @@ const findAndUpdateNode = (data: any, targetText: string, newChildren: any[]): a
 };
 
 // 添加UID
-const addUid = (data: any) => {
+const addUid = (data: MindMapDataNode) => {
     if (!data) return;
     const checkRepeatUiMap: Record<string, string> = {};
     const walk = (node: any, pUid = "") => {
@@ -643,7 +644,7 @@ const addUid = (data: any) => {
 
         // 递归处理子节点
         if (node.children && node.children.length > 0) {
-            node.children.forEach((child: any) => {
+            node.children.forEach((child: MindMapDataNode) => {
                 if (child) {
                     walk(child, node.data.uid);
                 }
@@ -677,15 +678,16 @@ watch(
     (newMessagesData) => {
         if (newMessagesData?.items && newMessagesData.items.length > 0) {
             // 将历史消息设置为初始消息
-            const historyMessages = newMessagesData.items.map((item: any) => ({
+            const historyMessages = newMessagesData.items.map((item: AiMessage) => ({
                 id: item.id || uuid(),
+                conversationId: item.conversationId,
                 role: item.role,
                 content: item.errorMessage || item.content,
+                messageType: item.messageType,
                 status: item.errorMessage ? ("failed" as const) : ("completed" as const),
-                mcpToolCalls: [],
-                createdAt: item.createdAt,
-                userConsumedPower: 0,
                 errorMessage: item.errorMessage,
+                createdAt: item.createdAt,
+                updatedAt: item.updatedAt,
             }));
 
             // 只有当 messages 还没有内容时才设置初始消息
@@ -740,15 +742,16 @@ const loadMoreMessages = async () => {
                 messagesData.value.items = [...reversedItems, ...messagesData.value.items];
 
                 // 同步更新 useChat 的 messages 数组，确保新加载的历史消息也能发送给大模型
-                const historyMessages = messagesData.value.items.map((item: any) => ({
+                const historyMessages = messagesData.value.items.map((item: AiMessage) => ({
                     id: item.id || uuid(),
+                    conversationId: item.conversationId,
                     role: item.role,
                     content: item.errorMessage || item.content,
+                    messageType: item.messageType,
                     status: item.errorMessage ? ("failed" as const) : ("completed" as const),
-                    mcpToolCalls: [],
-                    createdAt: item.createdAt,
-                    userConsumedPower: 0,
                     errorMessage: item.errorMessage,
+                    createdAt: item.createdAt,
+                    updatedAt: item.updatedAt,
                 }));
 
                 // 更新 useChat 中的消息列表，只保留非completed状态的消息（即用户刚发送但AI还未回复的消息）
@@ -919,7 +922,7 @@ const nodeFloatPosition = computed(() => {
 });
 
 // 初始化思维导图
-const initializeMindMap = (mindData: any, layoutType: string) => {
+const initializeMindMap = (mindData: MindMapDataNode, layoutType: string) => {
     // 销毁之前的实例
     if (mindMapInstance) {
         mindMapInstance.destroy();
@@ -1251,9 +1254,9 @@ const centerRootNode = () => {
 
 const loadMindMap = async () => {
     try {
-        record.value = (await apiGetMindMapDetailUser(mindMapId)) as MindMapRecord;
+        record.value = await apiGetMindMapDetailUser(mindMapId);
         pageTitle.value = record.value.description;
-        initializeMindMap(record.value.mindMapData.root, record.value.mindMapData.layout);
+        initializeMindMap(record.value.mindMapData.root, record.value.mindMapData.layout as string);
     } catch (e) {
         toast.error(t("create.toast.loadMindMapFailed"));
         console.warn("获取思维导图详情失败:", e);

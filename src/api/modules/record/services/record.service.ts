@@ -243,13 +243,17 @@ export class RecordService extends BaseService<MindMapRecord> {
     /**
      * 获取思维导图记录列表
      * @param listDto 列表DTO
+     * @param user 当前用户信息
      * @returns 分页思维导图记录列表
      */
-    async list(listDto: PaginationDto): Promise<PaginationResult<MindMapRecordPublicInterface>> {
+    async list(listDto: PaginationDto, user: UserPlayground): Promise<PaginationResult<MindMapRecordPublicInterface>> {
         const { page = 1, pageSize = 10 } = listDto;
 
         // 创建查询构建器
         const queryBuilder = this.MindMapRecordRepository.createQueryBuilder("mindMapRecord");
+        
+        // 添加用户过滤条件
+        queryBuilder.where("mindMapRecord.userId = :userId", { userId: user.id });
 
         // 添加排序
         queryBuilder.orderBy("mindMapRecord.updatedAt", "DESC");

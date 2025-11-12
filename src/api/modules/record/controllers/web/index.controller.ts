@@ -34,13 +34,15 @@ export class IndexController extends BaseController {
     /**
      * 获取思维导图记录列表
      * @param listDto 列表DTO
+     * @param user 当前用户信息
      * @returns 分页思维导图记录列表
      */
     @Get("list")
     async getMindMapRecordList(
         @Query() listDto: PaginationDto,
+        @Playground() user: UserPlayground,
     ): Promise<PaginationResult<MindMapRecordPublicInterface>> {
-        return await this.indexService.list(listDto);
+        return await this.indexService.list(listDto, user);
     }
 
     /**

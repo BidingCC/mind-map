@@ -11,7 +11,7 @@ import { MindMapHome } from "../../entities/mind-map-home.entity";
  */
 export class HomeSeeder extends BaseSeeder {
     readonly name = "MindMapHomeSeeder";
-    readonly priority = 100;
+    readonly priority = 101;
 
     /**
      * Override getConfigPath to use extension-relative paths

@@ -11,7 +11,7 @@ import { MindMapExample } from "../../entities/mind-map-example.entity";
  */
 export class ExampleSeeder extends BaseSeeder {
     readonly name = "MindMapExampleSeeder";
-    readonly priority = 101;
+    readonly priority = 102;
 
     /**
      * Override getConfigPath to use extension-relative paths

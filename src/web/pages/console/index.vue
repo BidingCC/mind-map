@@ -342,7 +342,10 @@ const handleViewConversation = async (mindMap: MindMapRecord) => {
         selected.value = mindMap;
         currentConversationId.value = mindMap.aiChatRecordId;
         // 获取对话详情
-        conversationDetail.value = await apiGetAiConversationDetail(mindMap.aiChatRecordId);
+        conversationDetail.value = await apiGetAiConversationDetail(
+            mindMap.aiChatRecordId,
+            mindMap.userId,
+        );
 
         // 初始化消息分页参数
         messagePagination.page = 1;

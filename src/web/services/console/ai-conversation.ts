@@ -5,10 +5,15 @@ import type { AiConversation } from "@buildingai/service/webapi/ai-conversation"
 /**
  * 获取对话详情
  * @param id 对话ID
+ * @param userId 用户ID
  * @returns 对话详情
  */
-export function apiGetAiConversationDetail(id: string | undefined): Promise<AiConversation> {
-    return usePluginConsoleGet(`/ai-chat-record/${id}`);
+export function apiGetAiConversationDetail(
+    id: string | undefined,
+    userId?: string,
+): Promise<AiConversation> {
+    const params = userId ? { userId } : {};
+    return usePluginConsoleGet(`/ai-chat-record/${id}`, { params });
 }
 
 /**

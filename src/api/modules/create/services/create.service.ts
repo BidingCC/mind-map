@@ -175,7 +175,6 @@ export class CreateService extends BaseService<MindMapRecord> {
      * 根据ID获取对话详情
      * @param conversationId 对话ID
      * @param userId 用户ID
-     * @param includeUserInfo 是否包含用户信息
      */
     async getConversationWithMessages(
         conversationId: string | undefined,
@@ -245,7 +244,7 @@ export class CreateService extends BaseService<MindMapRecord> {
      * @param conversationId 对话ID
      * @param userId 用户ID
      */
-    async deleteConversation(conversationId: string, userId: string): Promise<void> {
+    async deleteConversation(conversationId: string, userId: string = ""): Promise<void> {
         try {
             const queryBuilder = this.conversationRepository
                 .createQueryBuilder()

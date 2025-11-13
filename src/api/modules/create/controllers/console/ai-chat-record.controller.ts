@@ -1,7 +1,5 @@
 import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
-import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
-import { Playground } from "@buildingai/decorators/playground.decorator";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Body, Delete, Get, Param, Query } from "@nestjs/common";
@@ -25,9 +23,9 @@ export class AiChatRecordConsoleController extends BaseController {
     @Get(":id")
     async getConversationDetail(
         @Param("id", UUIDValidationPipe) conversationId: string | undefined,
-        @Playground() user: UserPlayground,
+        @Query("userId") userId: string,
     ) {
-        return await this.createService.getConversationWithMessages(conversationId, user.id);
+        return await this.createService.getConversationWithMessages(conversationId, userId);
     }
 
     /**
@@ -47,19 +45,16 @@ export class AiChatRecordConsoleController extends BaseController {
      * @returns 是否成功
      */
     @Delete()
-    async deleteConversations(@Body() ids: string[], @Playground() playground: UserPlayground) {
-        return await this.createService.batchDeleteConversations(ids, playground.id);
+    async deleteConversations(@Body() ids: string[]) {
+        return await this.createService.batchDeleteConversations(ids);
     }
 
     /**
      * 删除对话
      */
     @Delete(":id")
-    async deleteConversation(
-        @Param("id", UUIDValidationPipe) conversationId: string,
-        @Playground() playground: UserPlayground,
-    ) {
-        await this.createService.deleteConversation(conversationId, playground.id);
+    async deleteConversation(@Param("id", UUIDValidationPipe) conversationId: string) {
+        await this.createService.deleteConversation(conversationId);
         return { message: "对话删除成功" };
     }
 }

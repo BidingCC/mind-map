@@ -263,7 +263,11 @@ const { messages, input, handleSubmit, stop, status } = useChat({
         },
     },
     onError(err) {
-        const message = err?.message;
+        let message = err.message;
+        const errorObj = JSON.parse(err.message);
+        if (errorObj && errorObj.message) {
+            message = errorObj.message;
+        }
         console.error("聊天错误:", message);
         toast.error(t("create.toast.sendError") + ": " + message);
         // 隐藏AI正在输入状态

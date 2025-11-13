@@ -2,7 +2,7 @@
     "name": "buildingai-mind-map",
     "version": "1.0.0",
     "description": "可以AI生成思维导图",
-    "author": "BuildingAI Teams",
+    "author": "BuildingAI Teams-dserha",
     "private": true,
     "main": "./manifest.json",
     "module": "./manifest.json",

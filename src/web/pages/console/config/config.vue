@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import { AiProvider } from "@buildingai/db/entities/ai-provider.entity";
 import type { AiModel } from "@buildingai/service/webapi/ai-conversation";
 import { apiGetAiProviders } from "@buildingai/service/webapi/ai-conversation";
 
@@ -28,7 +27,7 @@ const selectedModel = ref<AiModel | null>(null);
 // 用于强制刷新ModelSelect组件的key
 const modelSelectKey = shallowRef<number>(0);
 // 存储所有供应商信息
-const providersCache = ref<AiProvider[]>([]);
+const providersCache = ref<any[]>([]);
 // KeyPoolSelect 组件的 key，用于强制更新
 const keyPoolSelectKey = shallowRef(0);
 

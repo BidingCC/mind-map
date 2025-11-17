@@ -28,7 +28,7 @@ export class AiChatRecordController extends BaseController {
         @Param("id", UUIDValidationPipe) conversationId: string,
         @Playground() playground: UserPlayground,
     ) {
-        await this.createService.deleteConversation(conversationId, playground.id);
+        await this.createService.deleteUserConversation(conversationId, playground.id);
         return { message: "对话删除成功" };
     }
 

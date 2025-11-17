@@ -46,9 +46,25 @@ export class CreateService extends BaseService<MindMapRecord> {
     /**
      * 保存思维导图记录
      * @param saveMindMapDto 保存思维导图DTO
+     * @param userId 当前用户ID
      * @returns 更新后的思维导图记录
      */
-    async saveMindMap(saveMindMapDto: SaveMindMapDto): Promise<MindMapRecord> {
+    async saveMindMap(saveMindMapDto: SaveMindMapDto, userId?: string): Promise<MindMapRecord> {
+        // 如果提供了userId，则验证当前用户是否为记录创建者
+        if (userId) {
+            const mindMapRecord = await this.mindMapRecordRepository.findOne({
+                where: { id: saveMindMapDto.id },
+            });
+
+            if (!mindMapRecord) {
+                throw HttpErrorFactory.notFound("The mind map record does not exist");
+            }
+
+            if (mindMapRecord.userId !== userId) {
+                throw HttpErrorFactory.forbidden("No permission to save this record");
+            }
+        }
+
         return await this.updateById(saveMindMapDto.id, saveMindMapDto);
     }
 
@@ -87,9 +103,25 @@ export class CreateService extends BaseService<MindMapRecord> {
      * 更新思维导图名称
      * @param id 思维导图ID
      * @param title 新名称
+     * @param userId 当前用户ID
      * @returns 更新后的思维导图记录
      */
-    async updateTitle(id: string, title: string): Promise<MindMapRecord> {
+    async updateTitle(id: string, title: string, userId?: string): Promise<MindMapRecord> {
+        // 如果提供了userId，则验证当前用户是否为记录创建者
+        if (userId) {
+            const mindMapRecord = await this.mindMapRecordRepository.findOne({
+                where: { id },
+            });
+
+            if (!mindMapRecord) {
+                throw HttpErrorFactory.notFound("The mind map record does not exist");
+            }
+
+            if (mindMapRecord.userId !== userId) {
+                throw HttpErrorFactory.forbidden("No permission to modify this record");
+            }
+        }
+
         return await this.updateById(id, { description: title });
     }
 
@@ -244,7 +276,7 @@ export class CreateService extends BaseService<MindMapRecord> {
      * @param conversationId 对话ID
      * @param userId 用户ID
      */
-    async deleteConversation(conversationId: string, userId: string = ""): Promise<void> {
+    async deleteConversation(conversationId: string): Promise<void> {
         if (!conversationId) {
             return;
         }
@@ -256,11 +288,6 @@ export class CreateService extends BaseService<MindMapRecord> {
                 .from(MindMapAiChatRecord)
                 .where("id = :conversationId", { conversationId });
 
-            // 如果不是管理员操作，需要验证用户权限
-            if (userId && userId.trim() !== "") {
-                queryBuilder.andWhere("userId = :userId", { userId });
-            }
-
             await queryBuilder.execute();
         } catch (error) {
             this.logger.error(`Failed to delete the conversation: ${error.message}`, error.stack);
@@ -269,11 +296,46 @@ export class CreateService extends BaseService<MindMapRecord> {
     }
 
     /**
+     * 前台用户删除对话（带权限验证）
+     * @param conversationId 对话ID
+     * @param userId 当前用户ID
+     */
+    async deleteUserConversation(conversationId: string, userId: string): Promise<void> {
+        if (!conversationId) {
+            throw HttpErrorFactory.badRequest("The conversation ID cannot be empty");
+        }
+
+        // 先检查对话是否存在并属于当前用户
+        const conversation = await this.conversationRepository.findOne({
+            where: {
+                id: conversationId,
+                userId: userId,
+            },
+        });
+
+        if (!conversation) {
+            throw HttpErrorFactory.notFound(
+                "The conversation record does not exist or is not accessible with permission",
+            );
+        }
+
+        try {
+            await this.conversationRepository.delete({
+                id: conversationId,
+                userId: userId,
+            });
+        } catch (error) {
+            this.logger.error(`Failed to delete the conversation: ${error.message}`, error.stack);
+            throw HttpErrorFactory.badRequest("Failed to delete the conversation");
+        }
+    }
+
+    /**
      * 批量删除对话
      * @param ids 对话ID数组
      * @param userId 用户ID
      */
-    async batchDeleteConversations(ids: string[], userId: string = ""): Promise<void> {
+    async batchDeleteConversations(ids: string[]): Promise<void> {
         if (!ids || ids.length === 0) {
             return;
         }
@@ -284,11 +346,6 @@ export class CreateService extends BaseService<MindMapRecord> {
                 .delete()
                 .from(MindMapAiChatRecord)
                 .where("id IN (:...ids)", { ids });
-
-            // 如果不是管理员操作，需要验证用户权限
-            if (userId && userId.trim() !== "") {
-                queryBuilder.andWhere("userId = :userId", { userId });
-            }
 
             await queryBuilder.execute();
         } catch (error) {

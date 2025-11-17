@@ -38,8 +38,9 @@ export class CreateController extends BaseController {
     async updateMindMapTitle(
         @Param("id", UUIDValidationPipe) id: string,
         @Body() updateTitleDto: UpdateTitleDto,
+        @Playground() user: UserPlayground,
     ) {
-        return await this.createService.updateTitle(id, updateTitleDto.title);
+        return await this.createService.updateTitle(id, updateTitleDto.title, user.id);
     }
 
     /**
@@ -48,7 +49,7 @@ export class CreateController extends BaseController {
      * @returns 是否成功
      */
     @Patch("save")
-    async saveMindMap(@Body() saveMindMapDto: SaveMindMapDto) {
-        return await this.createService.saveMindMap(saveMindMapDto);
+    async saveMindMap(@Body() saveMindMapDto: SaveMindMapDto, @Playground() user: UserPlayground) {
+        return await this.createService.saveMindMap(saveMindMapDto, user.id);
     }
 }

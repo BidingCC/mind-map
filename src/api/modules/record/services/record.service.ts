@@ -246,12 +246,15 @@ export class RecordService extends BaseService<MindMapRecord> {
      * @param user 当前用户信息
      * @returns 分页思维导图记录列表
      */
-    async list(listDto: PaginationDto, user: UserPlayground): Promise<PaginationResult<MindMapRecordPublicInterface>> {
+    async list(
+        listDto: PaginationDto,
+        user: UserPlayground,
+    ): Promise<PaginationResult<MindMapRecordPublicInterface>> {
         const { page = 1, pageSize = 10 } = listDto;
 
         // 创建查询构建器
         const queryBuilder = this.MindMapRecordRepository.createQueryBuilder("mindMapRecord");
-        
+
         // 添加用户过滤条件
         queryBuilder.where("mindMapRecord.userId = :userId", { userId: user.id });
 
@@ -293,9 +296,10 @@ export class RecordService extends BaseService<MindMapRecord> {
     /**
      * 删除思维导图记录
      * @param id 思维导图记录ID
+     * @param userId 当前用户ID
      * @returns 是否成功
      */
-    async deleteUser(id: string): Promise<void> {
+    async deleteUser(id: string, userId?: string): Promise<void> {
         const mindMapRecord = await this.MindMapRecordRepository.findOne({
             where: {
                 id,
@@ -305,6 +309,10 @@ export class RecordService extends BaseService<MindMapRecord> {
             throw HttpErrorFactory.notFound("The mind map record does not exist");
         }
 
+        if (userId && mindMapRecord.userId !== userId) {
+            throw HttpErrorFactory.forbidden("No permission to delete this record");
+        }
+
         await this.MindMapRecordRepository.delete(id);
     }
 
@@ -312,15 +320,21 @@ export class RecordService extends BaseService<MindMapRecord> {
      * 更新思维导图名称
      * @param id 思维导图ID
      * @param title 新名称
+     * @param userId 当前用户ID
      * @returns 更新后的思维导图记录
      */
-    async updateTitle(id: string, title: string): Promise<MindMapRecord> {
+    async updateTitle(id: string, title: string, userId?: string): Promise<MindMapRecord> {
         const mindMapRecord = await this.MindMapRecordRepository.findOne({
             where: { id },
         });
 
         if (!mindMapRecord) {
             throw HttpErrorFactory.notFound("The mind map record does not exist");
+        }
+
+        // 如果提供了userId，则验证当前用户是否为记录创建者
+        if (userId && mindMapRecord.userId !== userId) {
+            throw HttpErrorFactory.forbidden("No permission to modify this record");
         }
 
         mindMapRecord.description = title;

@@ -51,8 +51,11 @@ export class IndexController extends BaseController {
      * @returns 是否成功
      */
     @Delete("delete/:id")
-    async deleteMindMapRecord(@Param("id", UUIDValidationPipe) id: string) {
-        return await this.indexService.deleteUser(id);
+    async deleteMindMapRecord(
+        @Param("id", UUIDValidationPipe) id: string,
+        @Playground() user: UserPlayground,
+    ) {
+        return await this.indexService.deleteUser(id, user.id);
     }
 
     /**
@@ -64,7 +67,8 @@ export class IndexController extends BaseController {
     async updateMindMapTitle(
         @Param("id", UUIDValidationPipe) id: string,
         @Body() updateTitleDto: UpdateTitleDto,
+        @Playground() user: UserPlayground,
     ) {
-        return await this.indexService.updateTitle(id, updateTitleDto.title);
+        return await this.indexService.updateTitle(id, updateTitleDto.title, user.id);
     }
 }

@@ -240,7 +240,7 @@ export class CreateService extends BaseService<MindMapRecord> {
     }
 
     /**
-     * 软删除对话
+     * 删除对话
      * @param conversationId 对话ID
      * @param userId 用户ID
      */
@@ -248,10 +248,9 @@ export class CreateService extends BaseService<MindMapRecord> {
         try {
             const queryBuilder = this.conversationRepository
                 .createQueryBuilder()
-                .update(MindMapAiChatRecord)
-                .set({ isDeleted: true })
-                .where("id = :conversationId", { conversationId })
-                .andWhere("isDeleted = :isDeleted", { isDeleted: false });
+                .delete()
+                .from(MindMapAiChatRecord)
+                .where("id = :conversationId", { conversationId });
 
             // 如果不是管理员操作，需要验证用户权限
             if (userId && userId.trim() !== "") {
@@ -274,10 +273,9 @@ export class CreateService extends BaseService<MindMapRecord> {
         try {
             const queryBuilder = this.conversationRepository
                 .createQueryBuilder()
-                .update(MindMapAiChatRecord)
-                .set({ isDeleted: true })
-                .where("id IN (:...ids)", { ids })
-                .andWhere("isDeleted = :isDeleted", { isDeleted: false });
+                .delete()
+                .from(MindMapAiChatRecord)
+                .where("id IN (:...ids)", { ids });
 
             // 如果不是管理员操作，需要验证用户权限
             if (userId && userId.trim() !== "") {

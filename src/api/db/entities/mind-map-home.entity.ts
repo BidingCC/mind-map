@@ -1,5 +1,10 @@
 import { ExtensionEntity } from "@buildingai/core/decorators/extension-entity.decorator";
-import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+    Column,
+    CreateDateColumn,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn,
+} from "@buildingai/db/typeorm";
 
 /**
  * 思维导图首页配置

@@ -8,7 +8,7 @@ import {
     ManyToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
-} from "typeorm";
+} from "@buildingai/db/typeorm";
 
 import { MindMapAiChatRecord } from "./mind-map-ai-chat-record.entity";
 

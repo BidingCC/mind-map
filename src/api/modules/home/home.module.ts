@@ -1,5 +1,5 @@
+import { TypeOrmModule } from "@buildingai/db/@nestjs/typeorm";
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { MindMapHome } from "../../db/entities/mind-map-home.entity";
 import { HomeConsoleController } from "./controllers/console/home.controller";

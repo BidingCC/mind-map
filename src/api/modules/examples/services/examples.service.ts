@@ -1,8 +1,8 @@
 import { BaseService } from "@buildingai/base/services/base.service";
+import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
+import { Repository } from "@buildingai/db/typeorm";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 
 import { MindMapExample } from "../../../db/entities/mind-map-example.entity";
 import { MindMapExampleResponse } from "../interfaces/mind-map-example.interface";

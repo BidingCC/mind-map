@@ -1,8 +1,8 @@
+import { TypeOrmModule } from "@buildingai/db/@nestjs/typeorm";
 import { User } from "@buildingai/db/entities/user.entity";
 import { AiPublicModule } from "@buildingai/extension-sdk/modules/ai/ai-public.module";
 import { ExtensionBillingModule } from "@buildingai/extension-sdk/modules/billing/extension-billing.module";
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { MindMapAiChatMessage } from "../../db/entities/mind-map-ai-chat-message.entity";
 import { MindMapAiChatRecord } from "../../db/entities/mind-map-ai-chat-record.entity";

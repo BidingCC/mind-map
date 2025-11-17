@@ -1,6 +1,6 @@
+import { TypeOrmModule } from "@buildingai/db/@nestjs/typeorm";
 import { PublicUserService } from "@buildingai/extension-sdk/services/user.service";
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
 
 import { MindMapRecord } from "../../db/entities/mind-map-record.entity";
 import { RecordController } from "./controllers/console/record.controller";

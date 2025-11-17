@@ -1,7 +1,7 @@
 import { BaseService } from "@buildingai/base/services/base.service";
+import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
+import { Repository } from "@buildingai/db/typeorm";
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
 
 import { MindMapConfig } from "../../../db/entities/mind-map-config.entity";
 import { MindMapConfigUserDto } from "../dto/mind-map-config-user.dto";

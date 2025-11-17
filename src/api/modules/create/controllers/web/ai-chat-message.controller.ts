@@ -1,21 +1,21 @@
 import { TextGenerator } from "@buildingai/ai-sdk/core/generator/text";
 import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
+import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
 import { User } from "@buildingai/db/entities/user.entity";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
+import { Repository } from "@buildingai/db/typeorm";
 import { Playground } from "@buildingai/decorators/playground.decorator";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { PublicAiModelService } from "@buildingai/extension-sdk/modules/ai/services/ai-model.service";
 import { ExtensionBillingService } from "@buildingai/extension-sdk/modules/billing/extension-billing.service";
 import { Body, Post, Res } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
 import type { Response } from "express";
 import type {
     ChatCompletion,
     ChatCompletionCreateParams,
     ChatCompletionMessageParam,
 } from "openai/resources/index";
-import { Repository } from "typeorm";
 
 import { ChatRequestDto } from "../../dto/ai-chat-message.dto";
 import { ConversationStatus, MessageRole, MessageType } from "../../dto/ai-chat-record.dto";

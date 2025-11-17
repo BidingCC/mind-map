@@ -1,10 +1,10 @@
 import { BaseService } from "@buildingai/base/services/base.service";
+import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
+import { FindManyOptions, In, Not, Repository } from "@buildingai/db/typeorm";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { buildWhere } from "@buildingai/utils";
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { FindManyOptions, In, Not, Repository } from "typeorm";
 
 import { MindMapAiChatMessage } from "../../../db/entities/mind-map-ai-chat-message.entity";
 import { MindMapAiChatRecord } from "../../../db/entities/mind-map-ai-chat-record.entity";

@@ -1,11 +1,10 @@
 import { BaseService } from "@buildingai/base/services/base.service";
+import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
+import { In, Repository } from "@buildingai/db/typeorm";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { PublicUserService } from "@buildingai/extension-sdk/services/user.service";
 import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { In } from "typeorm";
-import { Repository } from "typeorm";
 
 import { MindMapRecord } from "../../../db/entities/mind-map-record.entity";
 import { CreateMindMapDto } from "../dto/create-mind-map.dto";

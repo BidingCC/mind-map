@@ -245,6 +245,10 @@ export class CreateService extends BaseService<MindMapRecord> {
      * @param userId 用户ID
      */
     async deleteConversation(conversationId: string, userId: string = ""): Promise<void> {
+        if (!conversationId) {
+            return;
+        }
+
         try {
             const queryBuilder = this.conversationRepository
                 .createQueryBuilder()
@@ -270,6 +274,10 @@ export class CreateService extends BaseService<MindMapRecord> {
      * @param userId 用户ID
      */
     async batchDeleteConversations(ids: string[], userId: string = ""): Promise<void> {
+        if (!ids || ids.length === 0) {
+            return;
+        }
+
         try {
             const queryBuilder = this.conversationRepository
                 .createQueryBuilder()

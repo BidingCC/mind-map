@@ -451,8 +451,12 @@ const confirmDelete = async () => {
             const aiChatRecordIds: string[] = selectedRows.value
                 .map((row) => row.aiChatRecordId)
                 .filter((id): id is string => id != null);
+
             await apiBatchDeleteMindMapConsole(ids);
-            await apiDeleteAiConversationConsoles(aiChatRecordIds);
+            if (aiChatRecordIds.length > 0) {
+                await apiDeleteAiConversationConsoles(aiChatRecordIds);
+            }
+
             toast.success(t("console.records.batchDeleteSuccess"));
             selectedRows.value = [];
         }

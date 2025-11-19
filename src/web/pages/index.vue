@@ -471,13 +471,13 @@ const costDescriptionText = computed(() => {
 // 创建新思维导图
 const createNewMindMap = async (type = "blank") => {
     try {
-        const rs = await apiCreateMindMap({
+        const id = await apiCreateMindMap({
             userId: userStore.userInfo?.id || "",
             description: t("index.main.untitled"),
             type,
             powerUsed: 0,
         });
-        router.push(`/${rs.id}`);
+        router.push(`/${id}`);
     } catch (e) {
         console.log(e);
         toast.error(t("index.toast.createError"));
@@ -529,14 +529,18 @@ const confirmDelete = async () => {
 
     try {
         const item = mindMapList.value.find((item) => item.id === deletingItemId.value);
-        await apiDeleteMindMap(deletingItemId.value);
-        if (item?.aiChatRecordId) {
-            await apiDeleteAiConversation(item?.aiChatRecordId);
+        const result = await apiDeleteMindMap(deletingItemId.value);
+        if (result) {
+            if (item?.aiChatRecordId) {
+                await apiDeleteAiConversation(item?.aiChatRecordId);
+            }
+            currentPage.value = 1;
+            noMore.value = false;
+            await fetchMindMapList(1);
+            toast.success(t("index.toast.deleteSuccess"));
+        } else {
+            toast.error(t("index.toast.deleteError"));
         }
-        currentPage.value = 1;
-        noMore.value = false;
-        await fetchMindMapList(1);
-        toast.success(t("index.toast.deleteSuccess"));
     } catch (error) {
         console.log(error);
         toast.error(t("index.toast.deleteError"));
@@ -675,10 +679,14 @@ const saveTitle = async (item: MindMapRecord) => {
     if (editableTitle.value.trim()) {
         const newTitle = editableTitle.value.trim();
         try {
-            await apiUpdateMindMapTitle(item.id, newTitle);
-            const targetItem = mindMapList.value.find((mapItem) => mapItem.id === item.id);
-            if (targetItem) {
-                targetItem.description = newTitle;
+            const result = await apiUpdateMindMapTitle(item.id, newTitle);
+            if (result) {
+                const targetItem = mindMapList.value.find((mapItem) => mapItem.id === item.id);
+                if (targetItem) {
+                    targetItem.description = newTitle;
+                }
+            } else {
+                toast.error(t("index.toast.updateTitleError"));
             }
         } catch (error) {
             console.error("更新标题时出错:", error);

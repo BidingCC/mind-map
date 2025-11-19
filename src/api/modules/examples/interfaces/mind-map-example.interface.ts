@@ -3,11 +3,6 @@
  */
 export interface MindMapExampleResponse {
     /**
-     * 配置ID
-     */
-    id: string;
-
-    /**
      * 开场白
      */
     prologue: string;

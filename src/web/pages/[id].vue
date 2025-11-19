@@ -159,8 +159,12 @@ const saveTitle = async () => {
     if (editableTitle.value.trim()) {
         try {
             isEditingTitle.value = false;
-            await apiUpdateMindMapTitle(mindMapId, editableTitle.value);
-            pageTitle.value = editableTitle.value;
+            const result = await apiUpdateMindMapTitle(mindMapId, editableTitle.value);
+            if (result) {
+                pageTitle.value = editableTitle.value;
+            } else {
+                toast.error(t("create.drawer.saveTitleError"));
+            }
         } catch (error) {
             console.error(error);
             toast.error(t("create.drawer.saveTitleError"));
@@ -1116,7 +1120,7 @@ const initializeMindMap = (mindData: MindMapDataNode, layoutType: string) => {
             initTimer.value = null;
         }, 1000);
     } else {
-        console.error("MindMap constructor is not available");
+        console.error("初始化思维导图失败");
         toast.error(t("create.toast.loadInitMindMapFailed"));
     }
 };
@@ -1289,25 +1293,28 @@ const saveMindMapData = async () => {
     try {
         // 获取完整的思维导图数据
         const fullData = mindMapInstance.getData(true);
-        await apiSaveMindMap({
+        const res = await apiSaveMindMap({
             id: mindMapId,
             mindMapData: fullData,
             updatedAt: new Date(),
         });
+        if (res) {
+            // 显示保存成功提示
+            showSaveIndicator.value = true;
 
-        // 显示保存成功提示
-        showSaveIndicator.value = true;
+            // 清理之前的定时器（如果存在）
+            if (saveIndicatorTimer.value) {
+                clearTimeout(saveIndicatorTimer.value);
+            }
 
-        // 清理之前的定时器（如果存在）
-        if (saveIndicatorTimer.value) {
-            clearTimeout(saveIndicatorTimer.value);
+            // 设置新的定时器
+            saveIndicatorTimer.value = setTimeout(() => {
+                showSaveIndicator.value = false;
+                saveIndicatorTimer.value = null;
+            }, 2000);
+        } else {
+            toast.error(t("create.drawer.saveError"));
         }
-
-        // 设置新的定时器
-        saveIndicatorTimer.value = setTimeout(() => {
-            showSaveIndicator.value = false;
-            saveIndicatorTimer.value = null;
-        }, 2000);
     } catch (error) {
         console.error("保存思维导图时出错:", error);
         toast.error(t("create.drawer.saveError"));

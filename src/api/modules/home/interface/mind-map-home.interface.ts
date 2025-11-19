@@ -4,11 +4,6 @@
  */
 export interface MindMapHomePublicInterface {
     /**
-     * 配置ID
-     */
-    id: string;
-
-    /**
      * 插件显示名称
      */
     name: string;

@@ -21,7 +21,7 @@ export class IndexController extends BaseController {
     /**
      * 创建思维导图记录
      * @param createMindMapDto 创建思维导图DTO
-     * @returns 创建的思维导图记录
+     * @returns 创建的思维导图记录ID
      */
     @Post("add")
     async addMindMapRecord(

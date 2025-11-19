@@ -25,25 +25,45 @@ export class ExamplesService extends BaseService<MindMapExample> {
      * @returns 思维导图示例配置
      */
     async getConfig(): Promise<MindMapExample> {
-        // 查找第一条配置记录，如果没有则创建默认配置
-        let config = await this.mindMapExampleRepository.findOne({
-            where: {},
-            order: {
-                createdAt: "ASC",
-            },
-        });
+        try {
+            // 查找第一条配置记录，如果没有则创建默认配置
+            let config = await this.mindMapExampleRepository.findOne({
+                where: {},
+                order: {
+                    createdAt: "ASC",
+                },
+            });
 
-        if (!config) {
-            config = new MindMapExample();
-            config.prologue = "";
-            config.dialogText = "";
-            config.try = [];
-            config.enabledTry = true;
-            config.enabledDialog = true;
-            await this.mindMapExampleRepository.save(config);
+            if (!config) {
+                config = new MindMapExample();
+                config.prologue = "<p>👋 Hi，朋友! 告诉我你的想法，我马上能变出一张思维导图~</p>";
+                config.dialogText = "提问即创造";
+                config.try = [
+                    {
+                        id: "1762826586470",
+                        content: "📅 制定高效率的个人周计划",
+                    },
+                    {
+                        id: "1762934979397",
+                        content: "📄 课程任务进度管理",
+                    },
+                    {
+                        id: "1763025414987",
+                        content: "💡 XXXXXX产品功能清单",
+                    },
+                ];
+                config.enabledTry = true;
+                config.enabledDialog = true;
+                await this.mindMapExampleRepository.save(config);
+                this.logger.debug("[MindMapExtension] 创建默认示例配置");
+            }
+
+            this.logger.debug("[MindMapExtension] 获取示例配置成功");
+            return config;
+        } catch (error) {
+            this.logger.error("[MindMapExtension] 获取配置失败", error);
+            throw HttpErrorFactory.internal("Failed to get config.");
         }
-
-        return config;
     }
 
     /**
@@ -52,40 +72,58 @@ export class ExamplesService extends BaseService<MindMapExample> {
      * @returns 保存后的配置
      */
     async saveConfig(data: Partial<MindMapExample>): Promise<MindMapExample> {
-        if (data.try && Array.isArray(data.try)) {
-            for (const item of data.try) {
-                if (item.content && typeof item.content === "string" && item.content.length > 35) {
-                    throw HttpErrorFactory.badRequest(
-                        `示例内容不能超过35个字符，当前长度：${item.content.length}`,
-                    );
+        try {
+            if (data.try && Array.isArray(data.try)) {
+                for (const item of data.try) {
+                    if (
+                        item.content &&
+                        typeof item.content === "string" &&
+                        item.content.length > 35
+                    ) {
+                        this.logger.warn("[MindMapExtension] 示例内容超过35个字符", {
+                            contentLength: item.content.length,
+                        });
+                        throw HttpErrorFactory.badRequest(
+                            `Example content cannot exceed 35 characters. Current length: ${item.content.length}`,
+                        );
+                    }
                 }
             }
+
+            if (data.dialogText !== undefined && data.dialogText.length > 20) {
+                this.logger.warn("[MindMapExtension] 对话文本超过20个字符", {
+                    contentLength: data.dialogText.length,
+                });
+                throw HttpErrorFactory.badRequest(`Dialog text cannot exceed 20 characters.`);
+            }
+
+            // 查找现有配置
+            const config = await this.mindMapExampleRepository.findOne({
+                where: {},
+                order: {
+                    createdAt: "ASC",
+                },
+            });
+
+            if (!config) {
+                this.logger.warn("[MindMapExtension] 示例配置未找到");
+                throw HttpErrorFactory.notFound("Congfig not found.");
+            }
+
+            // 更新配置字段
+            if (data.prologue !== undefined) config.prologue = data.prologue;
+            if (data.dialogText !== undefined) config.dialogText = data.dialogText;
+            if (data.try !== undefined) config.try = data.try;
+            if (data.enabledTry !== undefined) config.enabledTry = data.enabledTry;
+            if (data.enabledDialog !== undefined) config.enabledDialog = data.enabledDialog;
+
+            const result = await this.mindMapExampleRepository.save(config);
+            this.logger.debug("[MindMapExtension] 示例配置保存成功");
+            return result;
+        } catch (error) {
+            this.logger.error("[MindMapExtension] 保存配置失败", error);
+            throw HttpErrorFactory.internal("Failed to save config.");
         }
-
-        if (data.dialogText !== undefined && data.dialogText.length > 20) {
-            throw HttpErrorFactory.badRequest(`对话框文字不能超过20个字符。`);
-        }
-
-        // 查找现有配置或创建新配置
-        let config = await this.mindMapExampleRepository.findOne({
-            where: {},
-            order: {
-                createdAt: "ASC",
-            },
-        });
-
-        if (!config) {
-            config = new MindMapExample();
-        }
-
-        // 更新配置字段
-        if (data.prologue !== undefined) config.prologue = data.prologue;
-        if (data.dialogText !== undefined) config.dialogText = data.dialogText;
-        if (data.try !== undefined) config.try = data.try;
-        if (data.enabledTry !== undefined) config.enabledTry = data.enabledTry;
-        if (data.enabledDialog !== undefined) config.enabledDialog = data.enabledDialog;
-
-        return await this.mindMapExampleRepository.save(config);
     }
 
     // =================================================================
@@ -97,31 +135,33 @@ export class ExamplesService extends BaseService<MindMapExample> {
      * @returns 思维导图示例配置
      */
     async getConfigUser(): Promise<MindMapExampleResponse> {
-        // 查找第一条配置记录，如果没有则创建默认配置
-        let config = await this.mindMapExampleRepository.findOne({
-            where: {},
-            order: {
-                createdAt: "ASC",
-            },
-        });
+        try {
+            // 查找第一条配置记录
+            const config = await this.mindMapExampleRepository.findOne({
+                where: {},
+                order: {
+                    createdAt: "ASC",
+                },
+            });
 
-        if (!config) {
-            config = new MindMapExample();
-            config.prologue = "";
-            config.dialogText = "";
-            config.try = [];
-            config.enabledTry = true;
-            config.enabledDialog = true;
+            if (!config) {
+                this.logger.warn("[MindMapExtension] 用户示例配置未找到");
+                throw HttpErrorFactory.notFound(
+                    "Congfig not found, please contact the administrator.",
+                );
+            }
+
+            this.logger.debug("[MindMapExtension] 获取用户示例配置成功");
+            return {
+                prologue: config.prologue,
+                dialogText: config.dialogText,
+                try: config.try,
+                enabledTry: config.enabledTry,
+                enabledDialog: config.enabledDialog,
+            };
+        } catch (error) {
+            this.logger.error("[MindMapExtension] 获取配置失败", error);
+            throw HttpErrorFactory.internal("Failed to get config.");
         }
-
-        // 构造不包含时间字段的响应对象
-        return {
-            id: config.id,
-            prologue: config.prologue,
-            dialogText: config.dialogText,
-            try: config.try,
-            enabledTry: config.enabledTry,
-            enabledDialog: config.enabledDialog,
-        };
     }
 }

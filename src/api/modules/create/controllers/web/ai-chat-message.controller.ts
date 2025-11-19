@@ -1,4 +1,4 @@
-import { TextGenerator } from "@buildingai/ai-sdk/core/generator/text";
+import { TextGenerator } from "@buildingai/ai-sdk";
 import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
@@ -43,12 +43,12 @@ export class AiChatMessageController extends BaseController {
         try {
             await this.createService.handleUnfinishedMessages();
         } catch (error) {
-            this.logger.error("An error occurred when processing an unfinished message:", error);
+            this.logger.error("[MindMapExtension] 处理未完成消息时发生错误:", error);
         }
     }
 
     /**
-     * 流式聊天对话 - 专门为思维导图场景定制
+     * 流式聊天对话
      * 支持对话记录保存（通过saveConversation参数控制）
      */
     @Post("chat-stream")
@@ -73,7 +73,7 @@ export class AiChatMessageController extends BaseController {
         });
 
         if (!userInfo) {
-            throw HttpErrorFactory.badRequest("User not found.");
+            throw HttpErrorFactory.notFound("User not found.");
         }
 
         // 标记客户端是否已断开连接
@@ -82,7 +82,7 @@ export class AiChatMessageController extends BaseController {
         // 监听客户端断开连接事件
         res.on("close", () => {
             isClientDisconnected = true;
-            this.logger.debug("The client has disconnected");
+            this.logger.debug("[MindMapExtension] 客户端已断开连接");
         });
 
         // 获取插件配置
@@ -97,8 +97,8 @@ export class AiChatMessageController extends BaseController {
             (pluginConfig.billingType !== 2 &&
                 (pluginConfig.billingSetting === undefined || pluginConfig.billingSetting === null))
         ) {
-            throw HttpErrorFactory.badRequest(
-                "Mind map plugin configuration error. Please contact the administrator.",
+            throw HttpErrorFactory.internal(
+                "Extension configuration error. Please contact the administrator.",
             );
         }
 
@@ -149,7 +149,11 @@ export class AiChatMessageController extends BaseController {
                 const userMessage = dto.messages[dto.messages.length - 1];
                 if (userMessage) {
                     // 打印用户问题
-                    this.logger.debug(`🙋 用户问题: ${userMessage.content}`);
+                    this.logger.debug(
+                        `[MindMapExtension] 🙋 用户问题: ${this.formatContentPreview(
+                            userMessage.content,
+                        )}`,
+                    );
 
                     const userMessageRecord = await this.createService.createMessage({
                         conversationId,
@@ -183,7 +187,11 @@ export class AiChatMessageController extends BaseController {
             if (dto.saveConversation === false) {
                 const userMessage = dto.messages[dto.messages.length - 1];
                 if (userMessage) {
-                    this.logger.debug(`🙋 user questions (not saved): ${userMessage.content}`);
+                    this.logger.debug(
+                        `[MindMapExtension] 🙋 用户问题 (未保存): ${this.formatContentPreview(
+                            userMessage.content,
+                        )}`,
+                    );
                 }
             }
 
@@ -194,7 +202,8 @@ export class AiChatMessageController extends BaseController {
                     const mindMapRecord = await this.createService.findOneById(dto.mindMapId);
                     mindMapData = mindMapRecord?.mindMapData || null;
                 } catch (error) {
-                    this.logger.warn(`Failed to obtain the mind map data: ${error.message}`);
+                    this.logger.warn(`[MindMapExtension] 获取思维导图数据失败: ${error.message}`);
+                    throw HttpErrorFactory.internal("Failed to obtain the mind map data.");
                 }
             }
 
@@ -335,7 +344,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                 }
 
                 this.logger.debug(
-                    `🔄 context limit: original number of messages ${dto.messages.length}, restricted number of messages ${limitedMessages.length}, maximum context ${MAX_CONTEXT_LIMIT}`,
+                    `[MindMapExtension] 🔄 上下文限制: 原始消息数量 ${dto.messages.length}, 限制后消息数量 ${limitedMessages.length}, 最大上下文 ${MAX_CONTEXT_LIMIT}`,
                 );
             }
 
@@ -359,9 +368,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
             for await (const chunk of stream) {
                 // 检查客户端是否已断开连接
                 if (isClientDisconnected) {
-                    this.logger.debug(
-                        "It is detected that the client has disconnected, and the streaming response is stopped",
-                    );
+                    this.logger.debug("[MindMapExtension] 检测到客户端已断开连接，停止流式响应");
                     break;
                 }
 
@@ -396,12 +403,12 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                 finalChatCompletion = await stream.finalChatCompletion();
             }
 
-            // 只有在客户端未断开连接时才扣除算力和保存数据
+            // 只有在客户端未断开连接时才扣除积分和保存数据
             if (!isClientDisconnected) {
-                // 根据插件级别计费设置扣除用户算力
+                // 根据插件级别计费设置扣除用户积分
                 if (finalChatCompletion?.usage?.total_tokens) {
                     try {
-                        // 计算需要扣除的算力
+                        // 计算需要扣除的积分
                         let powerToDeduct = 0;
 
                         if (pluginConfig.billingType === 2) {
@@ -410,7 +417,6 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                         } else if (pluginConfig.billingType === 1) {
                             // 按字数计费
                             const billingSetting = pluginConfig.billingSetting || 1;
-                            // 按字符计费
                             powerToDeduct = Math.ceil(
                                 (finalChatCompletion.usage.total_tokens * billingSetting) / 100,
                             );
@@ -418,9 +424,9 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
 
                         if (powerToDeduct > 0) {
                             await this.userRepository.manager.transaction(async (entityManager) => {
-                                // 计算扣除后的算力，确保不会为负数
+                                // 计算扣除后的积分，确保不会为负数
                                 const newPower = Math.max(0, userInfo.power - powerToDeduct);
-                                // 实际扣除的算力（可能小于powerToDeduct，如果用户算力不足）
+                                // 实际扣除的积分（可能小于powerToDeduct，如果用户积分不足）
                                 userConsumedPower = userInfo.power - newPower;
 
                                 try {
@@ -428,25 +434,27 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                                         {
                                             userId: user.id,
                                             amount: userConsumedPower,
-                                            remark: `Mind mapping dialogue consumption (model: ${model.name})`,
+                                            remark: `Mind mapping dialogue consumption.`,
                                         },
                                         entityManager,
                                     );
 
-                                    // 如果实际扣除的算力小于应扣除的算力，记录日志
+                                    // 如果实际扣除的积分小于应扣除的积分，记录日志
                                     if (userConsumedPower < powerToDeduct) {
                                         this.logger.warn(
-                                            `The user 's ${user.id} points are insufficient. ${powerToDeduct} should be deducted. The actual deduction is ${userConsumedPower}, and the current points are 0`,
+                                            `[MindMapExtension] 用户 ${user.id} 积分不足。应扣除 ${powerToDeduct}，实际扣除 ${userConsumedPower}，当前积分为 0`,
                                         );
                                     }
                                 } catch (e) {
-                                    this.logger.error(`Failed to deduct points：${e.message}`);
+                                    this.logger.error(
+                                        `[MindMapExtension] 扣除积分失败：${e.message}`,
+                                    );
                                 }
                             });
                         }
                     } catch (error) {
                         this.logger.error(
-                            `Failed to deduct user points: ${error.message}`,
+                            `[MindMapExtension] 扣除用户积分失败: ${error.message}`,
                             error.stack,
                         );
                         // 这里不抛出异常，因为聊天已经完成，不应影响用户体验
@@ -462,7 +470,9 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                     aiMessageId
                 ) {
                     // 打印AI完整回复
-                    this.logger.debug(`🤖 AI replies: ${fullResponse}`);
+                    this.logger.debug(
+                        `[MindMapExtension] 🤖 AI回复: ${this.formatContentPreview(fullResponse)}`,
+                    );
 
                     // 准备 metadata，包含深度思考数据
                     const metadata: Record<string, unknown> = {};
@@ -514,7 +524,11 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
 
                 // 如果不保存对话记录但有完整回复，也打印出来
                 if (dto.saveConversation === false && fullResponse) {
-                    this.logger.debug(`🤖 AI reply (not saved): ${fullResponse}`);
+                    this.logger.debug(
+                        `[MindMapExtension] 🤖 AI回复 (未保存): ${this.formatContentPreview(
+                            fullResponse,
+                        )}`,
+                    );
                 }
 
                 // 只有在需要保存对话记录时才更新标题
@@ -553,9 +567,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                 res.write("data: [DONE]\n\n");
                 res.end();
             } else {
-                this.logger.debug(
-                    "The client has disconnected, skipping data saving and deducting computing power",
-                );
+                this.logger.debug("[MindMapExtension] 客户端已断开连接，跳过数据保存和积分扣除");
 
                 // 如果客户端断开连接且之前创建了对话但没有保存完整对话记录，
                 // 则删除用户消息和AI助手消息以保持数据一致性，并更新对话状态
@@ -565,7 +577,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                         if (userMessageId) {
                             await this.createService.deleteMessage(userMessageId);
                             this.logger.debug(
-                                "The client has disconnected and deleted user messages to maintain data consistency",
+                                "[MindMapExtension] 客户端已断开连接，删除用户消息以保持数据一致性",
                             );
                         }
 
@@ -573,7 +585,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                         if (aiMessageId) {
                             await this.createService.deleteMessage(aiMessageId);
                             this.logger.debug(
-                                "The client has disconnected and deleted the AI message to maintain data consistency",
+                                "[MindMapExtension] 客户端已断开连接，删除AI消息以保持数据一致性",
                             );
                         }
 
@@ -584,7 +596,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                         );
                     } catch (error) {
                         this.logger.error(
-                            `Failed to delete the conversation message or update the conversation status: ${error.message}`,
+                            `[MindMapExtension] 删除对话消息或更新对话状态失败: ${error.message}`,
                             error.stack,
                         );
                     }
@@ -594,10 +606,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                 res.end();
             }
         } catch (error) {
-            this.logger.error(
-                `The streaming chat conversation failed: ${error.message}`,
-                error.stack,
-            );
+            this.logger.error(`[MindMapExtension] 流式聊天对话失败: ${error.message}`, error.stack);
 
             // 更新消息状态为失败（无论客户端是否断开连接）
             // 但只在需要保存对话记录时才更新
@@ -638,7 +647,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                 }
                 res.end();
             } catch (writeError) {
-                this.logger.error("The error message failed to be sent:", writeError);
+                this.logger.error("[MindMapExtension] 发送错误消息失败:", writeError);
                 // 如果无法发送SSE错误，再抛出异常
                 throw HttpErrorFactory.badRequest(error.message);
             }
@@ -689,12 +698,28 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
 
             return "";
         } catch (error) {
-            this.logger.error(
-                `Failed to generate the dialogue title: ${error.message}`,
-                error.stack,
-            );
+            this.logger.error(`[MindMapExtension] 生成对话标题失败: ${error.message}`, error.stack);
             return content ? content.slice(0, 20) : "new Chat";
         }
+    }
+
+    /**
+     * 格式化日志输出，避免将完整敏感内容写入日志
+     * @param content 待格式化的原始内容
+     * @param maxLength 允许展示的最大长度
+     * @returns 处理后的内容预览
+     */
+    private formatContentPreview(content: string | undefined | null, maxLength = 120): string {
+        if (!content || typeof content !== "string") {
+            return "[empty]";
+        }
+
+        const trimmed = content.trim();
+        if (trimmed.length <= maxLength) {
+            return trimmed;
+        }
+
+        return `${trimmed.slice(0, maxLength)}... (total ${trimmed.length} chars)`;
     }
 
     /**

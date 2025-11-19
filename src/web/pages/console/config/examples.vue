@@ -161,7 +161,7 @@ onMounted(async () => {
                                 <Draggable
                                     v-model="trys"
                                     tag="div"
-                                    class="mt-2 mb-4 space-y-2"
+                                    class="mt-2 mb-4 space-y-2 overflow-hidden"
                                     :animation="200"
                                     item-key="id"
                                     handle=".drag-handle"
@@ -205,7 +205,7 @@ onMounted(async () => {
                                                     >
                                                         <div
                                                             @click="startEditing(element)"
-                                                            class="flex-1 cursor-text py-1 text-sm"
+                                                            class="flex-1 cursor-text py-1 text-sm whitespace-nowrap"
                                                         >
                                                             {{ element.content }}
                                                         </div>
@@ -308,7 +308,7 @@ onMounted(async () => {
                             {{ t("console.examples.try") }}
                         </div>
 
-                        <div class="mb-4 space-y-2 text-sm">
+                        <div class="mb-4 space-y-2 text-sm whitespace-nowrap">
                             <div
                                 v-for="element in trys"
                                 :key="element.id"

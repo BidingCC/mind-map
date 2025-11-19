@@ -189,7 +189,8 @@ const columns: TableColumn<MindMapRecord>[] = [
     },
     {
         accessorKey: "conversationsTimes",
-        header: () => h("p", { class: "" }, `${t("console.records.conversationsTime")}`),
+        header: () =>
+            h("p", { class: "whitespace-nowrap" }, `${t("console.records.conversationsTime")}`),
         cell: ({ row }) => {
             const power = row.original.conversationTimes || 0;
             return h("span", { class: "text-sm" }, power.toString());
@@ -205,7 +206,7 @@ const columns: TableColumn<MindMapRecord>[] = [
     },
     {
         accessorKey: "pointUsed",
-        header: () => h("p", { class: "" }, `${t("console.records.pointUsed")}`),
+        header: () => h("p", { class: "whitespace-nowrap" }, `${t("console.records.pointUsed")}`),
         cell: ({ row }) => {
             const power = row.original.powerUsed || 0;
             return h("span", { class: "text-sm" }, power.toString());
@@ -720,6 +721,7 @@ onUnmounted(() => {
             />
             <div class="flex flex-1 justify-end gap-2">
                 <UButton
+                    class="whitespace-nowrap"
                     @click="handleBatchDelete"
                     color="error"
                     variant="subtle"

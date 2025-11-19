@@ -164,7 +164,7 @@ onMounted(() => {
                         :button-ui="{
                             variant: 'outline',
                             color: 'neutral',
-                            class: 'bg-background w-xl',
+                            class: 'bg-background w-sm',
                         }"
                         :supported-model-types="['llm']"
                         :default-selected="false"

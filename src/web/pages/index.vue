@@ -739,7 +739,7 @@ onUnmounted(() => {
         <header class="relative h-50 shrink-0">
             <div class="absolute inset-0 flex items-center justify-between px-2">
                 <div
-                    class="mt-2 w-1/4 self-start truncate text-[18px] text-gray-600 dark:text-gray-300"
+                    class="mt-2 w-1/4 self-start overflow-hidden text-[18px] font-medium whitespace-nowrap text-gray-600 dark:text-gray-300"
                 >
                     {{ config.name }}
                 </div>
@@ -750,7 +750,7 @@ onUnmounted(() => {
                     ></h1>
                     <p
                         v-if="config.enabledDescription"
-                        class="mt-2 truncate text-sm text-gray-600 dark:text-gray-300"
+                        class="mt-2 truncate text-sm font-medium text-gray-600 dark:text-gray-300"
                     >
                         {{ config.description }}
                     </p>
@@ -801,7 +801,7 @@ onUnmounted(() => {
                             />
                         </div>
                         <div
-                            class="flex items-center p-2 text-sm wrap-break-word whitespace-pre-wrap"
+                            class="flex items-center overflow-hidden p-2 text-sm whitespace-nowrap"
                         >
                             {{ t(item.text) }}
                         </div>

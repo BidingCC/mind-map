@@ -1825,7 +1825,7 @@ onBeforeUnmount(() => {
         <!-- AI对话抽屉 -->
         <div
             v-if="isDrawerOpen"
-            class="fixed inset-y-0 right-0 z-50 flex w-[30rem] transform transition-transform duration-300 ease-in-out"
+            class="fixed inset-y-0 right-0 z-50 flex w-[30rem] min-w-[20rem] transform transition-transform duration-300 ease-in-out"
             :class="{ 'translate-x-0': isDrawerOpen, 'translate-x-full': !isDrawerOpen }"
         >
             <div

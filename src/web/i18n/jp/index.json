@@ -1,0 +1,55 @@
+{
+    "title": "マインドマップ",
+    "description": "AI技術を使ってマインドマップを生成",
+    "header": {
+        "costDescription": "料金説明",
+        "free": "無料",
+        "per100Chars": "ヒント：100文字ごとに消費",
+        "points": "100文字以内（100文字を含む）は消費として計上",
+        "within100Chars": "ヒント：100文字ごとに消費",
+        "eachGenerationFree": "ヒント：毎回生成無料",
+        "score": "ポイント"
+    },
+    "main": {
+        "createTitle": "すぐに作成してご利用ください",
+        "blank": "マインドマップを作成",
+        "right": "右ロジックマインドマップ",
+        "leftRight": "左右構造マインドマップ",
+        "under": "下方向ロジックマインドマップ",
+        "fishbone": "フィッシュボーン図",
+        "recently": "最近の更新",
+        "createdTip": "マインドマップがありません。作成してください～",
+        "create": "空のマインドマップを作成",
+        "rename": "名前変更",
+        "delete": "削除",
+        "download": "ダウンロード",
+        "previewAlt": "マインドマッププレビュー",
+        "untitled": "無題のマインドマップ",
+        "backToTop": "トップに戻る"
+    },
+    "toast": {
+        "fetchListError": "マインドマップリストの取得に失敗しました",
+        "deleteSuccess": "削除成功",
+        "deleteError": "削除失敗",
+        "downloadError": "ダウンロード失敗",
+        "updateTitleSuccess": "変更成功",
+        "updateTitleError": "変更失敗",
+        "createError": "作成失敗",
+        "fetchConfigError": "設定の取得に失敗しました"
+    },
+    "time": {
+        "justNow": "たった今更新",
+        "minutesAgo": "{0}分前",
+        "hoursAgo": "{0}時間前",
+        "daysAgo": "{0}日前",
+        "monthsAgo": "{0}か月前",
+        "yearsAgo": "{0}年前"
+    },
+    "confirm_delete": {
+        "title": "削除確認",
+        "single_message": "本当にこのマインドマップを削除しますか？",
+        "warning": "この操作は元に戻せません！",
+        "confirm": "削除確認",
+        "cancel": "キャンセル"
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "title": "Mind Map Creation",
+    "description": "Generate and edit mind maps using AI technology",
+    "drawer": {
+        "title": "Chat with Mind Map",
+        "try": "Try it",
+        "send": "Send Message",
+        "sendEmpty": "Please enter content before sending",
+        "saveTitleError": "Modification failed",
+        "downloadError": "Download failed",
+        "saveError": "Save failed",
+        "review": "Click to review"
+    },
+    "toolbar": {
+        "back": "Back",
+        "undo": "Undo",
+        "redo": "Redo",
+        "download": "Download",
+        "addSibling": "Add Sibling Node",
+        "addChild": "Add Child Node",
+        "delete": "Delete Node",
+        "center": "Center Root Node",
+        "backgroundColor": "Background Color",
+        "borderColor": "Border Color",
+        "textColor": "Font Color"
+    },
+    "contextMenu": {
+        "copy": "Copy Node",
+        "cut": "Cut Node",
+        "paste": "Paste Node"
+    },
+    "toast": {
+        "loadFailed": "Failed to fetch configuration",
+        "sendError": "Sending failed",
+        "noData": "There is currently no mind map to download",
+        "loadMindMapFailed": "Failed to fetch mind map",
+        "loadMoreFailed": "Failed to load more",
+        "loadInitMindMapFailed": "Failed to initialize mind map"
+    }
+}

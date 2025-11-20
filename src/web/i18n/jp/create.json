@@ -1,0 +1,40 @@
+{
+    "title": "マインドマップ作成",
+    "description": "AI技術を使ってマインドマップを生成・編集",
+    "drawer": {
+        "title": "マインドマップとチャット",
+        "try": "試してみる",
+        "send": "メッセージ送信",
+        "sendEmpty": "内容を入力してから送信してください",
+        "saveTitleError": "変更失敗",
+        "downloadError": "ダウンロード失敗",
+        "saveError": "保存失敗",
+        "review": "クリックしてレビュー"
+    },
+    "toolbar": {
+        "back": "戻る",
+        "undo": "元に戻す",
+        "redo": "やり直し",
+        "download": "ダウンロード",
+        "addSibling": "兄弟ノードを追加",
+        "addChild": "子ノードを追加",
+        "delete": "ノードを削除",
+        "center": "ルートノードを中央に",
+        "backgroundColor": "背景色",
+        "borderColor": "枠線色",
+        "textColor": "フォント色"
+    },
+    "contextMenu": {
+        "copy": "ノードをコピー",
+        "cut": "ノードをカット",
+        "paste": "ノードを貼り付け"
+    },
+    "toast": {
+        "loadFailed": "設定の取得に失敗しました",
+        "sendError": "送信失敗",
+        "noData": "現在ダウンロード可能なマインドマップがありません",
+        "loadMindMapFailed": "マインドマップの取得に失敗しました",
+        "loadMoreFailed": "さらに読み込みに失敗しました",
+        "loadInitMindMapFailed": "マインドマップの初期化に失敗しました"
+    }
+}

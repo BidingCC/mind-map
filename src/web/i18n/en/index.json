@@ -1,0 +1,55 @@
+{
+    "title": "Mind Map",
+    "description": "Generate mind maps using AI technology",
+    "header": {
+        "costDescription": "Cost Description",
+        "free": "Free",
+        "per100Chars": "Tip: Consume per 100 characters",
+        "points": "Characters within 100 (including 100) count as consumption",
+        "within100Chars": "Tip: Consume per 100 characters",
+        "eachGenerationFree": "Tip: Each generation is free",
+        "score": "Points"
+    },
+    "main": {
+        "createTitle": "Create Quickly and Use Immediately",
+        "blank": "Create Mind Map",
+        "right": "Right Logic Mind Map",
+        "leftRight": "Left-Right Structure Mind Map",
+        "under": "Downward Logic Mind Map",
+        "fishbone": "Fishbone Diagram",
+        "recently": "Recently Updated",
+        "createdTip": "No mind maps yet, go create one~",
+        "create": "Create Blank Mind Map",
+        "rename": "Rename",
+        "delete": "Delete",
+        "download": "Download",
+        "previewAlt": "Mind Map Preview",
+        "untitled": "Untitled Mind Map",
+        "backToTop": "Back to Top"
+    },
+    "toast": {
+        "fetchListError": "Failed to fetch mind map list",
+        "deleteSuccess": "Deleted successfully",
+        "deleteError": "Deletion failed",
+        "downloadError": "Download failed",
+        "updateTitleSuccess": "Modified successfully",
+        "updateTitleError": "Modification failed",
+        "createError": "Creation failed",
+        "fetchConfigError": "Failed to fetch configuration"
+    },
+    "time": {
+        "justNow": "Just updated",
+        "minutesAgo": "{0} minutes ago",
+        "hoursAgo": "{0} hours ago",
+        "daysAgo": "{0} days ago",
+        "monthsAgo": "{0} months ago",
+        "yearsAgo": "{0} years ago"
+    },
+    "confirm_delete": {
+        "title": "Confirm Deletion",
+        "single_message": "Are you sure you want to delete this mind map?",
+        "warning": "This operation cannot be undone!",
+        "confirm": "Confirm Delete",
+        "cancel": "Cancel"
+    }
+}

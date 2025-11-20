@@ -35,6 +35,7 @@
         "power": "ポイント",
         "metadata": "メタデータ",
         "conversationNotFound": "会話記録が見つかりません",
+        "errorMessage": "エラーメッセージ",
         "confirm_delete": {
             "title": "削除確認",
             "single_message": "本当にこの生成記録を削除しますか？",

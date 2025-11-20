@@ -165,7 +165,7 @@ onMounted(async () => {
 
 <template>
     <div>
-        <UForm :state="formData" class="max-w-2xl space-y-6">
+        <UForm :state="formData" class="max-w-sm space-y-6">
             <div>
                 <h3 class="mb-4 text-lg font-semibold">{{ t("console.home.title") }}</h3>
                 <div class="flex flex-col gap-6">

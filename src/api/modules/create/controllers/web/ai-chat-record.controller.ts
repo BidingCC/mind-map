@@ -2,7 +2,6 @@ import { ExtensionWebController } from "@buildingai/core/decorators";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";
-import { HttpErrorFactory } from "@buildingai/errors";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Delete, Get, Param, Query } from "@nestjs/common";
 
@@ -38,18 +37,10 @@ export class AiChatRecordController {
         @Query() paginationDto: PaginationDto,
         @Playground() playground: UserPlayground,
     ) {
-        // 先检查对话是否属于当前用户
-        const conversation = await this.createService.getConversationWithMessages(
+        return await this.createService.getConversationMessagesUser(
             conversationId,
+            paginationDto,
             playground.id,
         );
-
-        if (!conversation) {
-            throw HttpErrorFactory.badRequest(
-                "The conversation does not exist or is not accessible",
-            );
-        }
-
-        return await this.createService.getConversationMessagesUser(conversationId, paginationDto);
     }
 }

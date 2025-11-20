@@ -198,7 +198,7 @@ const columns: TableColumn<MindMapRecord>[] = [
     },
     {
         accessorKey: "drawName",
-        header: () => h("p", { class: "" }, `${t("console.records.drawName")}`),
+        header: () => h("p", { class: "whitespace-nowrap" }, `${t("console.records.drawName")}`),
         cell: ({ row }) => {
             const power = row.original.description || 0;
             return h("span", { class: "text-sm" }, power.toString());
@@ -702,12 +702,14 @@ onUnmounted(() => {
         <!-- 搜索区域 -->
         <div class="flex flex-col gap-4 md:flex-row">
             <UInput
+                class="min-w-[250px]"
                 v-model="searchForm.userName"
                 :placeholder="t('console.placeholders.id')"
                 icon="i-heroicons-user"
                 @keyup.enter="handleSearch"
             />
             <UInput
+                class="min-w-[250px]"
                 v-model="searchForm.description"
                 :placeholder="t('console.placeholders.key')"
                 icon="i-heroicons-magnifying-glass"

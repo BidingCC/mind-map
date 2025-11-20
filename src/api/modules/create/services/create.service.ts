@@ -486,13 +486,13 @@ export class CreateService extends BaseService<MindMapRecord> {
             // 构建查询选项
             const options: FindManyOptions<MindMapAiChatMessage> = {
                 order: { sequence: "DESC" as const },
-                where: { status: Not("failed") },
+                // where: { status: Not("failed") },
             };
 
             if (queryDto?.conversationId) {
                 options.where = {
                     conversationId: queryDto.conversationId,
-                    status: Not("failed"),
+                    // status: Not("failed"),
                 };
             }
 
@@ -544,12 +544,30 @@ export class CreateService extends BaseService<MindMapRecord> {
      * 获取对话的消息列表(用于前台)
      * @param conversationId 对话ID
      * @param paginationDto 分页参数
+     * @param userId 用户ID（用于权限检查）
      */
-    async getConversationMessagesUser(conversationId: string, paginationDto: PaginationDto) {
+    async getConversationMessagesUser(
+        conversationId: string,
+        paginationDto: PaginationDto,
+        userId: string,
+    ) {
         try {
             if (!conversationId) {
                 this.logger.warn("[MindMapExtension] 获取对话消息失败:对话ID为空");
                 throw HttpErrorFactory.notFound("The conversation does not exist.");
+            }
+
+            // 检查对话是否属于当前用户
+            const conversation = await this.getConversationWithMessages(conversationId, userId);
+
+            if (!conversation) {
+                this.logger.warn("[MindMapExtension] 获取对话消息失败:对话不存在或无权访问", {
+                    conversationId,
+                    userId,
+                });
+                throw HttpErrorFactory.badRequest(
+                    "The conversation does not exist or is not accessible",
+                );
             }
 
             // 获取原始分页数据
@@ -562,7 +580,6 @@ export class CreateService extends BaseService<MindMapRecord> {
                 content: item.content,
                 messageType: item.messageType,
                 status: item.status,
-                errorMessage: item.errorMessage,
                 createdAt: item.createdAt,
                 updatedAt: item.updatedAt,
             }));

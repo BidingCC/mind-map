@@ -210,7 +210,7 @@ onMounted(() => {
                     :label="t('console.config.billing')"
                     name="billing"
                     required
-                    class="w-xl whitespace-nowrap"
+                    class="w-sm whitespace-nowrap"
                 >
                     <URadioGroup
                         orientation="horizontal"

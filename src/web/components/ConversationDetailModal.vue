@@ -57,10 +57,33 @@ const formatDate = (date: string | Date) => {
     return `${year}-${month}-${day} ${hour}:${minute}`;
 };
 
+type MessageLike = AiMessage | MessageContent;
+
 /**
- * 将MessageContent转换为字符串
+ * 判断传入对象是否为 AiMessage
  */
-function formatMessageContent(content: MessageContent): string {
+function isAiMessage(message: MessageLike): message is AiMessage {
+    return typeof message === "object" && message !== null && "content" in message;
+}
+
+/**
+ * 将消息内容转换为字符串，失败消息优先显示错误信息
+ */
+function formatMessageContent(message: MessageLike): string {
+    const aiMessage = isAiMessage(message) ? message : null;
+
+    // 处理失败的消息，优先显示错误信息
+    if (aiMessage?.status === "failed" && aiMessage.errorMessage) {
+        return aiMessage.errorMessage;
+    }
+
+    // 如果message是字符串，直接返回
+    if (typeof message === "string") {
+        return message;
+    }
+
+    const content = aiMessage ? aiMessage.content : message;
+
     // 如果是字符串，直接返回
     if (typeof content === "string") {
         return content;
@@ -161,7 +184,13 @@ function formatMessageContent(content: MessageContent): string {
                             <div
                                 v-for="message in conversationMessages"
                                 :key="message.id"
-                                class="mb-4 rounded-lg border border-gray-200 p-4 dark:border-gray-700"
+                                class="mb-4 rounded-lg border p-4"
+                                :class="{
+                                    'border-gray-200 dark:border-gray-700':
+                                        message.status !== 'failed',
+                                    'border-red-200 bg-red-100 dark:bg-red-900/30':
+                                        message.status === 'failed',
+                                }"
                             >
                                 <!-- 消息头部 -->
                                 <div class="mb-2 flex items-center justify-between">
@@ -205,25 +234,43 @@ function formatMessageContent(content: MessageContent): string {
                                 </div>
 
                                 <!-- 消息内容 -->
-                                <div class="prose prose-sm dark:prose-invert max-w-none">
-                                    <BdMarkdown :content="formatMessageContent(message.content)" />
-                                </div>
-
-                                <!-- 元数据 -->
                                 <div
-                                    v-if="
-                                        message.metadata && Object.keys(message.metadata).length > 0
-                                    "
-                                    class="mt-3 border-t border-gray-100 pt-3 dark:border-gray-600"
+                                    v-if="message.status === 'failed'"
+                                    class="flex items-start gap-2 text-red-800"
                                 >
-                                    <details class="text-xs">
-                                        <summary class="text-muted-foreground cursor-pointer">
-                                            {{ t("console.records.metadata") }}
-                                        </summary>
-                                        <pre class="text-accent-foreground mt-2">{{
-                                            JSON.stringify(message.metadata, null, 2)
-                                        }}</pre>
-                                    </details>
+                                    <UIcon
+                                        name="i-lucide-alert-circle"
+                                        class="mt-0.5 h-4 w-4 shrink-0 text-red-600"
+                                    />
+                                    <div>
+                                        <div class="font-medium text-red-700 dark:text-red-600">
+                                            {{ t("console.records.errorMessage") }}:
+                                        </div>
+                                        <div class="mt-1 text-sm">
+                                            {{ message.errorMessage }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div v-else class="prose prose-sm dark:prose-invert max-w-none">
+                                    <BdMarkdown :content="formatMessageContent(message)" />
+
+                                    <!-- 元数据 -->
+                                    <div
+                                        v-if="
+                                            message.metadata &&
+                                            Object.keys(message.metadata).length > 0
+                                        "
+                                        class="mt-3 overflow-hidden border-t border-gray-100 pt-3 dark:border-gray-600"
+                                    >
+                                        <details class="text-xs">
+                                            <summary class="text-muted-foreground cursor-pointer">
+                                                {{ t("console.records.metadata") }}
+                                            </summary>
+                                            <pre class="text-accent-foreground mt-2">{{
+                                                JSON.stringify(message.metadata, null, 2)
+                                            }}</pre>
+                                        </details>
+                                    </div>
                                 </div>
                             </div>
                         </BdInfiniteScroll>

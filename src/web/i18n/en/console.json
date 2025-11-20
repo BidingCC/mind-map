@@ -35,6 +35,7 @@
         "power": "Points",
         "metadata": "Metadata",
         "conversationNotFound": "Conversation record not found",
+        "errorMessage": "Error Message",
         "confirm_delete": {
             "title": "Confirm Deletion",
             "single_message": "Are you sure you want to delete this generation record?",

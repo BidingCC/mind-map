@@ -268,10 +268,24 @@ const { messages, input, handleSubmit, stop, status } = useChat({
     },
     onError(err) {
         let message = err.message;
-        const errorObj = JSON.parse(err.message);
-        if (errorObj && errorObj.message) {
-            message = errorObj.message;
+
+        // 尝试解析错误信息，如果解析失败则使用原始错误信息
+        try {
+            const errorObj = JSON.parse(err.message);
+            if (errorObj && errorObj.message) {
+                message = errorObj.message;
+
+                // 针对第三方服务的账户欠费错误提供通用提示
+                if (message.includes("Access denied") && message.includes("good standing")) {
+                    message =
+                        "AI service is currently unavailable. Please contact the administrator.";
+                }
+            }
+        } catch (parseError) {
+            // 如果解析失败，保持原始错误信息
+            console.warn(parseError);
         }
+
         console.error("聊天错误:", message);
         toast.error(t("create.toast.sendError") + ": " + message);
         // 隐藏AI正在输入状态
@@ -666,10 +680,12 @@ const addUid = (data: MindMapDataNode) => {
 const scrollToBottom = () => {
     if (chatContainerRef.value) {
         const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.value;
-        const threshold = 50; // 距离底部的阈值
+        // AUTO_SCROLL_THRESHOLD: 当用户距离底部小于该值时，认为用户在底部附近
+        // 即使用户稍微向上滚动了一点，但仍在底部附近时，有新消息仍会自动滚动
+        const AUTO_SCROLL_THRESHOLD = 50;
 
         // 只有当用户在底部附近或者之前就在底部时才自动滚动
-        if (isAtBottom.value || scrollHeight - scrollTop - clientHeight <= threshold) {
+        if (isAtBottom.value || scrollHeight - scrollTop - clientHeight <= AUTO_SCROLL_THRESHOLD) {
             nextTick(() => {
                 if (chatContainerRef.value) {
                     chatContainerRef.value.scrollTop = chatContainerRef.value.scrollHeight;
@@ -677,6 +693,18 @@ const scrollToBottom = () => {
                 isAtBottom.value = true;
             });
         }
+    }
+};
+
+// 监听聊天容器的滚动事件，检查用户是否在底部
+const handleChatScroll = () => {
+    if (chatContainerRef.value) {
+        const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.value;
+        // USER_AT_BOTTOM_THRESHOLD: 当用户距离底部小于该值时，认为用户在底部
+        // 用于精确判断用户是否真的在查看底部内容
+        const USER_AT_BOTTOM_THRESHOLD = 10;
+        // 如果用户距离底部小于某个阈值，则认为在底部
+        isAtBottom.value = scrollHeight - scrollTop - clientHeight <= USER_AT_BOTTOM_THRESHOLD;
     }
 };
 
@@ -702,14 +730,10 @@ watch(
             if (messages.value.length === 0) {
                 messages.value = [...historyMessages];
             } else {
-                // 检查是否已经存在相同内容的消息，避免重复
+                // 检查是否已经存在相同ID的消息，避免重复
                 const uniqueHistoryMessages = historyMessages.filter(
                     (historyMsg) =>
-                        !messages.value.some(
-                            (existingMsg) =>
-                                existingMsg.content === historyMsg.content &&
-                                existingMsg.role === historyMsg.role,
-                        ),
+                        !messages.value.some((existingMsg) => existingMsg.id === historyMsg.id),
                 );
 
                 if (uniqueHistoryMessages.length > 0) {
@@ -747,7 +771,15 @@ const loadMoreMessages = async () => {
         if (newData.items.length > 0) {
             const reversedItems = newData.items.reverse();
             if (messagesData.value) {
-                messagesData.value.items = [...reversedItems, ...messagesData.value.items];
+                // 检查是否已经存在相同ID的消息，避免重复
+                const uniqueNewItems = reversedItems.filter(
+                    (newItem) =>
+                        !messagesData.value?.items.some(
+                            (existingItem) => existingItem.id === newItem.id,
+                        ),
+                );
+
+                messagesData.value.items = [...uniqueNewItems, ...messagesData.value.items];
 
                 // 同步更新 useChat 的 messages 数组，确保新加载的历史消息也能发送给大模型
                 const historyMessages = messagesData.value.items.map((item: AiMessage) => ({
@@ -766,7 +798,16 @@ const loadMoreMessages = async () => {
                 const nonCompletedMessages = messages.value.filter(
                     (msg) => msg.status !== "completed",
                 );
-                messages.value = [...historyMessages, ...nonCompletedMessages];
+
+                // 过滤掉重复的消息
+                const uniqueHistoryMessages = historyMessages.filter(
+                    (historyMsg) =>
+                        !nonCompletedMessages.some(
+                            (existingMsg) => existingMsg.id === historyMsg.id,
+                        ),
+                );
+
+                messages.value = [...uniqueHistoryMessages, ...nonCompletedMessages];
             }
         }
     } catch (error) {
@@ -787,6 +828,7 @@ const displayedMessages = computed(() => {
     if (queryPaging.page === 1) {
         const historyMessages = (messagesData.value.items || [])
             .map((item) => ({
+                id: item.id,
                 ...item,
                 content: item.errorMessage || item.content,
                 status: item.errorMessage ? "failed" : item.status,
@@ -803,6 +845,7 @@ const displayedMessages = computed(() => {
 
     // 如果加载了更多历史消息，显示所有历史消息 + 所有新消息
     const historyMessages = (messagesData.value.items || []).map((item) => ({
+        id: item.id,
         ...item,
         content: item.errorMessage || item.content,
         status: item.errorMessage ? "failed" : item.status,
@@ -1832,7 +1875,7 @@ onBeforeUnmount(() => {
                 class="flex h-full w-full flex-col border-l border-(--border) bg-(--background) shadow-lg"
             >
                 <!-- 抽屉头部 -->
-                <div class="flex w-full shrink-0 items-center justify-between p-6 pb-0">
+                <div class="flex w-full shrink-0 items-center justify-between p-6 pb-2">
                     <h2 class="flex items-center text-lg font-medium">
                         <span
                             class="mr-2 inline-flex rounded-full bg-linear-to-b from-blue-500 to-blue-300 p-2"
@@ -1851,7 +1894,11 @@ onBeforeUnmount(() => {
 
                 <!-- 抽屉内容 -->
                 <div class="flex min-h-0 flex-1 flex-col">
-                    <div class="flex-1 overflow-y-auto p-6 pb-0" ref="chatContainerRef">
+                    <div
+                        class="flex-1 overflow-y-auto p-6 pb-0"
+                        ref="chatContainerRef"
+                        @scroll="handleChatScroll"
+                    >
                         <!-- 开场白 -->
                         <div class="mb-4 flex flex-row gap-3">
                             <!-- 消息气泡 -->
@@ -1930,21 +1977,21 @@ onBeforeUnmount(() => {
                                             ></span>
                                             <span
                                                 v-if="!message.content"
-                                                class="flex items-center space-x-1"
+                                                class="loading-dots-container"
                                             >
                                                 <span
-                                                    class="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                                                    class="loading-dot"
                                                     style="animation-duration: 1.4s"
                                                 ></span>
                                                 <span
-                                                    class="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                                                    class="loading-dot"
                                                     style="
                                                         animation-duration: 1.4s;
                                                         animation-delay: 0.1s;
                                                     "
                                                 ></span>
                                                 <span
-                                                    class="h-2 w-2 animate-bounce rounded-full bg-gray-400"
+                                                    class="loading-dot"
                                                     style="
                                                         animation-duration: 1.4s;
                                                         animation-delay: 0.2s;
@@ -2151,5 +2198,46 @@ onBeforeUnmount(() => {
     color: inherit !important;
     padding: 0 !important;
     font-size: 0.95em !important;
+}
+
+/* AI加载点的从左到右光影效果 */
+.loading-dots-container {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.loading-dot {
+    height: 0.5rem;
+    width: 0.5rem;
+    border-radius: 50%;
+    background-color: #9ca3af; /* gray-400 */
+    animation: pulse 1.4s infinite ease-in-out;
+    animation-fill-mode: both;
+}
+
+.loading-dot:nth-child(1) {
+    animation-delay: -0.3s;
+}
+
+.loading-dot:nth-child(2) {
+    animation-delay: -0.15s;
+}
+
+.loading-dot:nth-child(3) {
+    animation-delay: 0s;
+}
+
+@keyframes pulse {
+    0%,
+    60%,
+    100% {
+        background-color: #9ca3af; /* gray-400 */
+        transform: scale(1);
+    }
+    30% {
+        background-color: #ffffff; /* 产生光影效果 */
+        transform: scale(1.2);
+    }
 }
 </style>

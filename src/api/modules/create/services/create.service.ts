@@ -1,4 +1,4 @@
-import { BaseService } from "@buildingai/base/services/base.service";
+import { BaseService } from "@buildingai/base";
 import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
 import { FindManyOptions, In, Not, Repository } from "@buildingai/db/typeorm";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";

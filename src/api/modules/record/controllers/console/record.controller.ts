@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
 import { BuildFileUrl } from "@buildingai/decorators/file-url.decorator";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
@@ -10,10 +9,8 @@ import { SearchMindMapRecordDto } from "../../dto/search-mind-map-record.dto";
 import { PaginationResult } from "../../interfaces/pagination-result.interface";
 import { RecordService } from "../../services/record.service";
 @ExtensionConsoleController("record", "思维导图管理")
-export class RecordController extends BaseController {
-    constructor(private readonly recordService: RecordService) {
-        super();
-    }
+export class RecordController {
+    constructor(private readonly recordService: RecordService) {}
 
     /**
      * 删除思维导图记录

@@ -1,4 +1,4 @@
-import { BaseService } from "@buildingai/base/services/base.service";
+import { BaseService } from "@buildingai/base";
 import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { In, Repository } from "@buildingai/db/typeorm";

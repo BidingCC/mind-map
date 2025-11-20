@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import { Get } from "@nestjs/common";
 
@@ -6,10 +5,8 @@ import { MindMapConfigUserDto } from "../../dto/mind-map-config-user.dto";
 import { ConfigService } from "../../services/config.service";
 
 @ExtensionWebController("config")
-export class ConfigWebController extends BaseController {
-    constructor(private readonly configService: ConfigService) {
-        super();
-    }
+export class ConfigWebController {
+    constructor(private readonly configService: ConfigService) {}
 
     /**
      * 获取思维导图插件配置（前台用户使用）

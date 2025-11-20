@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
 import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
@@ -12,10 +11,8 @@ import { CreateService } from "../../services/create.service";
  * 提供用户对话记录的查询和管理功能
  */
 @ExtensionConsoleController("ai-chat-record", "AI对话记录")
-export class AiChatRecordConsoleController extends BaseController {
-    constructor(private readonly createService: CreateService) {
-        super();
-    }
+export class AiChatRecordConsoleController {
+    constructor(private readonly createService: CreateService) {}
 
     /**
      * 获取对话详情（包含消息）

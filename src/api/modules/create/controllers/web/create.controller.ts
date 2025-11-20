@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import { type UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";
@@ -10,10 +9,8 @@ import { UpdateTitleDto } from "../../dto/update-title.dto";
 import { MindMapRecordPublicInterface } from "../../interfaces/mind-map-record.interface";
 import { CreateService } from "../../services/create.service";
 @ExtensionWebController("create")
-export class CreateController extends BaseController {
-    constructor(private readonly createService: CreateService) {
-        super();
-    }
+export class CreateController {
+    constructor(private readonly createService: CreateService) {}
 
     /**
      * 获取思维导图详情

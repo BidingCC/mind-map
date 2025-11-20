@@ -1,5 +1,5 @@
 import { TextGenerator } from "@buildingai/ai-sdk";
-import { BaseController } from "@buildingai/base/controllers/base.controller";
+import { BaseController } from "@buildingai/base";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
 import { User } from "@buildingai/db/entities/user.entity";

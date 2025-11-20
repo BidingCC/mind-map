@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";
@@ -13,10 +12,8 @@ import { PaginationResult } from "../../interfaces/pagination-result.interface";
 import { RecordService } from "../../services/record.service";
 
 @ExtensionWebController("index")
-export class IndexController extends BaseController {
-    constructor(private readonly indexService: RecordService) {
-        super();
-    }
+export class IndexController {
+    constructor(private readonly indexService: RecordService) {}
 
     /**
      * 创建思维导图记录

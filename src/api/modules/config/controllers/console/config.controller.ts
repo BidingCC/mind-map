@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Body, Get, Param, Post } from "@nestjs/common";
@@ -7,10 +6,8 @@ import { MindMapConfig } from "../../../../db/entities/mind-map-config.entity";
 import { ConfigService } from "../../services/config.service";
 
 @ExtensionConsoleController("config", "思维导图配置")
-export class ConfigConsoleController extends BaseController {
-    constructor(private readonly configService: ConfigService) {
-        super();
-    }
+export class ConfigConsoleController {
+    constructor(private readonly configService: ConfigService) {}
 
     /**
      * 获取思维导图插件配置

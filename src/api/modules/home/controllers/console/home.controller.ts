@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionConsoleController } from "@buildingai/core/decorators";
 import { Body, Get, Post } from "@nestjs/common";
 
@@ -6,10 +5,8 @@ import { MindMapHome } from "../../../../db/entities/mind-map-home.entity";
 import { HomeService } from "../../services/home.service";
 
 @ExtensionConsoleController("home", "思维导图首页")
-export class HomeConsoleController extends BaseController {
-    constructor(private readonly homeService: HomeService) {
-        super();
-    }
+export class HomeConsoleController {
+    constructor(private readonly homeService: HomeService) {}
 
     /**
      * 获取思维导图首页配置

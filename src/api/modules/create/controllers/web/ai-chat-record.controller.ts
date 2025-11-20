@@ -1,4 +1,3 @@
-import { BaseController } from "@buildingai/base/controllers/base.controller";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
 import { Playground } from "@buildingai/decorators/playground.decorator";
@@ -15,10 +14,8 @@ import { CreateService } from "../../services/create.service";
  * 提供用户对话记录的查询和管理功能
  */
 @ExtensionWebController("ai-chat-record")
-export class AiChatRecordController extends BaseController {
-    constructor(private readonly createService: CreateService) {
-        super();
-    }
+export class AiChatRecordController {
+    constructor(private readonly createService: CreateService) {}
 
     /**
      * 删除对话

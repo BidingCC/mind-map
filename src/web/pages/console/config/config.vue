@@ -2,6 +2,7 @@
 import type { AiModel } from "@buildingai/service/webapi/ai-conversation";
 import { apiGetAiProviders } from "@buildingai/service/webapi/ai-conversation";
 
+import AdaptiveTooltip from "../../../components/AdaptiveTooltip.vue";
 import type { MindMapConfig } from "../../../models/record";
 import { apiGetMindMapConfig, apiSaveMindMapConfig } from "../../../services/console/config";
 
@@ -30,6 +31,8 @@ const modelSelectKey = shallowRef<number>(0);
 const providersCache = ref<any[]>([]);
 // KeyPoolSelect 组件的 key，用于强制更新
 const keyPoolSelectKey = shallowRef(0);
+
+const mindMapConfigContainerRef = shallowRef<HTMLElement | null>(null);
 
 /** 获取插件配置详情 */
 const { lockFn: getPluginConfig, isLock: detailLoading } = useLockFn(async () => {
@@ -146,42 +149,16 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="pb-8">
+    <div ref="mindMapConfigContainerRef" class="relative pb-8">
         <UForm :state="formData" class="space-y-6" @submit="submitForm">
             <div class="space-y-4">
                 <div class="flex items-center gap-2">
                     <h3 class="text-lg font-semibold">{{ t("console.config.title") }}</h3>
-                    <div class="group relative">
-                        <div class="group flex cursor-help items-center gap-1 whitespace-nowrap">
-                            <svg
-                                class="text-muted-foreground group-hover:text-foreground ml-1 h-4 w-4 cursor-help transition-colors"
-                                viewBox="0 0 1024 1024"
-                                version="1.1"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="currentColor"
-                            >
-                                <path
-                                    d="M463.99957 784.352211c0 26.509985 21.490445 48.00043 48.00043 48.00043s48.00043-21.490445 48.00043-48.00043c0-26.509985-21.490445-48.00043-48.00043-48.00043S463.99957 757.842226 463.99957 784.352211z"
-                                    fill="currentColor"
-                                ></path>
-                                <path
-                                    d="M512 960c-247.039484 0-448-200.960516-448-448S264.960516 64 512 64 960 264.960516 960 512 759.039484 960 512 960zM512 128.287273c-211.584464 0-383.712727 172.128262-383.712727 383.712727 0 211.551781 172.128262 383.712727 383.712727 383.712727 211.551781 0 383.712727-172.159226 383.712727-383.712727C895.712727 300.415536 723.551781 128.287273 512 128.287273z"
-                                    fill="currentColor"
-                                ></path>
-                                <path
-                                    d="M512 673.695256c-17.664722 0-32.00086-14.336138-32.00086-31.99914l0-54.112297c0-52.352533 39.999785-92.352318 75.32751-127.647359 25.887273-25.919957 52.67249-52.67249 52.67249-74.016718 0-53.343368-43.07206-96.735385-95.99914-96.735385-53.823303 0-95.99914 41.535923-95.99914 94.559333 0 17.664722-14.336138 31.99914-32.00086 31.99914s-32.00086-14.336138-32.00086-31.99914c0-87.423948 71.775299-158.559333 160.00086-158.559333s160.00086 72.095256 160.00086 160.735385c0 47.904099-36.32028 84.191695-71.424378 119.295794-27.839699 27.776052-56.575622 56.511974-56.575622 82.3356l0 54.112297C544.00086 659.328155 529.664722 673.695256 512 673.695256z"
-                                    fill="currentColor"
-                                ></path>
-                            </svg>
-                            <div
-                                class="text-muted-foreground group-hover:text-foreground text-sm transition-colors"
-                            >
-                                {{ t("console.config.description") }}
-                            </div>
-                        </div>
-                        <div
-                            class="absolute top-full z-100 hidden w-76 rounded-xl bg-(--secondary-foreground) p-2 text-sm text-(--background) opacity-80 shadow-lg group-hover:block"
-                        >
+                    <AdaptiveTooltip
+                        :teleport-target="mindMapConfigContainerRef"
+                        :trigger-label="t('console.config.description')"
+                    >
+                        <template #content>
                             <div class="wrap-break-word whitespace-pre-wrap">
                                 {{ t("console.config.forExample") }}
                                 <a
@@ -203,8 +180,8 @@ onMounted(() => {
                                 </a>
                                 )
                             </div>
-                        </div>
-                    </div>
+                        </template>
+                    </AdaptiveTooltip>
                 </div>
 
                 <UFormField

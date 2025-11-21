@@ -296,7 +296,6 @@ const { messages, input, handleSubmit, stop, status } = useChat({
             if (record.value) {
                 record.value.aiChatRecordId = chunk.data;
             }
-            console.log("收到 conversation_id:", chunk.data);
         }
     },
     onFinish(message) {
@@ -316,7 +315,7 @@ let inTemplateBlock = false; // 标记是否在<template>代码块内
 let lastProcessedContent = ""; // 存储上一次处理过的内容
 let lastProcessedLine = ""; // 存储上一次处理过的行，用于逐步生成节点
 let isFirstData = true; // 标记是否为首次设置数据
-let waitUid = ""; // 用于保存等待的UID
+// const waitUid = ""; // 用于保存等待的UID
 let contentBuffer = ""; // 用于处理可能被分段的内容
 
 watch(
@@ -1116,38 +1115,38 @@ const initializeMindMap = (mindData: MindMapDataNode, layoutType: string) => {
         });
 
         // 监听详细数据变化事件，用于获取新创建的节点
-        mindMapInstance.on("data_change_detail", (list: any[]) => {
-            // 找出新创建节点中的最后一个
-            const lastCreate = list
-                .filter((item) => {
-                    return item.action === "create";
-                })
-                .pop(); // 使用pop获取最后一个创建的节点
+        // mindMapInstance.on("data_change_detail", (list: any[]) => {
+        //     // 找出新创建节点中的最后一个
+        //     const lastCreate = list
+        //         .filter((item) => {
+        //             return item.action === "create";
+        //         })
+        //         .pop(); // 使用pop获取最后一个创建的节点
 
-            if (lastCreate && lastCreate.data) {
-                const uid = lastCreate.data.data?.uid;
-                if (uid) {
-                    const node = mindMapInstance.renderer.findNodeByUid(uid);
-                    if (node) {
-                        mindMapInstance.renderer.moveNodeToCenter(node);
-                    } else {
-                        waitUid = uid;
-                    }
-                }
-            }
-        });
+        //     if (lastCreate && lastCreate.data) {
+        //         const uid = lastCreate.data.data?.uid;
+        //         if (uid) {
+        //             const node = mindMapInstance.renderer.findNodeByUid(uid);
+        //             if (node) {
+        //                 mindMapInstance.renderer.moveNodeToCenter(node);
+        //             } else {
+        //                 waitUid = uid;
+        //             }
+        //         }
+        //     }
+        // });
 
         // 监听节点树渲染完成事件
-        mindMapInstance.on("node_tree_render_end", () => {
-            if (waitUid) {
-                const uid = waitUid;
-                waitUid = "";
-                const node = mindMapInstance.renderer.findNodeByUid(uid);
-                if (node) {
-                    mindMapInstance.renderer.moveNodeToCenter(node);
-                }
-            }
-        });
+        // mindMapInstance.on("node_tree_render_end", () => {
+        //     if (waitUid) {
+        //         const uid = waitUid;
+        //         waitUid = "";
+        //         const node = mindMapInstance.renderer.findNodeByUid(uid);
+        //         if (node) {
+        //             mindMapInstance.renderer.moveNodeToCenter(node);
+        //         }
+        //     }
+        // });
 
         // 确保容器尺寸正确
         const containerEl = document.getElementById("mindmap-container");

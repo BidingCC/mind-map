@@ -46,6 +46,7 @@
     },
     "config": {
         "title": "收费配置",
+        "description": "配置说明",
         "selectModel": "选择模型",
         "selectModelPlaceholder": "请选择模型",
         "selectModelDescription": "选择生成思维导图的模型",
@@ -71,7 +72,9 @@
         "noWebsiteUrl": "未找到模型对应的官网链接",
         "noProviderInfo": "暂无供应商信息，请稍后再试",
         "mindMapPreview": "思维导图预览",
-        "validBilling": "计费不能小于1"
+        "validBilling": "计费不能小于1",
+        "forExample": "文字大模型可选择任意厂家，推荐Kimi：",
+        "ifCannotOpenOfficial": "如无法打开，可使用第三方中转站APlstudio"
     },
     "examples": {
         "title": "AI界面配置",

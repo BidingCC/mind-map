@@ -46,6 +46,7 @@
     },
     "config": {
         "title": "課金設定",
+        "description": "設定説明",
         "selectModel": "モデル選択",
         "selectModelPlaceholder": "モデルを選択してください",
         "selectModelDescription": "マインドマップ生成のモデルを選択",
@@ -71,7 +72,9 @@
         "noWebsiteUrl": "対応するモデルの公式サイトリンクが見つかりません",
         "noProviderInfo": "プロバイダー情報がありません。しばらくしてから再度お試しください",
         "mindMapPreview": "マインドマッププレビュー",
-        "validBilling": "課金額は1未満にできません"
+        "validBilling": "課金額は1未満にできません",
+        "forExample": "テキスト大規模モデルは任意のメーカーを選択できます。おすすめKimi：",
+        "ifCannotOpenOfficial": "公式APIが開けない場合、サードパーティの中継ステーションAPlstudioをご利用ください"
     },
     "examples": {
         "title": "AIインターフェース設定",

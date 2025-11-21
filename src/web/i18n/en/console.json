@@ -46,6 +46,7 @@
     },
     "config": {
         "title": "Billing Configuration",
+        "description": "Configuration Instructions",
         "selectModel": "Select Model",
         "selectModelPlaceholder": "Please select a model",
         "selectModelDescription": "Select the model for generating mind maps",
@@ -71,7 +72,9 @@
         "noWebsiteUrl": "Official website link not found for the corresponding model",
         "noProviderInfo": "No provider information available, please try again later",
         "mindMapPreview": "Mind Map Preview",
-        "validBilling": "Billing cannot be less than 1"
+        "validBilling": "Billing cannot be less than 1",
+        "forExample": "For text models, any vendor can be selected. Recommended: Kimi:",
+        "ifCannotOpenOfficial": "If unable to open official API, you can use third-party relay station APlstudio"
     },
     "examples": {
         "title": "AI Interface Configuration",

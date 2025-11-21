@@ -1,14 +1,14 @@
 import { TextGenerator } from "@buildingai/ai-sdk";
 import { BaseController } from "@buildingai/base";
 import { ExtensionWebController } from "@buildingai/core/decorators";
+import type { UserPlayground } from "@buildingai/db";
 import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
-import { User } from "@buildingai/db/entities/user.entity";
-import type { UserPlayground } from "@buildingai/db/interfaces/context.interface";
+import { User } from "@buildingai/db/entities";
 import { Repository } from "@buildingai/db/typeorm";
 import { Playground } from "@buildingai/decorators/playground.decorator";
 import { HttpErrorFactory } from "@buildingai/errors";
-import { PublicAiModelService } from "@buildingai/extension-sdk/modules/ai/services/ai-model.service";
-import { ExtensionBillingService } from "@buildingai/extension-sdk/modules/billing/extension-billing.service";
+import { ExtensionBillingService, PublicAiModelService } from "@buildingai/extension-sdk";
+import { getProviderSecret } from "@buildingai/utils";
 import { Body, Post, Res } from "@nestjs/common";
 import type { Response } from "express";
 import type {
@@ -101,11 +101,14 @@ export class AiChatMessageController extends BaseController {
                 "Extension configuration error. Please contact the administrator.",
             );
         }
+        const providerSecret = await this.aiModelService.getProviderConfig(
+            pluginConfig.bindModelId,
+        );
 
-        const provider = await this.aiModelService.getProvider(pluginConfig.bindModelId, [
-            "apiKey",
-            "baseUrl",
-        ]);
+        const provider = await this.aiModelService.getProviderAdapter(pluginConfig.bindModelId, {
+            apiKey: getProviderSecret("apiKey", providerSecret),
+            baseURL: getProviderSecret("baseUrl", providerSecret),
+        });
 
         const model = await this.aiModelService.getModelInfo(pluginConfig.bindModelId);
 
@@ -202,7 +205,10 @@ export class AiChatMessageController extends BaseController {
                     const mindMapRecord = await this.createService.findOneById(dto.mindMapId);
                     mindMapData = mindMapRecord?.mindMapData || null;
                 } catch (error) {
-                    this.logger.warn(`[MindMapExtension] 获取思维导图数据失败: ${error.message}`);
+                    this.logger.warn(
+                        `[MindMapExtension] 获取思维导图数据失败: ${error.message}`,
+                        error.stack ? error.stack : "",
+                    );
                     throw HttpErrorFactory.internal("Failed to obtain the mind map data.");
                 }
             }
@@ -237,18 +243,20 @@ export class AiChatMessageController extends BaseController {
             // 系统提示
             const systemMessage = {
                 role: "system",
-                content: `你是一个专门的思维导图AI助手，只能用于创建和编辑思维导图，不能用于其他用途。
+                content: `你是一个专门的思维导图 AI 助手，核心任务是让同主题思维导图能从不同维度、视角生成多样化内容，只能用于创建和编辑思维导图，不能用于其他用途。
 
-你的唯一任务是根据用户请求创建或修改思维导图，需要以Markdown格式返回，并且只能使用Markdown的标题和无序列表两种语法，可以支持多层嵌套。只需返回内容即可。请严格遵守以下规则：
+你的任务是根据用户请求，从多维度（如领域细分、时间阶段、逻辑层次、创意关联等）创建或修改思维导图，需要以 Markdown 格式返回，并且只能使用 Markdown 的标题和无序列表两种语法，支持多层嵌套。只需返回内容即可。请严格遵守以下规则：
 
 【重要】在任何情况下都必须遵守以下输出格式：
-1. 回复内容应该是用户容易理解的自然语言
-2. 不要提及思维导图的数据结构、字段格式等技术细节
-3. 不要说明你做了哪些技术层面的修复或改动
-4. 只描述对用户有意义的内容变化和功能改进
-5. 在返回思维导图Markdown数据前，必须添加友好的提示语告诉用户正在生成或更新思维导图
-6. 如果用户要求在原有结构的基础上更新思维导图，你只需给出需要更改的节点，不需要从根节点开始
-7. 必须使用<template></template>标签包裹Markdown数据，格式模仿以下样例：
+1. 回复内容用自然语言，让用户易理解；
+2. 不提及思维导图技术细节（如数据结构、字段格式等）；
+3. 不说明技术层面的修复 / 改动，只描述对用户有意义的内容变化、功能拓展；
+4. 生成或更新思维导图前，必须添加友好提示语，告知用户正在生成或更新；
+5. 全量更新（从头生成整个思维导图）：以单个#开头，从不同细分方向（如主题的历史发展、分类变体、跨领域关联、创意延伸等）生成内容，避免重复固定分支；
+例如同 “游戏” 主题，可侧重 “游戏设计原理”“游戏产业生态”“游戏文化影响” 等不同核心方向；
+6. 增量更新（在现有基础上修改）：以##/###或列表项-开头，聚焦单个节点的多维度拓展（如给 “游戏类型” 节点新增 “小众冷门类型”“未来概念型”，或给 “学习目标” 节点补充 “跨学科融合目标”“兴趣驱动型目标” 等）；
+若用户要求修改多个节点，需提示：“目前暂不支持同时修改多个节点，我会优先为您拓展第一个节点（如 “xxx” 节点），后续可再对其他节点单独更新～”，并仅生成第一个节点的拓展内容；
+7. 必须用<template></template>标签包裹 Markdown 数据，格式示例：
 <template>
 # 主题
 ## 分支1
@@ -267,12 +275,7 @@ export class AiChatMessageController extends BaseController {
 - 子分支
 </template>
 
-严禁使用任何其他格式，包括但不限于：
-- 严禁使用---作为分隔线
-- 严禁使用**作为强调格式
-- 严禁使用\`\`\`作为代码块
-- 严禁在标题前添加数字编号如### **1.**
-- 严禁在标题前添加任何特殊符号如>、-等
+严禁使用其他格式（包括但不限于：用---作分隔线、用**强调、用\`\`\`作代码块、标题前加数字 / 特殊符号如>、-等）。
 
 错误的输出格式（禁止使用）示例：
 \`\`\`markdown
@@ -282,32 +285,26 @@ export class AiChatMessageController extends BaseController {
 或者：
  --- ### **1. 游戏的历史** - **起源**：从古代棋类（如围棋、象棋）到现代电子游戏，游戏是人类社交与娱乐的重要形式。 - **电子游戏发展**： - 1972年《 pong 》（Pong）标志着商业电子游戏的开端。 ---
 
- 【重要】更新类型判断规则（严格遵守）：
-1. 全量更新（从头开始生成整个思维导图）：
-   - 只能以单个#开头，表示重新生成整个思维导图
-   - 不能在增量更新请求中使用单个#开头
-2. 增量更新（在现有思维导图基础上修改）：
-   - 必须以##或更多层级（###、####等）或列表项（-）开头
-   - 不能以单个#开头
-   - 增量更新时，必须以要更新的节点作为根节点
-3. 目前只支持单个节点增量更新，如果用户要求修改多个节点需要提示不支持更新多个节点，并提示生成的思维导图将只包含第一个要修改的一个节点，其他节点将丢失
-   - 比如用户要求"修改节点1和节点2"，则提示不支持修改多个节点，并返回节点1的思维导图
-   - 注意！！必须要提示用户不支持更新多个节点以及生成的思维导图将只包含第一个要修改的一个节点，不然用户会不了解为什么只更新了第一个节点
+生成同主题思维导图时，会随机选择不同的核心视角 / 细分领域进行拓展，例如：
+
+主题 “旅行”：可侧重 “旅行准备清单（物资 / 攻略）”“旅行文化体验（各地风俗）”“旅行历史演变（不同年代旅行方式）”“旅行创意玩法（小众路线 / 主题旅行）” 等不同核心；
+主题 “阅读”：可从 “阅读方法体系”“阅读载体演变”“阅读社交生态”“经典作品分类赏析” 等维度切入；
+通过这种 “随机核心视角 + 多维度细分” 的方式，确保同主题多次生成的思维导图内容差异显著、更具多样性。
+
+全量更新输出样例（主题 “游戏”，侧重 “游戏文化影响” 维度）：
+" 好的，我将从「游戏文化影响」的角度为您生成思维导图～以下是结构化内容：\n\n<template>\n# 游戏的文化影响 \n## 社会互动层面 \n### 玩家社群 \n- 全球跨地域联机社群 \n- 垂直领域兴趣社群（如解谜游戏、沙盒建造）\n### 社交模式改变 \n- 线上组队替代线下聚会 \n- 游戏内社交关系向现实延伸 \n## 文化创作层面 \n### 衍生内容生态 \n- 游戏改编影视（如《生化危机》系列）\n- 玩家自制同人作品（漫画、音乐、剧情）\n### 艺术表达突破 \n- 独立游戏的实验性叙事 \n- 游戏作为 “互动艺术” 的策展（如博物馆游戏展）\n## 产业联动层面 \n### 跨产业合作 \n- 游戏与文旅结合（主题乐园、实景解谜）\n- 游戏与教育融合（严肃游戏、技能训练）\n### 经济影响分支 \n- 电竞产业的商业体系 \n- 游戏周边的消费链（手办、服饰）\n</template>\n\n 思维导图从社会互动、文化创作、产业联动三个维度，展现游戏对不同领域的文化影响～您可以基于这些分支，补充具体案例或拓展其他维度～"
+
+增量更新输出样例（在现有 “游戏类型” 节点上，新增 “小众创意类型”）：
+" 好的，我将为「游戏类型」节点新增 “小众创意类型” 的拓展～优化后内容如下：\n\n<template>\n## 游戏类型 \n### 小众创意类型 \n- 步行模拟类（侧重叙事与氛围体验）\n - 代表作品：《伊迪芬奇的记忆》\n - 核心特点：弱化玩法，强化故事沉浸 \n- 实验性互动类 \n - 代表作品：《山》（仅观察山体变化）\n - 核心特点：打破传统 “目标 - 反馈” 逻辑 \n- 哲学思辨类 \n - 代表作品：《史丹利的寓言》\n - 核心特点：通过选择引发对自由意志的思考 \n</template>\n\n 思维导图已为 “游戏类型” 新增小众创意类的细分，涵盖步行模拟、实验互动、哲学思辨等方向～这些类型更强调艺术表达与思想传递，能丰富对游戏多样性的认知～"
+若用户请求与思维导图无关，需引导：“您好～我是思维导图助手，专注于帮您创建 / 优化思维导图～如果需要生成思维导图，可以告诉我主题或现有内容，我会从多样维度为您拓展～”
 
 返回内容结构：
 提示语 + <template>思维导图Markdown数据</template> + 总结
 
-全量更新输出样例：
-"好的，我正在为您生成关于"游戏"的思维导图。以下是结构化的思维导图内容：\n\n<template>\n# 游戏\n## 游戏类型\n### 动作游戏\n### 角色扮演游戏（RPG）\n### 策略游戏\n### 射击游戏\n### 冒险解谜\n## 游戏平台\n### PC端\n### 主机（PlayStation/Xbox）\n### 移动端\n### 云游戏\n## 游戏文化\n### 电子竞技\n### 游戏直播\n### 社区与玩家社群\n### 衍生周边（动漫/手办）\n</template>\n\n思维导图已创建完成，包含游戏类型、平台和文化三个核心分支，并细化了常见的子分类。您可以通过添加具体游戏案例、技术细节或文化现象等内容进一步扩展。"
-增量更新输出样例：
-"好的，我将针对「周目标设定」模块进行优化升级，增强目标制定的科学性和可执行性：\n\n\n<template>\n## 周目标设定\n### 目标制定框架\n#### SMART原则应用\n- Specific（具体性）\n- Measurable（可衡量）\n- Achievable（可实现）\n- Relevant（相关性）\n- Time-bound（时限性）\n#### 目标分类体系\n- 工作目标（建议占比40-50%）\n- 学习目标（建议占比20-30%）\n- 健康目标（建议占比15-20%）\n- 个人发展（建议占比5-10%）\n### 目标拆解工具\n#### 时间块分配法\n- 按优先级划分时间占比\n- 设置关键里程碑节点\n#### 优先级矩阵\n- 紧急重要 quadrant\n- 重要不紧急 quadrant\n- 紧急不重要 quadrant\n- 不紧急不重要 quadrant\n### 目标校准机制\n#### 基准参考系\n- 上周完成率对比\n- 个人能力成长曲线\n- 环境变化因素评估\n#### 风险预案\n- 时间缓冲区设置（建议20%冗余）\n- 替代方案准备\n- 资源保障清单\n</template>\n\n思维导图已优化目标设定模块，新增SMART目标制定框架、时间分配比例建议和风险预案机制。通过引入优先级矩阵和目标拆解工具，帮助更科学地分配时间和资源。建议在使用时结合PDCA循环，在周复盘环节持续优化目标设定策略。"
-增量更新多个节点输出样例：
-由于目前只支持单个节点的增量更新，我将优先处理「游戏类型」的详细扩展。以下是更新后的内容：+ <template>思维导图Markdown数据</template> + 思维导图已更新，对游戏类型进行了全面细化，新增了各类型的子分类、核心特点、代表作品和游戏机制。内容涵盖了从动作到休闲的广泛谱系，突出了玩法多样性和用户体验差异。建议结合具体平台或文化背景，进一步补充案例分析和趋势洞察。
-
 当前思维导图数据：
 ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图数据"}
 
-请严格按照用户请求创建或修改思维导图，如果用户请求与思维导图无关，请引导用户回到思维导图创建任务。`,
+请严格按照用户请求创建或修改思维导图，若用户请求与思维导图无关，需引导：“您好～我是思维导图助手，专注于帮您创建 / 优化思维导图～如果需要生成思维导图，可以告诉我主题或现有内容，我会从多样维度为您拓展～”`,
             };
 
             // 限制上下文数量
@@ -448,6 +445,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                                 } catch (e) {
                                     this.logger.error(
                                         `[MindMapExtension] 扣除积分失败：${e.message}`,
+                                        JSON.stringify(e, null, 2),
                                     );
                                 }
                             });
@@ -455,7 +453,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                     } catch (error) {
                         this.logger.error(
                             `[MindMapExtension] 扣除用户积分失败: ${error.message}`,
-                            error.stack,
+                            JSON.stringify(error, null, 2),
                         );
                         // 这里不抛出异常，因为聊天已经完成，不应影响用户体验
                         // 但可以记录错误日志，方便后续人工处理
@@ -634,22 +632,111 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
             // 通过SSE流发送错误信息，而不是抛出异常（只有在客户端未断开时才发送）
             try {
                 if (!isClientDisconnected) {
+                    // 根据错误类型确定发送给用户的消息
+                    let userFriendlyMessage =
+                        "An unexpected error occurred. Please try again later.";
+                    let errorCode = error.code || "INTERNAL_ERROR";
+
+                    // 检查错误消息内容以确定错误类型
+                    if (error.message) {
+                        const errorMsg = error.message.toLowerCase();
+
+                        // 账户欠费或访问被拒绝（包括阿里云百炼平台的欠费情况）
+                        if (
+                            errorMsg.includes("access denied") ||
+                            errorMsg.includes("unauthorized") ||
+                            errorMsg.includes("forbidden") ||
+                            (errorMsg.includes("good standing") && errorMsg.includes("payment")) ||
+                            errorMsg.includes("arrearage")
+                        ) {
+                            userFriendlyMessage =
+                                "AI service is currently unavailable due to account issues. Please contact the administrator.";
+                            errorCode = "ACCOUNT_ACCESS_DENIED";
+                        }
+                        // 模型相关错误
+                        else if (
+                            errorMsg.includes("model") &&
+                            (errorMsg.includes("not found") ||
+                                errorMsg.includes("invalid") ||
+                                errorMsg.includes("unsupported"))
+                        ) {
+                            userFriendlyMessage =
+                                "The AI model is currently unavailable. Please contact administrator or try again later.";
+                            errorCode = "MODEL_UNAVAILABLE";
+                        }
+                        // 配额耗尽
+                        else if (
+                            errorMsg.includes("quota") ||
+                            errorMsg.includes("rate limit") ||
+                            errorMsg.includes("too many requests")
+                        ) {
+                            userFriendlyMessage =
+                                "Service quota exceeded. Please try again later or upgrade your plan.";
+                            errorCode = "QUOTA_EXCEEDED";
+                        }
+                        // 内容审核被拒绝
+                        else if (
+                            errorMsg.includes("content policy") ||
+                            errorMsg.includes("content filter") ||
+                            errorMsg.includes("blocked")
+                        ) {
+                            userFriendlyMessage =
+                                "Your request was blocked by content policy. Please modify your query and try again.";
+                            errorCode = "CONTENT_POLICY_VIOLATION";
+                        }
+                        // 上下文长度超限
+                        else if (
+                            errorMsg.includes("context length") ||
+                            errorMsg.includes("maximum context")
+                        ) {
+                            userFriendlyMessage =
+                                "The conversation is too long. Please start a new conversation or reduce the content length.";
+                            errorCode = "CONTEXT_LENGTH_EXCEEDED";
+                        }
+                    }
+
                     res.write(
                         `data: ${JSON.stringify({
                             type: "error",
                             data: {
-                                message: error.message,
-                                code: error.code || "INTERNAL_ERROR",
+                                message: userFriendlyMessage,
+                                code: errorCode,
+                                // 只有在开发环境才返回原始错误代码，避免泄露敏感信息
+                                ...(process.env.NODE_ENV === "development" && {
+                                    debugCode: error.code,
+                                }),
                             },
                         })}\n\n`,
                     );
                     res.write("data: [DONE]\n\n");
+                } else {
+                    // 客户端已断开连接，记录详细错误信息供调试
+                    this.logger.warn(
+                        `[MindMapExtension] 客户端已断开连接，无法发送错误信息: ${error.message}`,
+                    );
+                    this.logger.warn(`[MindMapExtension] 错误详细信息:`, {
+                        userId: user.id,
+                        conversationId,
+                        aiMessageId,
+                        errorMessage: error.message,
+                        errorStack: error.stack,
+                        url: error?.config?.url || "Unknown",
+                        status: error?.response?.status || "Unknown",
+                    });
                 }
                 res.end();
             } catch (writeError) {
-                this.logger.error("[MindMapExtension] 发送错误消息失败:", writeError);
+                this.logger.error(
+                    "[MindMapExtension] 发送错误消息失败:",
+                    JSON.stringify(writeError, null, 2),
+                );
                 // 如果无法发送SSE错误，再抛出异常
-                throw HttpErrorFactory.badRequest(error.message);
+                // 使用通用的用户友好错误消息
+                const userFriendlyError = HttpErrorFactory.badRequest(
+                    "An unexpected error occurred. Please try again later.",
+                );
+                userFriendlyError.cause = error; // 保留原始错误用于日志记录
+                throw userFriendlyError;
             }
         }
     }
@@ -664,11 +751,11 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
             if (!content) {
                 return "new Chat";
             }
-
-            const provider = await this.aiModelService.getProvider(bindModelId, [
-                "apiKey",
-                "baseUrl",
-            ]);
+            const providerSecret = await this.aiModelService.getProviderConfig(bindModelId);
+            const provider = await this.aiModelService.getProviderAdapter(bindModelId, {
+                apiKey: getProviderSecret("apiKey", providerSecret),
+                baseURL: getProviderSecret("baseUrl", providerSecret),
+            });
             const client = new TextGenerator(provider);
 
             const response = await client.chat.create({
@@ -698,7 +785,10 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
 
             return "";
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 生成对话标题失败: ${error.message}`, error.stack);
+            this.logger.error(
+                `[MindMapExtension] 生成对话标题失败: ${error.message}`,
+                JSON.stringify(error, null, 2),
+            );
             return content ? content.slice(0, 20) : "new Chat";
         }
     }

@@ -1,5 +1,5 @@
 import { ExtensionWebController } from "@buildingai/core/decorators";
-import { type UserPlayground } from "@buildingai/db/interfaces/context.interface";
+import { type UserPlayground } from "@buildingai/db";
 import { Playground } from "@buildingai/decorators/playground.decorator";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Body, Get, Param, Patch } from "@nestjs/common";

@@ -1,5 +1,5 @@
-import { ExtensionEntity } from "@buildingai/core/decorators/extension-entity.decorator";
-import { AiModel } from "@buildingai/db/entities/ai-model.entity";
+import { ExtensionEntity } from "@buildingai/core/decorators";
+import { AiModel } from "@buildingai/db/entities";
 import {
     Column,
     CreateDateColumn,

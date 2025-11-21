@@ -1,11 +1,9 @@
-import { BaseSeeder } from "@buildingai/db/seeds/seeders/base.seeder";
+import { BaseSeeder } from "@buildingai/db";
 
 import { ConfigSeeder } from "./seeders/config.seeder";
 import { ExampleSeeder } from "./seeders/example.seeder";
 import { HomeSeeder } from "./seeders/home.seeder";
 import { MindMapInitialSeeder } from "./seeders/initial.seeder";
-
-export default [MindMapInitialSeeder, HomeSeeder, ExampleSeeder, ConfigSeeder];
 
 /**
  * Extension seed entry

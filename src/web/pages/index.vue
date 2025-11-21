@@ -762,7 +762,7 @@ onUnmounted(() => {
                             <span class="truncate">{{ t("index.header.costDescription") }}</span>
                         </div>
                         <div
-                            class="absolute top-full right-0 z-100 mt-1 hidden w-56 rounded-2xl bg-(--secondary-foreground) p-3 text-sm text-(--background) shadow-lg group-hover:block"
+                            class="absolute top-full right-0 z-100 hidden w-56 rounded-2xl bg-(--secondary-foreground) p-3 text-sm text-(--background) shadow-lg group-hover:block"
                         >
                             <div class="wrap-break-word whitespace-pre-wrap">
                                 {{ costDescriptionText }}

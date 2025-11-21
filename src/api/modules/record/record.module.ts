@@ -1,5 +1,5 @@
 import { TypeOrmModule } from "@buildingai/db/@nestjs/typeorm";
-import { PublicUserService } from "@buildingai/extension-sdk/services/user.service";
+import { PublicUserService } from "@buildingai/extension-sdk";
 import { Module } from "@nestjs/common";
 
 import { MindMapRecord } from "../../db/entities/mind-map-record.entity";

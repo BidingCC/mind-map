@@ -16,11 +16,13 @@ const props = withDefaults(
         verticalGap?: number;
         triggerClass?: string | Record<string, boolean> | Array<string>;
         triggerLabel?: string;
+        hideDelay?: number;
     }>(),
     {
         teleportTarget: null,
         horizontalPadding: 8,
         verticalGap: 8,
+        hideDelay: 300,
         triggerClass: () => [
             "group",
             "flex",
@@ -39,6 +41,9 @@ const tooltipVisible = shallowRef(false);
 const tooltipStyle = reactive<{ left: string; top: string }>({ left: "0px", top: "0px" });
 const slots = useSlots();
 const hasDefaultTriggerSlot = computed(() => Boolean(slots.default));
+
+// 添加定时器引用
+let hideTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
  * 计算并更新弹窗样式，使其沿着容器边界自动调整。
@@ -76,15 +81,27 @@ const updateTooltipPosition = () => {
  * 鼠标移入触发器时展示提示，并在下一帧计算位置。
  */
 const handleMouseEnter = () => {
+    // 清除隐藏定时器
+    if (hideTimer) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+    }
     tooltipVisible.value = true;
     nextTick(updateTooltipPosition);
 };
 
 /**
- * 鼠标移出触发器或提示层时隐藏提示。
+ * 鼠标移出触发器或提示层时延迟隐藏提示。
  */
 const handleMouseLeave = () => {
-    tooltipVisible.value = false;
+    // 设置隐藏定时器
+    if (hideTimer) {
+        clearTimeout(hideTimer);
+    }
+    hideTimer = setTimeout(() => {
+        tooltipVisible.value = false;
+        hideTimer = null;
+    }, props.hideDelay);
 };
 
 useEventListener(window, "resize", () => {
@@ -107,6 +124,13 @@ watch(
         }
     },
 );
+
+// 组件卸载时清除定时器
+onUnmounted(() => {
+    if (hideTimer) {
+        clearTimeout(hideTimer);
+    }
+});
 
 defineExpose({ updateTooltipPosition });
 </script>
@@ -166,7 +190,7 @@ defineExpose({ updateTooltipPosition });
     <div
         v-else-if="tooltipVisible"
         ref="tooltipRef"
-        class="absolute z-100 w-76 rounded-xl bg-(--secondary-foreground) p-2 text-sm text-(--background) opacity-80 shadow-lg"
+        class="absolute z-100 w-76 rounded-xl bg-(--secondary-foreground) p-2 text-sm text-(--background) opacity-95 shadow-lg"
         :style="tooltipStyle"
         @mouseenter="handleMouseEnter"
         @mouseleave="handleMouseLeave"

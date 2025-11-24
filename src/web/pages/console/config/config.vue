@@ -153,7 +153,9 @@ onMounted(() => {
         <UForm :state="formData" class="space-y-6" @submit="submitForm">
             <div class="space-y-4">
                 <div class="flex items-center gap-2">
-                    <h3 class="text-lg font-semibold">{{ t("console.config.title") }}</h3>
+                    <h3 class="text-lg font-semibold whitespace-nowrap">
+                        {{ t("console.config.title") }}
+                    </h3>
                     <AdaptiveTooltip
                         :teleport-target="mindMapConfigContainerRef"
                         :trigger-label="t('console.config.description')"

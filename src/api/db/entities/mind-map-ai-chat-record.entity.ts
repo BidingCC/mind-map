@@ -8,6 +8,7 @@ import {
     ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
+    type Relation,
     UpdateDateColumn,
 } from "@buildingai/db/typeorm";
 
@@ -168,7 +169,7 @@ export class MindMapAiChatRecord {
         onDelete: "CASCADE",
     })
     @JoinColumn({ name: "user_id" })
-    user: User;
+    user: Relation<User>;
 
     /**
      * 关联的思维导图记录
@@ -177,7 +178,7 @@ export class MindMapAiChatRecord {
         onDelete: "SET NULL",
     })
     @JoinColumn({ name: "mind_map_id" })
-    mindMap: MindMapRecord;
+    mindMap: Relation<MindMapRecord>;
 
     /**
      * 对话中的消息列表
@@ -185,5 +186,5 @@ export class MindMapAiChatRecord {
     @OneToMany("MindMapAiChatMessage", "conversation", {
         cascade: true,
     })
-    messages: Awaited<MindMapAiChatMessage[]>;
+    messages: Relation<MindMapAiChatMessage[]>;
 }

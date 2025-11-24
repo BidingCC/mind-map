@@ -7,6 +7,7 @@ import {
     JoinColumn,
     ManyToOne,
     PrimaryGeneratedColumn,
+    type Relation,
     UpdateDateColumn,
 } from "@buildingai/db/typeorm";
 
@@ -187,7 +188,7 @@ export class MindMapAiChatMessage {
         onDelete: "CASCADE",
     })
     @JoinColumn({ name: "conversation_id" })
-    conversation: Awaited<MindMapAiChatRecord>;
+    conversation: Relation<MindMapAiChatRecord>;
 
     /**
      * 使用的AI模型
@@ -196,5 +197,5 @@ export class MindMapAiChatMessage {
         onDelete: "CASCADE",
     })
     @JoinColumn({ name: "model_id" })
-    model: Awaited<AiModel>;
+    model: Relation<AiModel>;
 }

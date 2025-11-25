@@ -3,10 +3,16 @@ withDefaults(
     defineProps<{
         isBatch?: boolean;
         count?: number;
+        message?: string;
+        batchMessage?: string;
+        warning?: string;
     }>(),
     {
         isBatch: false,
         count: 0,
+        message: "",
+        batchMessage: "",
+        warning: "",
     },
 );
 
@@ -23,17 +29,21 @@ const { t } = useI18n();
         :ui="{ content: 'max-w-xl' }"
         @close="emits('close', false)"
     >
-        <p class="text-muted-foreground mb-6">
-            {{
-                !isBatch
-                    ? t("console.records.confirm_delete.single_message")
-                    : t("console.records.confirm_delete.batch_message", {
-                          count: count,
-                      })
-            }}
-            {{ t("console.records.confirm_delete.warning") }}
-        </p>
-        <div class="flex justify-end space-x-4">
+        <div class="space-y-4">
+            <p class="text-muted-foreground">
+                {{
+                    !isBatch
+                        ? message || t("console.records.confirm_delete.single_message")
+                        : batchMessage ||
+                          t("console.records.confirm_delete.batch_message", {
+                              count: count,
+                          })
+                }}
+                {{ warning || t("console.records.confirm_delete.warning") }}
+            </p>
+        </div>
+
+        <div class="flex justify-end space-x-4 pt-4">
             <button
                 @click="emits('close', false)"
                 class="bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-lg px-4 py-2 transition-colors"

@@ -47,7 +47,7 @@ export class HomeService extends BaseService<MindMapHome> {
             this.logger.debug("[MindMapExtension] 获取首页配置成功");
             return config;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取配置失败", error);
+            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
             throw HttpErrorFactory.internal("Failed to get config.");
         }
     }
@@ -122,7 +122,7 @@ export class HomeService extends BaseService<MindMapHome> {
             this.logger.debug("[MindMapExtension] 首页配置保存成功");
             return result;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 保存配置失败", error);
+            this.logger.error(`[MindMapExtension] 保存配置失败: ${error}`);
             throw HttpErrorFactory.internal("Failed to save config.");
         }
     }
@@ -160,7 +160,7 @@ export class HomeService extends BaseService<MindMapHome> {
                 enabledDescription: config.enabledDescription,
             };
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取配置失败", error);
+            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
             throw HttpErrorFactory.internal("Failed to get config.");
         }
     }

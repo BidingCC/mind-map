@@ -58,8 +58,7 @@ const isBatchDelete = shallowRef(false);
 // 列表查询参数
 const searchForm = reactive({
     description: undefined,
-    userName: undefined,
-    userId: undefined,
+    userIdentifier: undefined,
     startDate: undefined as string | undefined,
     endDate: undefined as string | undefined,
 });
@@ -130,9 +129,9 @@ const columns: TableColumn<MindMapRecord>[] = [
         cell: ({ row }) => {
             return h("div", { class: "flex items-center gap-2" }, [
                 // 用户头像
-                row.original.userAvatar
+                row.original.avatar
                     ? h("img", {
-                          src: row.original.userAvatar,
+                          src: row.original.avatar,
                           alt: "用户头像",
                           class: "h-8 w-8 rounded-full object-cover flex-shrink-0",
                       })
@@ -149,7 +148,7 @@ const columns: TableColumn<MindMapRecord>[] = [
                           ],
                       ),
                 // 用户名
-                h("span", { class: "text-sm font-medium" }, row.original.userName || "-"),
+                h("span", { class: "text-sm font-medium" }, row.original.username || "-"),
             ]);
         },
     },
@@ -703,7 +702,7 @@ onUnmounted(() => {
         <div class="flex flex-col gap-4 md:flex-row">
             <UInput
                 class="min-w-[250px]"
-                v-model="searchForm.userName"
+                v-model="searchForm.userIdentifier"
                 :placeholder="t('console.placeholders.id')"
                 icon="i-heroicons-user"
                 @keyup.enter="handleSearch"

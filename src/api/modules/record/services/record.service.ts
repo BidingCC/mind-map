@@ -1,9 +1,9 @@
 import { BaseService } from "@buildingai/base";
 import type { UserPlayground } from "@buildingai/db";
 import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
-import { In, Repository } from "@buildingai/db/typeorm";
+import { User } from "@buildingai/db/entities";
+import { Brackets, In, Repository } from "@buildingai/db/typeorm";
 import { HttpErrorFactory } from "@buildingai/errors";
-import { PublicUserService } from "@buildingai/extension-sdk";
 import { Injectable } from "@nestjs/common";
 
 import { MindMapRecord } from "../../../db/entities/mind-map-record.entity";
@@ -19,7 +19,6 @@ export class RecordService extends BaseService<MindMapRecord> {
     constructor(
         @InjectRepository(MindMapRecord)
         private readonly MindMapRecordRepository: Repository<MindMapRecord>,
-        private readonly userService: PublicUserService,
     ) {
         super(MindMapRecordRepository);
     }
@@ -48,7 +47,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             await this.MindMapRecordRepository.delete(id);
             this.logger.debug("[MindMapExtension] 思维导图记录删除成功", { id });
         } catch (error) {
-            this.logger.error("[MindMapExtension] 删除思维导图记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 删除思维导图记录时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to delete mind map record.");
         }
     }
@@ -75,7 +74,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             await this.MindMapRecordRepository.delete(ids);
             this.logger.debug("[MindMapExtension] 批量删除思维导图记录成功", { count: ids.length });
         } catch (error) {
-            this.logger.error("[MindMapExtension] 批量删除思维导图记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 批量删除思维导图记录时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to delete mind map records.");
         }
     }
@@ -90,30 +89,31 @@ export class RecordService extends BaseService<MindMapRecord> {
             const {
                 page = 1,
                 pageSize = 10,
-                userName,
-                userId,
+                userIdentifier,
                 description,
                 startDate,
                 endDate,
             } = queryDto;
 
-            const queryBuilder = this.MindMapRecordRepository.createQueryBuilder("mindMapRecord");
+            const queryBuilder = this.MindMapRecordRepository.createQueryBuilder("mindMapRecord")
+                .leftJoin(User, "user", '"mindMapRecord"."user_id"::uuid = "user"."id"')
+                .addSelect(["user.nickname", "user.avatar"]);
 
             // 只在参数不为空时添加对应的where条件
-            if (userName) {
-                queryBuilder.andWhere("mindMapRecord.userName LIKE :userName", {
-                    userName: `%${userName}%`,
-                });
-            }
-
-            if (userId) {
-                queryBuilder.andWhere("mindMapRecord.userId LIKE :userId", {
-                    userId: `%${userId}%`,
-                });
+            if (userIdentifier) {
+                queryBuilder.andWhere(
+                    new Brackets((qb) => {
+                        qb.where("user.nickname ILIKE :userName", {
+                            userName: `%${userIdentifier}%`,
+                        }).orWhere("mindMapRecord.userId = :userId", {
+                            userId: userIdentifier,
+                        });
+                    }),
+                );
             }
 
             if (description) {
-                queryBuilder.andWhere("mindMapRecord.description LIKE :description", {
+                queryBuilder.andWhere("mindMapRecord.description ILIKE :description", {
                     description: `%${description}%`,
                 });
             }
@@ -139,13 +139,14 @@ export class RecordService extends BaseService<MindMapRecord> {
                 .skip((page - 1) * pageSize)
                 .take(pageSize);
 
-            const { entities } = await queryBuilder.getRawAndEntities();
+            const { raw, entities } = await queryBuilder.getRawAndEntities();
 
-            const data = entities.map((entity) => {
-                return {
-                    ...entity,
-                };
-            });
+            // 合并数据，将用户信息添加到每个记录中
+            const data = entities.map((entity, index) => ({
+                ...entity,
+                username: raw[index].user_nickname,
+                avatar: raw[index].user_avatar,
+            }));
 
             // 计算总页数
             const totalPages = Math.ceil(total / pageSize);
@@ -160,7 +161,7 @@ export class RecordService extends BaseService<MindMapRecord> {
                 totalPages: totalPages,
             };
         } catch (error) {
-            this.logger.error("[MindMapExtension] 搜索思维导图记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 搜索思维导图记录时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get mind map records.");
         }
     }
@@ -186,11 +187,6 @@ export class RecordService extends BaseService<MindMapRecord> {
             mindMapRecord.createdAt = new Date();
             mindMapRecord.updatedAt = new Date();
             mindMapRecord.conversationTimes = 0;
-
-            // 获取用户信息
-            const userInfo = await this.userService.findUserById(user.id);
-            mindMapRecord.userName = userInfo.nickname;
-            mindMapRecord.userAvatar = userInfo.avatar;
 
             // 根据type设置layout
             const typeToLayoutMap: Record<string, string> = {
@@ -261,7 +257,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 创建思维导图记录成功", { id: rs.id });
             return rs.id;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 创建思维导图记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 创建思维导图记录时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to create mind map record.");
         }
     }
@@ -325,7 +321,7 @@ export class RecordService extends BaseService<MindMapRecord> {
                 totalPages,
             };
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取思维导图记录列表时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取思维导图记录列表时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get mind map records.");
         }
     }
@@ -357,7 +353,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 用户删除思维导图记录成功", { id, userId });
             return (result.affected ?? 0) > 0;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 删除思维导图记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 删除思维导图记录时出错: ${error}`);
             throw HttpErrorFactory.internal("Delete mind map record failed");
         }
     }
@@ -391,7 +387,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 更新思维导图名称成功", { id, title });
             return result !== null;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 更新思维导图名称时出错:", error);
+            this.logger.error(`[MindMapExtension] 更新思维导图名称时出错: ${error}`);
             throw HttpErrorFactory.internal("Update mind map record failed");
         }
     }

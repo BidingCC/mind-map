@@ -32,4 +32,14 @@ export interface MindMapRecordPublicInterface {
      * AI聊天记录ID
      */
     aiChatRecordId?: string;
+
+    /**
+     * 用户名
+     */
+    username?: string;
+
+    /**
+     * 用户头像
+     */
+    avatar?: string;
 }

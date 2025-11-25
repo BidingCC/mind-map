@@ -48,7 +48,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
             this.logger.debug("[MindMapExtension] 获取插件配置成功");
             return config;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取思维导图插件配置时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取思维导图插件配置时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get mind map config.");
         }
     }
@@ -69,7 +69,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
             });
 
             if (!config) {
-                this.logger.warn("[MindMapExtension] 配置未找到", { id });
+                this.logger.warn(`[MindMapExtension] 配置未找到: ${id}`);
                 throw HttpErrorFactory.notFound("Config not found");
             }
 
@@ -81,10 +81,10 @@ export class ConfigService extends BaseService<MindMapConfig> {
             if (data.billingSetting !== undefined) config.billingSetting = data.billingSetting;
 
             const result = await this.mindMapConfigRepository.save(config);
-            this.logger.debug("[MindMapExtension] 配置保存成功", { id });
+            this.logger.debug(`[MindMapExtension] 配置保存成功: ${id}`);
             return result;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 保存配置失败", error);
+            this.logger.error(`[MindMapExtension] 保存配置失败: ${error}`);
             throw HttpErrorFactory.internal("Failed to save mind map config.");
         }
     }
@@ -116,7 +116,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
             this.logger.debug("[MindMapExtension] 获取用户配置成功");
             return new MindMapConfigUserDto(config);
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取思维导图插件配置时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取思维导图插件配置时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get config.");
         }
     }

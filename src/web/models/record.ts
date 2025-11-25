@@ -182,10 +182,6 @@ export interface MindMapRecord {
     id: string;
     /** 用户ID */
     userId: string;
-    /** 用户名称 */
-    userName: string;
-    /** 用户头像 */
-    userAvatar?: string;
     /** 思维导图描述 */
     description: string;
     /** 生成时间 */
@@ -200,6 +196,10 @@ export interface MindMapRecord {
     aiChatRecordId?: string;
     /** 更新时间 */
     updatedAt: string | Date;
+    /** 用户头像 */
+    avatar?: string;
+    /** 用户名 */
+    username?: string;
 }
 
 /**

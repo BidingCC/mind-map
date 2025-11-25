@@ -867,6 +867,7 @@ onUnmounted(() => {
                                             {
                                                 label: t('index.main.delete'),
                                                 icon: 'i-lucide-trash-2',
+                                                color: 'error',
                                                 onSelect: () => deleteMindMap(item),
                                             },
                                         ],

@@ -38,7 +38,7 @@ export class RecordController {
      * @returns 分页思维导图记录列表
      */
     @Get()
-    @BuildFileUrl(["**.userAvatar"])
+    @BuildFileUrl(["**.avatar"])
     async searchMindMapRecords(
         @Query() searchDto: SearchMindMapRecordDto,
     ): Promise<PaginationResult<MindMapRecord>> {

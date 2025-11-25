@@ -61,7 +61,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
             this.logger.debug("[MindMapExtension] 获取示例配置成功");
             return config;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取配置失败", error);
+            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
             throw HttpErrorFactory.internal("Failed to get config.");
         }
     }
@@ -121,7 +121,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
             this.logger.debug("[MindMapExtension] 示例配置保存成功");
             return result;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 保存配置失败", error);
+            this.logger.error(`[MindMapExtension] 保存配置失败: ${error}`);
             throw HttpErrorFactory.internal("Failed to save config.");
         }
     }
@@ -160,7 +160,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
                 enabledDialog: config.enabledDialog,
             };
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取配置失败", error);
+            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
             throw HttpErrorFactory.internal("Failed to get config.");
         }
     }

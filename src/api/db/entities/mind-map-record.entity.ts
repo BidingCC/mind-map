@@ -23,25 +23,6 @@ export class MindMapRecord {
     userId: string;
 
     /**
-     * 用户名称
-     */
-    @Column({
-        type: "varchar",
-        comment: "用户名称",
-    })
-    userName: string;
-
-    /**
-     * 用户头像
-     */
-    @Column({
-        type: "varchar",
-        comment: "用户头像",
-        nullable: true,
-    })
-    userAvatar: string;
-
-    /**
      * 生成时间
      */
     @CreateDateColumn({

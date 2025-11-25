@@ -43,7 +43,7 @@ export class CreateService extends BaseService<MindMapRecord> {
         try {
             return await this.configService.getConfig();
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取插件配置时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取插件配置时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get config.");
         }
     }
@@ -74,7 +74,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             const result = await this.updateById(saveMindMapDto.id, saveMindMapDto);
             return result !== null;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 保存思维导图记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 保存思维导图记录时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to save mind map record.");
         }
     }
@@ -110,7 +110,7 @@ export class CreateService extends BaseService<MindMapRecord> {
                 aiChatRecordId: mindMapRecord.aiChatRecordId,
             };
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取思维导图详情时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取思维导图详情时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get mind map record.");
         }
     }
@@ -145,7 +145,7 @@ export class CreateService extends BaseService<MindMapRecord> {
 
             return await this.updateById(id, { description: title });
         } catch (error) {
-            this.logger.error("[MindMapExtension] 更新思维导图名称时出错:", error);
+            this.logger.error(`[MindMapExtension] 更新思维导图名称时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to update mind map record.");
         }
     }
@@ -171,7 +171,7 @@ export class CreateService extends BaseService<MindMapRecord> {
 
             return await this.updateById(mindMapRecord.id, updates);
         } catch (error) {
-            this.logger.error("[MindMapExtension] 通过对话ID更新思维导图记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 通过对话ID更新思维导图记录时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to update mind map record.");
         }
     }
@@ -196,7 +196,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             const updatedPowerUsed = mindMapRecord.powerUsed + powerUsed;
             return await this.updateById(id, { powerUsed: updatedPowerUsed });
         } catch (error) {
-            this.logger.error("[MindMapExtension] 思维导图记录的积分消耗时出错:", error);
+            this.logger.error(`[MindMapExtension] 思维导图记录的积分消耗时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to update mind map record.");
         }
     }
@@ -213,7 +213,7 @@ export class CreateService extends BaseService<MindMapRecord> {
                 where: { id },
             });
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取对话记录时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取对话记录时出错: ${error}`);
             return null;
         }
     }
@@ -515,7 +515,7 @@ export class CreateService extends BaseService<MindMapRecord> {
                 totalPages,
             };
         } catch (error) {
-            this.logger.error("[MindMapExtension] 分页查询消息时出错:", error);
+            this.logger.error(`[MindMapExtension] 分页查询消息时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get messages.");
         }
     }
@@ -535,7 +535,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 获取对话消息成功", { conversationId });
             return result;
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取对话的消息列表时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取对话的消息列表时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get messages.");
         }
     }
@@ -594,7 +594,7 @@ export class CreateService extends BaseService<MindMapRecord> {
                 totalPages: result.totalPages,
             };
         } catch (error) {
-            this.logger.error("[MindMapExtension] 获取对话的消息列表时出错:", error);
+            this.logger.error(`[MindMapExtension] 获取对话的消息列表时出错: ${error}`);
             throw HttpErrorFactory.internal("Failed to get messages.");
         }
     }
@@ -708,7 +708,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             });
         } catch (error) {
             // 统计信息更新失败不应该影响主流程，仅记录日志
-            this.logger.error("[MindMapExtension] 更新对话统计信息失败", error);
+            this.logger.error(`[MindMapExtension] 更新对话统计信息失败: ${error}`);
         }
     }
 
@@ -765,7 +765,7 @@ export class CreateService extends BaseService<MindMapRecord> {
                 this.logger.debug("[MindMapExtension] 未发现未完成的消息");
             }
         } catch (error) {
-            this.logger.error("[MindMapExtension] 处理未完成的消息时出错:", error);
+            this.logger.error(`[MindMapExtension] 处理未完成的消息时出错: ${error}`);
         }
     }
 }

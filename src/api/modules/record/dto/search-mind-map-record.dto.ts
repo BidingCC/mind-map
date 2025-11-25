@@ -9,18 +9,11 @@ import { PaginationDto } from "./pagination.dto";
  */
 export class SearchMindMapRecordDto extends PaginationDto {
     /**
-     * 用户名
+     * 用户标识符（可以是用户ID或用户名）
      */
     @IsOptional()
     @IsString()
-    userName?: string;
-
-    /**
-     * 用户ID
-     */
-    @IsOptional()
-    @IsString()
-    userId?: string;
+    userIdentifier?: string;
 
     /**
      * 思维导图描述

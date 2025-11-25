@@ -6,7 +6,7 @@ import { DataSource } from "@buildingai/db/typeorm";
  *
  * 创建 MindMap 插件所需的数据库表
  */
-export class MindMapInitialSeeder extends BaseSeeder {
+export class InitialSeeder extends BaseSeeder {
     readonly name = "MindMapInitialSeeder";
     readonly priority = 100;
 
@@ -22,7 +22,7 @@ export class MindMapInitialSeeder extends BaseSeeder {
 
             // 创建 mind_map_record 表
             await queryRunner.query(
-                `CREATE TABLE IF NOT EXISTS "buildingai_mind_map"."mind_map_record" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" character varying NOT NULL, "user_name" character varying NOT NULL, "user_avatar" character varying, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "conversation_times" integer NOT NULL, "description" character varying NOT NULL, "mind_map_data" json, "power_used" integer NOT NULL, "ai_chat_record_id" uuid, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_44cb68101daa5c8d71756eac4d4" PRIMARY KEY ("id")); COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."user_id" IS '用户ID'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."user_name" IS '用户名称'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."user_avatar" IS '用户头像'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."created_at" IS '生成时间'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."conversation_times" IS '对话次数'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."description" IS '画板名称'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."mind_map_data" IS '思维导图数据'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."power_used" IS '消耗积分'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."ai_chat_record_id" IS '关联的AI对话记录ID'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."updated_at" IS '更新时间'`,
+                `CREATE TABLE IF NOT EXISTS "buildingai_mind_map"."mind_map_record" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "user_id" character varying NOT NULL, "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "conversation_times" integer NOT NULL, "description" character varying NOT NULL, "mind_map_data" json, "power_used" integer NOT NULL, "ai_chat_record_id" uuid, "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_44cb68101daa5c8d71756eac4d4" PRIMARY KEY ("id")); COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."user_id" IS '用户ID'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."created_at" IS '生成时间'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."conversation_times" IS '对话次数'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."description" IS '画板名称'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."mind_map_data" IS '思维导图数据'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."power_used" IS '消耗积分'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."ai_chat_record_id" IS '关联的AI对话记录ID'; COMMENT ON COLUMN "buildingai_mind_map"."mind_map_record"."updated_at" IS '更新时间'`,
             );
             await queryRunner.query(
                 `COMMENT ON TABLE "buildingai_mind_map"."mind_map_record" IS '思维导图生成记录'`,

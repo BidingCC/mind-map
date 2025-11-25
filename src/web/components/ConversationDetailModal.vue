@@ -142,7 +142,7 @@ function formatMessageContent(message: MessageLike): string {
                             t("console.records.userInfo")
                         }}</label>
                         <p class="text-secondary-foreground mt-1 text-sm">
-                            {{ mindMap?.userName || "-" }}
+                            {{ mindMap?.username || "-" }}
                         </p>
                     </div>
                     <div>

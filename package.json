@@ -23,10 +23,10 @@
     },
     "scripts": {
         "build:clean": "rimraf build .output build/build.tsbuildinfo",
-        "dev:web": "NUXT_BUILD_SSR=false NUXT_BUILD_ENV=development nuxt dev --no-clear --dotenv ../../.env",
-        "dev:api": "NODE_ENV=development tsup --watch src/api",
+        "dev:web": "cross-env NUXT_BUILD_SSR=false NUXT_BUILD_ENV=development nuxt dev --no-clear --dotenv ../../.env",
+        "dev:api": "cross-env NODE_ENV=development tsup --watch src/api",
         "dev": "pnpm run \"/^dev:.*/\"",
-        "build:api": "NODE_ENV=production tsup",
+        "build:api": "cross-env NODE_ENV=production tsup",
         "build:web": "cross-env NODE_OPTIONS=--max-old-space-size=4096 NUXT_BUILD_SSR=false NUXT_BUILD_ENV=production nuxt generate --dotenv ../../.env",
         "build:publish": "pnpm build:clean && pnpm run build:web && pnpm run build:api",
         "format": "prettier --write src",

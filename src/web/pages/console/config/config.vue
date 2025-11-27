@@ -3,8 +3,8 @@ import type { AiModel } from "@buildingai/service/webapi/ai-conversation";
 import { apiGetAiProviders } from "@buildingai/service/webapi/ai-conversation";
 
 import AdaptiveTooltip from "../../../components/AdaptiveTooltip.vue";
-import type { MindMapConfig } from "../../../models/record";
 import { apiGetMindMapConfig, apiSaveMindMapConfig } from "../../../services/console/config";
+import type { MindMapConfig } from "../../../services/types/record";
 
 const { t } = useI18n();
 const toast = useMessage();

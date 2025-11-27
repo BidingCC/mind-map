@@ -10,7 +10,7 @@ import type {
     MindMapHomeConfig,
     MindMapListResponse,
     MindMapRecord,
-} from "../../models/record";
+} from "../types/record";
 
 /**
  * 获取思维导图记录列表

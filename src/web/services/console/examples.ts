@@ -2,7 +2,7 @@
  * 思维导图实例配置服务
  * @description 提供后台思维导图实例配置相关的API调用服务
  */
-import type { MindMapExampleConfig } from "../../models/record";
+import type { MindMapExampleConfig } from "../types/record";
 
 /**
  * 获取思维导图示例配置

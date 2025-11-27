@@ -2,7 +2,7 @@
  * 思维导图管理服务
  * @description 提供后台思维导图管理相关的API调用服务
  */
-import type { MindMapListResponse, SearchMindMapRecordDto } from "../../models/record";
+import type { MindMapListResponse, SearchMindMapRecordDto } from "../types/record";
 
 /**
  * 获取思维导图记录详情（后台管理）

@@ -14,8 +14,6 @@ const ConversationDetailModal = defineAsyncComponent(
 );
 import type { AiMessage } from "@buildingai/service/models/message";
 
-import type { AiChatRecord } from "../../models/ai-record";
-import type { MindMapRecord } from "../../models/record";
 import {
     apiDeleteAiConversationConsole,
     apiDeleteAiConversationConsoles,
@@ -27,6 +25,8 @@ import {
     apiDeleteMindMapConsole,
     apiSearchMindMapRecordsConsole,
 } from "../../services/console/record";
+import type { AiChatRecord } from "../../services/types/ai-record";
+import type { MindMapRecord } from "../../services/types/record";
 const UCheckbox = resolveComponent("UCheckbox");
 const UButton = resolveComponent("UButton");
 const UIcon = resolveComponent("UIcon");

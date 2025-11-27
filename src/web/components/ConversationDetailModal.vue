@@ -2,8 +2,8 @@
 import type { AiMessage } from "@buildingai/service/models/message";
 import type { MessageContent } from "@buildingai/types";
 
-import type { AiChatRecord } from "../models/ai-record";
-import type { MindMapRecord } from "../models/record";
+import type { AiChatRecord } from "../services/types/ai-record";
+import type { MindMapRecord } from "../services/types/record";
 
 const emits = defineEmits<{
     close: [];

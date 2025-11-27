@@ -9,7 +9,7 @@ import { useColorMode } from "@vueuse/core";
 import { useDebounceFn } from "@vueuse/core";
 
 import { uuid } from "../../../../../packages/web/buildingai-ui/app/utils";
-import type { MindMapData, MindMapDataNode, MindMapRecord } from "../models/record";
+import type { MindMapData, MindMapDataNode, MindMapRecord } from "../services/types/record";
 import { apiChatStream, apiGetAiConversation } from "../services/web/ai-conversation";
 import {
     apiGetMindMapDetailUser,

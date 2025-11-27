@@ -2,7 +2,7 @@
  * 思维导图创建编辑服务
  * @description 思维导图创建编辑页面相关的API调用服务
  */
-import type { MindMapExampleConfig, MindMapRecord, SaveMindMapDto } from "../../models/record";
+import type { MindMapExampleConfig, MindMapRecord, SaveMindMapDto } from "../types/record";
 
 /**
  * 获取思维导图记录详情

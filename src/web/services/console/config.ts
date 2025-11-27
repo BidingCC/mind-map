@@ -3,7 +3,7 @@
  * @description 提供后台思维导图插件配置相关的API调用服务
  */
 
-import type { MindMapConfig } from "../../models/record";
+import type { MindMapConfig } from "../types/record";
 
 /**
  * 获取思维导图插件配置

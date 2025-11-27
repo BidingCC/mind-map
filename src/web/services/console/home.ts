@@ -3,7 +3,7 @@
  * @description 提供后台思维导图首页配置相关的API调用服务
  */
 
-import type { MindMapHomeConfig } from "../../models/record";
+import type { MindMapHomeConfig } from "../types/record";
 
 /**
  * 获取思维导图首页配置

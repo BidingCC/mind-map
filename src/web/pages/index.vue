@@ -15,7 +15,7 @@ import logicalStructureImg from "../assets/icons/right.png";
 import logicalStructureDarkImg from "../assets/icons/right-dark.png";
 import organizationStructureImg from "../assets/icons/under.png";
 import organizationStructureDarkImg from "../assets/icons/under-dark.png";
-import type { MindMapRecord } from "../models/record";
+import type { MindMapRecord } from "../services/types/record";
 import { apiDeleteAiConversation } from "../services/web/ai-conversation";
 import {
     apiCreateMindMap,

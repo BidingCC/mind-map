@@ -9,5 +9,8 @@
         "name": "BuildingAI Teams-dserha",
         "homepage": "https://github.com/dserha"
     },
-    "changelog": []
+    "changelog": [],
+    "engine": {
+        "buildingai": ">=25.1.0"
+    }
 }

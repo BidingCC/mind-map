@@ -735,7 +735,6 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                 const userFriendlyError = HttpErrorFactory.badRequest(
                     "An unexpected error occurred. Please try again later.",
                 );
-                userFriendlyError.cause = error; // 保留原始错误用于日志记录
                 throw userFriendlyError;
             }
         }

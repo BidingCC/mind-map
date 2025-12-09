@@ -45,7 +45,7 @@
         }
     },
     "config": {
-        "title": "收费配置",
+        "title": "计费配置",
         "description": "配置说明",
         "selectModel": "选择模型",
         "selectModelPlaceholder": "请选择模型",

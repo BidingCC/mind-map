@@ -117,7 +117,7 @@ const columns: TableColumn<MindMapRecord>[] = [
     },
     {
         accessorKey: "userId",
-        header: () => h("p", { class: "" }, `ID`),
+        header: () => h("p", { class: "whitespace-nowrap" }, `ID`),
         cell: ({ row }) => {
             const power = row.original.userId || 0;
             return h("span", { class: "text-sm" }, power.toString());
@@ -125,7 +125,7 @@ const columns: TableColumn<MindMapRecord>[] = [
     },
     {
         accessorKey: "userInfo",
-        header: () => h("p", { class: "" }, `${t("console.records.userInfo")}`),
+        header: () => h("p", { class: "whitespace-nowrap" }, `${t("console.records.userInfo")}`),
         cell: ({ row }) => {
             return h("div", { class: "flex items-center gap-2" }, [
                 // 用户头像
@@ -165,7 +165,7 @@ const columns: TableColumn<MindMapRecord>[] = [
                         ? "i-lucide-arrow-up-narrow-wide"
                         : "i-lucide-arrow-down-wide-narrow"
                     : "i-lucide-arrow-up-down",
-                class: "-mx-2.5",
+                class: "-mx-2.5 whitespace-nowrap",
                 onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
             });
         },
@@ -213,7 +213,7 @@ const columns: TableColumn<MindMapRecord>[] = [
     },
     {
         id: "actions",
-        header: () => h("p", { class: "" }, `${t("console.records.actions")}`),
+        header: () => h("p", { class: "whitespace-nowrap" }, `${t("console.records.actions")}`),
         size: 80,
         enableSorting: false,
         enableHiding: false,

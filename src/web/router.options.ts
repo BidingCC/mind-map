@@ -23,9 +23,10 @@ export const consoleMenu: PluginMenuItem[] = [
         name: "应用配置",
         path: "config",
         icon: "i-lucide-settings",
+        defaultOpen: true,
         children: [
             {
-                name: "收费配置",
+                name: "计费配置",
                 path: "config",
                 icon: "i-lucide-settings",
                 component: () => import("~/pages/console/config/config.vue"),

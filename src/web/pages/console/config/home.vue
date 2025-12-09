@@ -114,6 +114,10 @@ const loadHomeConfig = async () => {
     } catch (error) {
         console.error("加载首页配置失败:", error);
         toast.error(t("console.home.loadFailed"));
+        formData.value.name = "";
+        formData.value.publicLanguage = "";
+        formData.value.description = "";
+        formData.value.enabledDescription = true;
     } finally {
         loading.value = false;
     }
@@ -174,6 +178,9 @@ onMounted(async () => {
                             v-model="formData.name"
                             maxlength="15"
                             class="w-full"
+                            :disabled="loading || saveLoading"
+                            :loading="loading"
+                            trailing
                             :ui="{ base: 'p-3' }"
                         />
                     </UFormField>
@@ -194,6 +201,7 @@ onMounted(async () => {
                                         icon="i-heroicons-information-circle"
                                         variant="link"
                                         size="xs"
+                                        :disabled="loading || saveLoading"
                                         class="text-(--muted-foreground)"
                                         @click="openTip = !openTip"
                                     />
@@ -201,7 +209,12 @@ onMounted(async () => {
                             </div>
                         </template>
                         <div class="flex flex-col gap-2">
-                            <div class="flex gap-2">
+                            <div
+                                class="flex gap-2"
+                                :class="{
+                                    'pointer-events-none opacity-50': loading || saveLoading,
+                                }"
+                            >
                                 <UButton
                                     v-for="color in colors"
                                     :key="color"
@@ -242,6 +255,9 @@ onMounted(async () => {
 
                             <div
                                 class="min-h-10 rounded-md border border-(--border-accent) p-3 focus-within:border-(--color-primary) focus-within:ring-1 focus-within:ring-(--color-primary) dark:bg-[#171717]"
+                                :class="{
+                                    'pointer-events-none opacity-50': loading || saveLoading,
+                                }"
                             >
                                 <EditorContent :editor="editor || undefined" />
                             </div>
@@ -251,13 +267,21 @@ onMounted(async () => {
                     <UFormField>
                         <div class="mb-2 flex items-center justify-between">
                             <div>{{ t("console.home.description") }}</div>
-                            <div><USwitch v-model="formData.enabledDescription" /></div>
+                            <div>
+                                <USwitch
+                                    v-model="formData.enabledDescription"
+                                    :disabled="loading || saveLoading"
+                                />
+                            </div>
                         </div>
                         <UInput
                             v-if="formData.enabledDescription"
                             v-model="formData.description"
                             class="w-full"
                             maxlength="25"
+                            :disabled="loading || saveLoading"
+                            :loading="loading"
+                            trailing
                             :ui="{ base: 'p-3' }"
                         />
                     </UFormField>
@@ -271,6 +295,7 @@ onMounted(async () => {
                         size="lg"
                         color="primary"
                         :loading="saveLoading"
+                        :disabled="loading || saveLoading"
                         @click="saveHomeConfig"
                     >
                         {{ t("console.home.save") }}

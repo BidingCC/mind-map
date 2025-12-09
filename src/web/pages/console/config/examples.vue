@@ -59,6 +59,11 @@ const loadExamples = async () => {
     } catch (error) {
         console.error("加载示例配置失败:", error);
         toast.error(t("console.examples.loadFailed"));
+        formData.value.prologue = "";
+        formData.value.dialogText = "-";
+        trys.value = [];
+        tryValue.value = false;
+        dialogValue.value = false;
     } finally {
         loading.value = false;
     }
@@ -88,7 +93,7 @@ const batchSaveExamples = useDebounceFn(async () => {
     } finally {
         saveLoading.value = false;
     }
-}, 500);
+}, 300);
 
 // 添加新示例
 const addExample = () => {
@@ -135,7 +140,11 @@ onMounted(async () => {
                         <h3 class="text-lg font-semibold">{{ t("console.examples.title") }}</h3>
                         <div class="mb-5">
                             <div class="mb-1 text-sm">{{ t("console.examples.prologue") }}</div>
-                            <div>
+                            <div
+                                :class="{
+                                    'pointer-events-none opacity-50': loading || saveLoading,
+                                }"
+                            >
                                 <BdEditor v-model="formData.prologue" />
                             </div>
                         </div>
@@ -143,7 +152,13 @@ onMounted(async () => {
                         <div class="mb-5">
                             <div class="mb-1 flex items-center justify-between">
                                 <div class="text-sm">{{ t("console.examples.try") }}</div>
-                                <div><USwitch v-model="tryValue" /></div>
+                                <div>
+                                    <USwitch
+                                        :disabled="loading"
+                                        :loading="saveLoading"
+                                        v-model="tryValue"
+                                    />
+                                </div>
                             </div>
                             <template v-if="tryValue">
                                 <div class="mb-2 flex justify-end">
@@ -152,7 +167,7 @@ onMounted(async () => {
                                         color="primary"
                                         variant="ghost"
                                         size="xs"
-                                        :disabled="trys.length >= 5"
+                                        :disabled="trys.length >= 5 || loading || saveLoading"
                                         @click="addExample"
                                     >
                                         {{ t("console.examples.addExample") }}
@@ -164,11 +179,14 @@ onMounted(async () => {
                                     class="mt-2 mb-4 space-y-2 overflow-hidden"
                                     :animation="200"
                                     item-key="id"
+                                    :class="{
+                                        'pointer-events-none opacity-50': loading || saveLoading,
+                                    }"
                                     handle=".drag-handle"
                                 >
                                     <template #item="{ element, index }">
                                         <div
-                                            class="group rounded-lg border border-(--border) p-3 transition-colors hover:border-(--border-inverted)"
+                                            class="group rounded-lg border border-(--border) p-3 transition-colors hover:border-(--color-primary)"
                                         >
                                             <div class="flex items-center justify-between">
                                                 <div class="flex-1">
@@ -180,6 +198,9 @@ onMounted(async () => {
                                                             v-model="editingContent"
                                                             class="flex-1"
                                                             maxlength="35"
+                                                            :disabled="loading || saveLoading"
+                                                            :loading="loading"
+                                                            trailing
                                                             @keyup.enter="saveEditing(element)"
                                                             @keyup.esc="cancelEditing"
                                                             autofocus
@@ -189,6 +210,7 @@ onMounted(async () => {
                                                             color="primary"
                                                             variant="ghost"
                                                             size="xs"
+                                                            :disabled="loading || saveLoading"
                                                             @click="saveEditing(element)"
                                                         />
                                                         <UButton
@@ -196,6 +218,7 @@ onMounted(async () => {
                                                             color="error"
                                                             variant="ghost"
                                                             size="xs"
+                                                            :disabled="loading || saveLoading"
                                                             @click="cancelEditing"
                                                         />
                                                     </div>
@@ -214,6 +237,7 @@ onMounted(async () => {
                                                             color="neutral"
                                                             variant="ghost"
                                                             size="xs"
+                                                            :disabled="loading || saveLoading"
                                                             @click="startEditing(element)"
                                                             class="opacity-0 transition-opacity group-hover:opacity-100"
                                                         />
@@ -225,6 +249,7 @@ onMounted(async () => {
                                                         color="error"
                                                         variant="ghost"
                                                         size="xs"
+                                                        :disabled="loading || saveLoading"
                                                         @click="removeExample(index)"
                                                     />
                                                     <UButton
@@ -233,6 +258,7 @@ onMounted(async () => {
                                                         variant="ghost"
                                                         size="xs"
                                                         class="drag-handle cursor-move"
+                                                        :disabled="loading || saveLoading"
                                                     />
                                                 </div>
                                             </div>
@@ -247,13 +273,22 @@ onMounted(async () => {
                                 <div class="mb-1 text-sm">
                                     {{ t("console.examples.dialogText") }}
                                 </div>
-                                <div><USwitch v-model="dialogValue" /></div>
+                                <div>
+                                    <USwitch
+                                        :disabled="loading"
+                                        :loading="saveLoading"
+                                        v-model="dialogValue"
+                                    />
+                                </div>
                             </div>
                             <template v-if="dialogValue">
                                 <UInput
                                     id="ai-prompt"
                                     v-model="formData.dialogText"
                                     :maxlength="20"
+                                    :disabled="loading || saveLoading"
+                                    :loading="loading"
+                                    trailing
                                     :ui="{ base: 'p-3' }"
                                     class="w-full"
                                 />
@@ -294,7 +329,10 @@ onMounted(async () => {
                                 <div
                                     class="bg-muted prose prose-neutral dark:prose-invert max-w-none rounded-lg px-3 py-2 text-sm"
                                 >
-                                    <div v-html="formData.prologue"></div>
+                                    <div v-if="loading || saveLoading">
+                                        <UIcon name="i-lucide-loader-circle" class="animate-spin" />
+                                    </div>
+                                    <div v-else v-html="formData.prologue"></div>
                                 </div>
                             </div>
                         </div>
@@ -312,6 +350,9 @@ onMounted(async () => {
                             <div
                                 v-for="element in trys"
                                 :key="element.id"
+                                :class="{
+                                    'pointer-events-none opacity-50': loading || saveLoading,
+                                }"
                                 class="w-fit cursor-pointer rounded-lg border border-(--border) p-2 transition-colors hover:border-(--color-primary)"
                             >
                                 {{ element.content }}
@@ -351,6 +392,7 @@ onMounted(async () => {
                 size="lg"
                 color="primary"
                 :loading="saveLoading"
+                :disabled="loading"
                 @click="batchSaveExamples"
                 class="mb-4"
             >

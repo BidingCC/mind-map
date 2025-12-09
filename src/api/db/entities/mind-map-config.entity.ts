@@ -39,16 +39,6 @@ export class MindMapConfig {
     bindModelId: string;
 
     /**
-     * 绑定的密钥配置ID
-     */
-    // @Column({
-    //     type: "varchar",
-    //     length: 255,
-    //     comment: "绑定的密钥配置ID",
-    // })
-    // bindKeyConfigId: string;
-
-    /**
      * 计费类型  1、按字数 2、免费
      */
     @Column({

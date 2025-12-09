@@ -141,6 +141,10 @@ const pageSize = shallowRef(20);
 const total = shallowRef(0);
 const loading = shallowRef(false);
 const noMore = shallowRef(false);
+// 首页配置加载状态
+const homeConfigLoading = shallowRef(false);
+// 插件配置加载状态
+const pluginConfigLoading = shallowRef(false);
 // 首页配置
 const config = ref({
     name: "",
@@ -151,6 +155,7 @@ const config = ref({
 // 加载首页配置
 const loadConfig = async () => {
     try {
+        homeConfigLoading.value = true;
         const res = await apiGetMindMapHomeConfigUser();
         config.value.name = res.name || "";
         config.value.publicLanguage = res.publicLanguage || "";
@@ -159,6 +164,13 @@ const loadConfig = async () => {
             res.enabledDescription !== undefined ? res.enabledDescription : true;
     } catch (error) {
         console.error("加载AI配置失败:", error);
+        // 失败时设置合理的默认值
+        config.value.name = "-";
+        config.value.publicLanguage = "-";
+        config.value.description = "-";
+        config.value.enabledDescription = true;
+    } finally {
+        homeConfigLoading.value = false;
     }
 };
 
@@ -253,6 +265,10 @@ const fetchMindMapList = async (page: number = 1) => {
     } catch (error) {
         console.error("获取思维导图列表失败:", error);
         toast.error(t("index.toast.fetchListError"));
+        // 第一页加载失败时，显示空列表状态
+        if (page === 1) {
+            mindMapList.value = [];
+        }
     } finally {
         loading.value = false;
     }
@@ -436,6 +452,7 @@ const generatePreviewImage = async (item: MindMapRecord) => {
 // 获取插件配置
 const fetchPluginConfig = async () => {
     try {
+        pluginConfigLoading.value = true;
         const config = await apiGetMindMapConfigUser();
         pluginConfig.value = config;
         // 只有获取成功时才更新显示值
@@ -449,6 +466,8 @@ const fetchPluginConfig = async () => {
         };
         // 发生错误时显示"-"
         displayBillingSetting.value = "-";
+    } finally {
+        pluginConfigLoading.value = false;
     }
 };
 
@@ -703,11 +722,21 @@ const cancelEditingTitle = () => {
 };
 
 onMounted(async () => {
-    loadConfig();
-    // 初始化图片映射
-    initializeTypeImages();
-
-    await Promise.all([fetchMindMapList(), fetchPluginConfig()]);
+    // 并行加载配置和列表数据
+    await Promise.all([
+        loadConfig().catch((error) => {
+            console.error("加载首页配置失败:", error);
+            toast.error(t("index.toast.fetchConfigError"));
+        }),
+        fetchPluginConfig().catch((error) => {
+            console.error("加载插件配置失败:", error);
+            toast.error(t("index.toast.fetchConfigError"));
+        }),
+        fetchMindMapList().catch((error) => {
+            console.error("加载思维导图列表失败:", error);
+            toast.error(t("index.toast.fetchListError"));
+        }),
+    ]);
 });
 
 onUnmounted(() => {
@@ -739,33 +768,55 @@ onUnmounted(() => {
         <header class="relative h-50 shrink-0">
             <div class="absolute inset-0 flex items-center justify-between px-2">
                 <div
-                    class="mt-2 w-1/4 self-start overflow-hidden text-[18px] font-medium whitespace-nowrap text-gray-600 dark:text-gray-300"
+                    v-if="homeConfigLoading"
+                    class="flex h-full w-full items-center justify-center"
                 >
-                    {{ config.name }}
+                    <div class="flex flex-col items-center">
+                        <UIcon
+                            name="i-lucide-loader-circle"
+                            class="h-6 w-6 animate-spin text-(--color-primary)"
+                        />
+                    </div>
                 </div>
-                <div class="flex-1 px-2 text-center">
-                    <h1
-                        class="truncate text-3xl font-bold"
-                        v-dompurify-html="config.publicLanguage"
-                    ></h1>
-                    <p
-                        v-if="config.enabledDescription"
-                        class="mt-2 truncate text-sm font-medium text-gray-600 dark:text-gray-300"
+                <div v-else class="flex h-full w-full items-center justify-between">
+                    <div
+                        class="w-1/4 self-start overflow-hidden text-[18px] font-medium whitespace-nowrap text-gray-600 dark:text-gray-300"
                     >
-                        {{ config.description }}
-                    </p>
-                </div>
-                <div class="mt-2 w-1/4 self-start text-sm text-gray-600 dark:text-gray-300">
-                    <div class="group relative float-right p-3 pt-0">
-                        <div class="flex items-center">
-                            <UIcon name="i-lucide-info" class="mr-1 h-4 w-4" />
-                            <span class="truncate">{{ t("index.header.costDescription") }}</span>
-                        </div>
-                        <div
-                            class="absolute top-full right-0 z-100 hidden w-56 rounded-2xl bg-(--secondary-foreground) p-3 text-sm text-(--background) shadow-lg group-hover:block"
+                        {{ config.name }}
+                    </div>
+                    <div class="flex-1 px-2 text-center">
+                        <h1
+                            class="truncate text-3xl font-bold"
+                            v-dompurify-html="config.publicLanguage"
+                        ></h1>
+                        <p
+                            v-if="config.enabledDescription"
+                            class="mt-2 truncate text-sm font-medium text-gray-600 dark:text-gray-300"
                         >
-                            <div class="wrap-break-word whitespace-pre-wrap">
-                                {{ costDescriptionText }}
+                            {{ config.description }}
+                        </p>
+                    </div>
+                    <div class="mt-2 w-1/4 self-start text-sm text-gray-600 dark:text-gray-300">
+                        <div class="group relative float-right p-3 pt-0">
+                            <div class="flex items-center">
+                                <UIcon name="i-lucide-info" class="mr-1 h-4 w-4" />
+                                <span class="truncate">{{
+                                    t("index.header.costDescription")
+                                }}</span>
+                            </div>
+                            <div
+                                class="absolute top-full right-0 z-100 hidden w-56 rounded-2xl bg-(--secondary-foreground) p-3 text-sm text-(--background) shadow-lg group-hover:block"
+                            >
+                                <div class="wrap-break-word whitespace-pre-wrap">
+                                    <div v-if="pluginConfigLoading" class="flex items-center">
+                                        <UIcon
+                                            name="i-lucide-loader-circle"
+                                            class="mr-2 h-4 w-4 animate-spin"
+                                        />
+                                        {{ t("index.loading") }}
+                                    </div>
+                                    <div v-else>{{ costDescriptionText }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -777,7 +828,9 @@ onUnmounted(() => {
             class="bg-background mx-auto flex w-full max-w-6xl flex-1 flex-col gap-2 rounded-tl-xl rounded-tr-xl"
         >
             <div class="flex flex-col gap-2">
-                <div class="px-6 pt-4 font-bold">{{ t("index.main.createTitle") }}</div>
+                <div class="px-6 pt-4 font-bold whitespace-nowrap">
+                    {{ t("index.main.createTitle") }}
+                </div>
                 <div class="grid grid-cols-5 gap-4 px-6 py-4">
                     <div
                         v-for="(item, index) in mindMapTypes"
@@ -800,9 +853,7 @@ onUnmounted(() => {
                                 class="h-8 w-8 text-(--foreground)"
                             />
                         </div>
-                        <div
-                            class="flex items-center overflow-hidden p-2 text-sm whitespace-nowrap"
-                        >
+                        <div class="flex items-center truncate p-2 text-sm">
                             {{ t(item.text) }}
                         </div>
                     </div>
@@ -812,7 +863,15 @@ onUnmounted(() => {
             <div class="flex flex-1 flex-col">
                 <div class="mb-2 px-6 font-bold">{{ t("index.main.recently") }}</div>
                 <div class="min-h-0 flex-1">
-                    <div v-if="hasMindMaps" class="grid grid-cols-5 gap-4 px-6 py-4">
+                    <div v-if="loading && currentPage === 1" class="flex justify-center py-12">
+                        <div class="flex flex-col items-center">
+                            <UIcon
+                                name="i-lucide-loader-circle"
+                                class="h-8 w-8 animate-spin text-(--color-primary)"
+                            />
+                        </div>
+                    </div>
+                    <div v-else-if="hasMindMaps" class="grid grid-cols-5 gap-4 px-6 py-4">
                         <div
                             v-for="item in mindMapList"
                             :key="item.id"
@@ -832,7 +891,7 @@ onUnmounted(() => {
                                     "
                                     :src="previewImages[item.id]"
                                     :alt="t('index.main.previewAlt')"
-                                    class="h-full w-full object-contain"
+                                    class="h-full w-full object-contain select-none"
                                     :class="{ 'opacity-50': previewImageLoading[item.id] }"
                                 />
                                 <UIcon
@@ -887,7 +946,7 @@ onUnmounted(() => {
 
                             <!-- 标题和更新时间 -->
                             <div
-                                class="w-full cursor-pointer rounded-b-xl border-t border-(--border) p-2"
+                                class="w-full cursor-pointer rounded-b-xl border-t border-(--border) p-2 whitespace-nowrap"
                             >
                                 <div class="flex flex-col gap-2">
                                     <!-- 修改标题显示部分，支持内联编辑 -->
@@ -911,7 +970,7 @@ onUnmounted(() => {
                                             ref="titleInput"
                                         />
                                     </div>
-                                    <span class="text-xs">{{
+                                    <span class="truncate text-xs">{{
                                         formatUpdateTime(item.updatedAt)
                                     }}</span>
                                 </div>
@@ -919,7 +978,10 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <div v-else class="flex flex-col items-center justify-center py-12">
+                    <div
+                        v-else-if="!loading && !hasMindMaps"
+                        class="flex flex-col items-center justify-center py-12"
+                    >
                         <div
                             class="bg-background flex h-32 w-32 items-center justify-center rounded-full"
                         >
@@ -937,6 +999,14 @@ onUnmounted(() => {
                                 {{ t("index.main.create") }}
                             </UButton>
                         </div>
+                    </div>
+
+                    <!-- 列表加载更多时的加载状态 -->
+                    <div v-if="loading && currentPage > 1" class="flex justify-center py-4">
+                        <UIcon
+                            name="i-lucide-loader-circle"
+                            class="h-6 w-6 animate-spin text-(--color-primary)"
+                        />
                     </div>
                 </div>
             </div>

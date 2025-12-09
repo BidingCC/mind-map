@@ -38,7 +38,6 @@ export class ConfigService extends BaseService<MindMapConfig> {
                 config = new MindMapConfig();
                 config.bindModel = "";
                 config.bindModelId = "";
-                // config.bindKeyConfigId = "";
                 config.billingType = 2;
                 config.billingSetting = 0;
                 await this.mindMapConfigRepository.save(config);
@@ -76,7 +75,6 @@ export class ConfigService extends BaseService<MindMapConfig> {
             // 更新配置字段
             if (data.bindModel !== undefined) config.bindModel = data.bindModel;
             if (data.bindModelId !== undefined) config.bindModelId = data.bindModelId;
-            // if (data.bindKeyConfigId !== undefined) config.bindKeyConfigId = data.bindKeyConfigId;
             if (data.billingType !== undefined) config.billingType = data.billingType;
             if (data.billingSetting !== undefined) config.billingSetting = data.billingSetting;
 

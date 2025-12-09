@@ -56,7 +56,20 @@ const firstRender = shallowRef(true);
 // 用于滚动触底加载更多的响应式引用
 const chatContainerRef = shallowRef<HTMLElement | null>(null);
 const hasMoreHistory = shallowRef(false);
-const isLoading = computed(() => status.value === "loading");
+// 加载状态变量
+const aiConfigLoading = shallowRef(false);
+const mindMapLoading = shallowRef(false);
+const messagesLoading = shallowRef(false);
+// 加载失败状态变量
+const mindMapLoadFailed = shallowRef(false);
+
+const isLoading = computed(
+    () =>
+        status.value === "loading" ||
+        aiConfigLoading.value ||
+        mindMapLoading.value ||
+        messagesLoading.value,
+);
 // 保存状态提示相关
 const showSaveIndicator = shallowRef(false);
 const saveIndicatorTimer = shallowRef<NodeJS.Timeout | null>(null);
@@ -120,6 +133,7 @@ const restoreMindMapState = () => {
 // 加载AI对话框配置
 const loadAiConfig = async () => {
     try {
+        aiConfigLoading.value = true;
         const config = await apiGetMindMapExamplesUser();
         aiConfig.value.prologue = config.prologue ?? aiConfig.value.prologue;
         aiConfig.value.try = config.try ?? aiConfig.value.try;
@@ -129,6 +143,14 @@ const loadAiConfig = async () => {
     } catch (error) {
         console.error("加载AI配置失败:", error);
         toast.error(t("create.toast.loadFailed"));
+        // 设置默认值
+        aiConfig.value.prologue = "-";
+        aiConfig.value.try = [];
+        aiConfig.value.dialogText = "-";
+        aiConfig.value.enabledTry = false;
+        aiConfig.value.enabledDialog = false;
+    } finally {
+        aiConfigLoading.value = false;
     }
 };
 
@@ -749,13 +771,14 @@ watch(
 
 // 加载更多消息
 const loadMoreMessages = async () => {
-    if (loading.value) return;
+    if (loading.value || messagesLoading.value) return;
 
     if (!hasMoreHistory.value && messagesData.value?.items.length) {
         return;
     }
 
     queryPaging.page++;
+    messagesLoading.value = true;
 
     try {
         const newData = await apiGetAiConversation(
@@ -813,6 +836,8 @@ const loadMoreMessages = async () => {
         console.error("加载更多消息失败:", error);
         toast.error(t("create.toast.loadMoreFailed"));
         queryPaging.page--;
+    } finally {
+        messagesLoading.value = false;
     }
 };
 
@@ -1304,12 +1329,19 @@ const centerRootNode = () => {
 
 const loadMindMap = async () => {
     try {
+        mindMapLoading.value = true;
+        mindMapLoadFailed.value = false;
         record.value = await apiGetMindMapDetailUser(mindMapId);
         pageTitle.value = record.value.description;
         initializeMindMap(record.value.mindMapData.root, record.value.mindMapData.layout as string);
     } catch (e) {
         toast.error(t("create.toast.loadMindMapFailed"));
         console.warn("获取思维导图详情失败:", e);
+        // 设置默认值
+        pageTitle.value = "-";
+        mindMapLoadFailed.value = true;
+    } finally {
+        mindMapLoading.value = false;
     }
 };
 
@@ -1749,7 +1781,14 @@ onBeforeUnmount(() => {
                 {{ t("create.toolbar.back") }}
             </UButton>
             <div class="border-l border-(--border) px-2 text-lg">
-                <span v-if="!isEditingTitle" @dblclick="startEditingTitle" class="cursor-pointer">
+                <span
+                    v-if="!isEditingTitle"
+                    @click="!mindMapLoadFailed && startEditingTitle()"
+                    :class="{
+                        'cursor-pointer': !mindMapLoadFailed,
+                        'cursor-not-allowed opacity-50': mindMapLoadFailed,
+                    }"
+                >
                     {{ pageTitle }}
                 </span>
                 <input
@@ -1761,13 +1800,14 @@ onBeforeUnmount(() => {
                     ref="titleInput"
                     class="border-b focus:border-(--color-primary) focus:outline-none"
                     type="text"
+                    :disabled="mindMapLoadFailed"
                 />
             </div>
             <UButton
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-undo"
-                :disabled="isStart || isAiTyping"
+                :disabled="isStart || isAiTyping || isLoading"
                 @click="handleUndo"
             >
                 {{ t("create.toolbar.undo") }}
@@ -1776,7 +1816,7 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-redo"
-                :disabled="isEnd || isAiTyping"
+                :disabled="isEnd || isAiTyping || isLoading"
                 @click="handleRedo"
             >
                 {{ t("create.toolbar.redo") }}
@@ -1785,7 +1825,7 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-download"
-                :disabled="isAiTyping"
+                :disabled="isAiTyping || isLoading"
                 @click="handleDownload"
             >
                 {{ t("create.toolbar.download") }}
@@ -1795,7 +1835,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-plus"
                 @click="addNode"
-                :disabled="!hasSelectedNode || isSelectedRootNode || isAiTyping"
+                :disabled="!hasSelectedNode || isSelectedRootNode || isAiTyping || isLoading"
             >
                 {{ t("create.toolbar.addSibling") }}
             </UButton>
@@ -1804,7 +1844,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-corner-down-right"
                 @click="addChildNode"
-                :disabled="!hasSelectedNode || isAiTyping"
+                :disabled="!hasSelectedNode || isAiTyping || isLoading"
             >
                 {{ t("create.toolbar.addChild") }}
             </UButton>
@@ -1813,7 +1853,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-trash"
                 @click="removeNode"
-                :disabled="!hasSelectedNode || isAiTyping"
+                :disabled="!hasSelectedNode || isAiTyping || isLoading"
             >
                 {{ t("create.toolbar.delete") }}
             </UButton>
@@ -1821,7 +1861,7 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-maximize"
-                :disabled="isAiTyping"
+                :disabled="isAiTyping || isLoading"
                 @click="centerRootNode"
             >
                 {{ t("create.toolbar.center") }}
@@ -1867,7 +1907,7 @@ onBeforeUnmount(() => {
         <!-- AI对话抽屉 -->
         <div
             v-if="isDrawerOpen"
-            class="fixed inset-y-0 right-0 z-50 flex w-[30rem] min-w-[20rem] transform transition-transform duration-300 ease-in-out"
+            class="absolute inset-y-0 right-0 z-50 flex h-full w-[30rem] min-w-[20rem] transform transition-transform duration-300 ease-in-out"
             :class="{ 'translate-x-0': isDrawerOpen, 'translate-x-full': !isDrawerOpen }"
         >
             <div
@@ -1899,7 +1939,20 @@ onBeforeUnmount(() => {
                         @scroll="handleChatScroll"
                     >
                         <!-- 开场白 -->
-                        <div class="mb-4 flex flex-row gap-3">
+                        <div v-if="aiConfigLoading" class="mb-4 flex flex-row gap-3">
+                            <!-- 消息气泡 -->
+                            <div class="flex max-w-[80%] flex-col items-start">
+                                <div
+                                    class="bg-muted prose prose-neutral dark:prose-invert max-w-none rounded-lg px-3 py-2 text-sm"
+                                >
+                                    <UIcon
+                                        name="i-lucide-loader-circle"
+                                        class="h-6 w-6 animate-spin text-(--color-primary)"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="mb-4 flex flex-row gap-3">
                             <!-- 消息气泡 -->
                             <div class="flex max-w-[80%] flex-col items-start">
                                 <div
@@ -1918,7 +1971,8 @@ onBeforeUnmount(() => {
                                     variant="ghost"
                                     size="xs"
                                     @click="loadMoreMessages"
-                                    :loading="loading"
+                                    :loading="loading || messagesLoading"
+                                    :disabled="isLoading"
                                 >
                                     {{ t("create.drawer.review") }}
                                 </UButton>
@@ -2041,32 +2095,28 @@ onBeforeUnmount(() => {
                             </div>
                         </template>
 
-                        <div class="relative w-full">
+                        <div class="textarea-with-button relative w-full">
                             <UTextarea
                                 id="ai-prompt"
                                 v-model="promptText"
                                 :rows="1"
                                 autoresize
                                 :maxrows="4"
-                                :disabled="isLoading"
+                                :disabled="isLoading || mindMapLoadFailed"
                                 class="w-full"
-                                :placeholder="
-                                    aiConfig.enabledDialog
-                                        ? aiConfig.dialogText
-                                        : t('create.drawer.inputPlaceholder')
-                                "
+                                :placeholder="aiConfig.enabledDialog ? aiConfig.dialogText : '-'"
                                 :ui="{
                                     base: 'py-3 pl-3 pr-12 text-[16px]',
                                 }"
                                 @keydown.enter.exact.prevent="sendPrompt"
                             />
-                            <div class="absolute right-2 bottom-2 flex gap-1">
+                            <div class="pointer-events-none absolute right-2 bottom-2 flex gap-1">
                                 <UButton
                                     v-if="isLoading"
                                     color="neutral"
                                     variant="ghost"
-                                    class="flex h-8 w-8 items-center justify-center rounded-full p-0"
-                                    @click="handleStop"
+                                    class="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full p-0"
+                                    @click.stop="handleStop"
                                 >
                                     <UIcon name="i-lucide-stop-circle" class="h-4 w-4" />
                                 </UButton>
@@ -2074,8 +2124,9 @@ onBeforeUnmount(() => {
                                     v-else
                                     color="primary"
                                     variant="solid"
-                                    class="flex h-8 w-8 items-center justify-center rounded-full p-0"
-                                    @click="sendPrompt"
+                                    class="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full p-0"
+                                    @click.stop="sendPrompt"
+                                    :disabled="isLoading || mindMapLoadFailed"
                                 >
                                     <UIcon name="i-lucide-arrow-up" class="h-4 w-4" />
                                 </UButton>
@@ -2089,7 +2140,7 @@ onBeforeUnmount(() => {
         <!-- 右上角AI对话按钮 -->
         <div
             v-if="!isDrawerOpen"
-            class="bg-background fixed top-4 right-4 z-10 flex items-center gap-2 rounded-lg p-2 shadow-md"
+            class="bg-background absolute top-4 right-4 z-10 flex items-center gap-2 rounded-lg p-2 shadow-md"
         >
             <UButton
                 color="primary"
@@ -2235,8 +2286,35 @@ onBeforeUnmount(() => {
         transform: scale(1);
     }
     30% {
-        background-color: #ffffff; /* 产生光影效果 */
+        background-color: #eeeeee; /* 产生光影效果 */
         transform: scale(1.2);
+    }
+}
+
+.textarea-with-button {
+    display: flex;
+    flex-direction: column;
+
+    :deep(.textarea-wrapper) {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+    }
+
+    :deep(textarea) {
+        padding-right: 3rem !important;
+    }
+
+    > div:last-child {
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.5rem;
+        z-index: 10;
+        pointer-events: none;
+    }
+
+    > div:last-child > * {
+        pointer-events: auto;
     }
 }
 </style>

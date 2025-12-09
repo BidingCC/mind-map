@@ -12,7 +12,6 @@ const toast = useMessage();
 // 表单数据
 const formData = reactive<MindMapConfig>({
     id: "",
-    // bindKeyConfigId: "",
     bindModel: "",
     bindModelId: "",
     billingType: 1, // 默认按字数计费
@@ -82,10 +81,6 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
             toast.error(t("console.config.modelRequired"));
             return;
         }
-        // if (!formData.bindKeyConfigId.trim()) {
-        //     toast.error(t("console.config.keyRequired"));
-        //     return;
-        // }
 
         // 验证计费设置（免费模式不需要验证）
         if (formData.billingType !== 2) {
@@ -95,7 +90,6 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
             }
         }
         const updateData = {
-            // bindKeyConfigId: formData.bindKeyConfigId,
             billingType: formData.billingType,
             billingSetting: formData.billingType === 2 ? 0 : formData.billingSetting, // 免费模式设置为0
             bindModel: selectedModel.value?.name || "",
@@ -122,26 +116,6 @@ const handleModelChange = (model: AiModel | null) => {
     selectedModel.value = model;
     selectedModelId.value = model.id;
 };
-
-// 跳转到模型平台官网
-// const goToModelPlatform = () => {
-//     if (selectedModel.value && providersCache.value.length > 0) {
-//         // 在已缓存的供应商信息中查找包含当前选中模型的供应商
-//         const provider = providersCache.value.find(
-//             (p) => p.models && p.models.some((model: any) => model.id === selectedModel.value?.id),
-//         );
-
-//         // 如果找到了供应商且有官网链接，则跳转
-//         if (provider && provider.websiteUrl) {
-//             window.open(provider.websiteUrl, "_blank");
-//         } else {
-//             toast.warning(t("console.config.noWebsiteUrl"));
-//         }
-//     } else if (selectedModel.value) {
-//         // 如果没有缓存数据但仍选择了模型，显示提示信息
-//         toast.warning(t("console.config.noProviderInfo"));
-//     }
-// };
 
 onMounted(() => {
     getPluginConfig();
@@ -207,44 +181,12 @@ onMounted(() => {
                     />
                 </UFormField>
 
-                <!-- <UFormField
-                    :label="t('console.config.apiKey')"
-                    name="apiKey"
-                    required
-                    class="w-xl whitespace-nowrap"
-                >
-                    <KeyPoolSelect
-                        v-model="formData.bindKeyConfigId"
-                        :key="keyPoolSelectKey"
-                        :button-ui="{
-                            variant: 'outline',
-                            color: 'neutral',
-                            class: 'bg-background w-xl',
-                        }"
-                    />
-                    <template #hint>
-                        <div class="flex items-center whitespace-nowrap">
-                            <span>{{ t("console.config.apiSecretDescription1") }}</span>
-                            <span v-if="selectedModel" class="mx-1 font-medium">{{
-                                selectedModel.name
-                            }}</span>
-                            <span v-else class="mx-1 font-medium">xxx</span>
-                            <span>{{ t("console.config.apiSecretDescription2") }}</span>
-                            <NuxtLink
-                                href="javascript:void(0)"
-                                @click="goToModelPlatform"
-                                class="text-blue-500 hover:underline"
-                            >
-                                {{ t("console.config.apiSecretDescription3") }}
-                            </NuxtLink>
-                        </div>
-                    </template>
-                </UFormField> -->
-
                 <UFormField
                     :label="t('console.config.billing')"
                     name="billing"
                     required
+                    :disabled="detailLoading || isLock"
+                    :loading="isLock"
                     class="w-sm whitespace-nowrap"
                 >
                     <URadioGroup

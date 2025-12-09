@@ -127,8 +127,8 @@ function formatMessageContent(message: MessageLike): string {
 
         <div v-else-if="conversationDetail" class="space-y-6">
             <!-- 对话基本信息 -->
-            <div class="bg-muted rounded-lg p-4">
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div class="bg-muted overflow-hidden rounded-lg p-4">
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="text-accent-foreground text-sm font-medium">{{
                             t("console.records.drawName")
@@ -197,7 +197,7 @@ function formatMessageContent(message: MessageLike): string {
                                     <div class="flex items-center gap-2">
                                         <span
                                             :class="getMessageRoleClass(message.role)"
-                                            class="rounded-full px-2 py-1 text-xs font-medium"
+                                            class="rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap"
                                         >
                                             {{ getMessageRoleDisplay(message.role) }}
                                         </span>

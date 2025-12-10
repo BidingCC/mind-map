@@ -77,7 +77,7 @@
         "ifCannotOpenOfficial": "公式APIが開けない場合、サードパーティの中継ステーションAPlstudioをご利用ください"
     },
     "examples": {
-        "title": "AIインターフェース設定",
+        "title": "ダイアログインターフェース設定",
         "prologue": "オープニング",
         "try": "試してみる",
         "dialogText": "ダイアログテキスト",
@@ -90,7 +90,7 @@
         "addExample": "例を追加"
     },
     "home": {
-        "title": "ホーム設定",
+        "title": "ホーム装飾",
         "name": "プラグイン表示名",
         "publicLanguage": "宣伝文言",
         "publicLanguageTooltip": "フォントの色を個別に選択できます",

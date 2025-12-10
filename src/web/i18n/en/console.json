@@ -77,7 +77,7 @@
         "ifCannotOpenOfficial": "If unable to open official API, you can use third-party relay station APlstudio"
     },
     "examples": {
-        "title": "AI Interface Configuration",
+        "title": "Dialog Interface Configuration",
         "prologue": "Prologue",
         "try": "Try it",
         "dialogText": "Dialog Text",
@@ -90,7 +90,7 @@
         "addExample": "Add Example"
     },
     "home": {
-        "title": "Home Configuration",
+        "title": "Home Decoration",
         "name": "Plugin Display Name",
         "publicLanguage": "Promotional Language Copy",
         "publicLanguageTooltip": "Colors can be selected for fonts separately",

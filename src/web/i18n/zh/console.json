@@ -77,7 +77,7 @@
         "ifCannotOpenOfficial": "如无法打开，可使用第三方中转站APlstudio"
     },
     "examples": {
-        "title": "AI界面配置",
+        "title": "对话界面配置",
         "prologue": "开场白",
         "try": "试一试",
         "dialogText": "对话框文字",
@@ -90,7 +90,7 @@
         "addExample": "添加示例"
     },
     "home": {
-        "title": "首页配置",
+        "title": "首页装修",
         "name": "插件显示名称",
         "publicLanguage": "宣传语文案",
         "publicLanguageTooltip": "可分别对字体进行颜色选择",

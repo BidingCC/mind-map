@@ -42,7 +42,7 @@ defineOptions({
 
 // 定义页面元信息
 definePageMeta({
-    name: "思维导图",
+    name: "首页",
     inLinkSelector: true,
 });
 

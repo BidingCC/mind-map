@@ -326,7 +326,7 @@ const { messages, input, handleSubmit, stop, status } = useChat({
         // 隐藏AI正在输入状态
         isAiTyping.value = false;
         // console.log("聊天完成:", message);
-
+        saveMindMapData();
         scrollToBottom();
     },
 });
@@ -1366,8 +1366,9 @@ const saveMindMapData = async () => {
         mindMapLoadFailed.value ||
         isLoading.value ||
         isAiTyping.value
-    )
+    ) {
         return;
+    }
 
     isSaving.value = true;
 

@@ -79,15 +79,8 @@ const contextMenu = reactive({
     show: false,
     left: 0,
     top: 0,
-    type: "node", // 'node' 或 'svg'
+    type: "node",
     node: null as any,
-});
-
-// 记录鼠标右键按下的位置
-const mousedownPosition = reactive({
-    x: 0,
-    y: 0,
-    isMousedown: false,
 });
 
 // 记录AI对话框配置
@@ -110,7 +103,12 @@ let mindMapInitialState: MindMapData | null = null;
 // 在开始新的AI对话前保存当前思维导图状态
 const saveMindMapState = () => {
     if (mindMapInstance) {
-        mindMapInitialState = mindMapInstance.getData(true);
+        try {
+            mindMapInitialState = mindMapInstance.getData(true);
+        } catch (error) {
+            console.warn("保存思维导图状态时出错:", error);
+            mindMapInitialState = null;
+        }
     }
 };
 
@@ -126,6 +124,17 @@ const restoreMindMapState = () => {
             record.value.mindMapData = {
                 root: mindMapInitialState.root,
             };
+        }
+    }
+};
+
+// 设置思维导图只读状态
+const setMindMapReadonly = (mode: "readonly" | "edit") => {
+    if (mindMapInstance) {
+        try {
+            mindMapInstance.setMode(mode);
+        } catch (error) {
+            console.warn("设置思维导图模式时出错:", error);
         }
     }
 };
@@ -216,9 +225,13 @@ const sendPrompt = async () => {
 
     try {
         // 在发送新的AI请求前保存当前思维导图状态
-        saveMindMapState();
+        if (mindMapInstance) {
+            saveMindMapState();
+        }
         // 显示AI正在输入状态
         isAiTyping.value = true;
+        // 设置思维导图为只读状态，防止用户在AI生成过程中编辑
+        setMindMapReadonly("readonly");
         await handleSubmit(promptText.value);
         const userMessage = messages.value[messages.value.length - 2];
         if (userMessage && userMessage.role === "user" && !userMessage.createdAt) {
@@ -232,6 +245,8 @@ const sendPrompt = async () => {
         toast.error(t("create.toast.sendError"));
         // 隐藏AI正在输入状态
         isAiTyping.value = false;
+        // 出错时恢复思维导图编辑功能
+        setMindMapReadonly("edit");
     }
 };
 
@@ -239,6 +254,15 @@ const handleStop = () => {
     // 停止AI流式响应
     stop();
     isAiTyping.value = false;
+    // 恢复思维导图编辑功能
+    setMindMapReadonly("edit");
+    // 清理所有相关的缓冲区状态，防止继续处理不完整的数据
+    inTemplateBlock = false;
+    templateBuffer = "";
+    contentBuffer = "";
+    lastProcessedContent = "";
+    lastProcessedLine = "";
+    isFirstData = true;
 };
 
 const {
@@ -312,6 +336,8 @@ const { messages, input, handleSubmit, stop, status } = useChat({
         toast.error(t("create.toast.sendError") + ": " + message);
         // 隐藏AI正在输入状态
         isAiTyping.value = false;
+        // AI生成结束后启用思维导图编辑
+        setMindMapReadonly("edit");
     },
     onUpdate(chunk) {
         if (chunk.type === "conversation_id" && chunk.data) {
@@ -325,6 +351,8 @@ const { messages, input, handleSubmit, stop, status } = useChat({
         message.createdAt = new Date().toISOString();
         // 隐藏AI正在输入状态
         isAiTyping.value = false;
+        // AI生成结束后启用思维导图编辑
+        setMindMapReadonly("edit");
         // console.log("聊天完成:", message);
         saveMindMapData();
         scrollToBottom();
@@ -343,6 +371,8 @@ let contentBuffer = ""; // 用于处理可能被分段的内容
 watch(
     () => messages.value,
     (newMessages) => {
+        // 如果AI已停止生成，不再处理新的内容
+        if (!isAiTyping.value) return;
         // 检查最后一条消息是否为AI回复且正在生成中
         if (newMessages.length > 0) {
             const lastMessage = newMessages[newMessages.length - 1];
@@ -487,6 +517,8 @@ watch(
 // 处理单行Markdown内容并逐步生成思维导图节点
 const processMarkdownLine = async (line: string) => {
     if (!mindMapInstance || !markdownParser) return;
+    // 如果AI已停止生成，不再处理新的内容
+    if (!isAiTyping.value) return;
 
     // console.log("处理Markdown行:", line);
 
@@ -669,8 +701,9 @@ const addUid = (data: MindMapDataNode) => {
         if (!node.data) {
             node.data = {};
         }
+        // 确保data对象存在后再访问其属性
         if (!node.data.uid) {
-            const key = pUid + "-" + (node.data.text || "");
+            const key = pUid + "-" + (node.data?.text || "");
             // 如果映射中已存在该key，则复用uid，否则生成新的uid
             if (checkRepeatUiMap[key]) {
                 node.data.uid = checkRepeatUiMap[key];
@@ -681,15 +714,21 @@ const addUid = (data: MindMapDataNode) => {
             }
         } else {
             // 如果节点已经有uid，则更新映射表
-            const key = pUid + "-" + (node.data.text || "");
+            const key = pUid + "-" + (node.data?.text || "");
             checkRepeatUiMap[key] = node.data.uid;
         }
 
         // 递归处理子节点
-        if (node.children && node.children.length > 0) {
+        if (node.children && Array.isArray(node.children) && node.children.length > 0) {
             node.children.forEach((child: MindMapDataNode) => {
-                if (child) {
-                    walk(child, node.data.uid);
+                // 确保子节点存在且是有效对象
+                if (child && typeof child === "object") {
+                    // 确保data存在且有uid属性后再递归
+                    if (node.data && node.data.uid) {
+                        walk(child, node.data.uid);
+                    } else {
+                        walk(child, pUid);
+                    }
                 }
             });
         }
@@ -885,11 +924,51 @@ const displayedMessages = computed(() => {
 
 // 显示右键菜单
 const showContextMenu = (e: MouseEvent, type: string, node?: any) => {
+    // 只处理节点右键菜单
+    if (type !== "node") {
+        return;
+    }
+
     contextMenu.show = true;
-    contextMenu.left = e.clientX;
-    contextMenu.top = e.clientY;
     contextMenu.type = type;
     contextMenu.node = node || null;
+
+    // 计算菜单位置，确保菜单不会超出视口
+    const menuWidth = 280; // 预估菜单宽度
+    const menuHeight = 150; // 预估菜单高度
+    const offsetX = -50; // 鼠标右侧的小偏移量，避免遮挡
+    const offsetY = 5; // 鼠标下方的小偏移量，避免遮挡
+    const margin = 8; // 边距，确保菜单不会紧贴视口边界
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // 默认位置：鼠标位置 + 小偏移量
+    let left = e.clientX + offsetX;
+    let top = e.clientY + offsetY;
+
+    // 如果菜单右边界会超出视窗，尝试显示在鼠标左侧
+    if (left + menuWidth > viewportWidth - margin) {
+        left = e.clientX - menuWidth - offsetX;
+    }
+
+    // 使用 Math.max 和 Math.min 同时约束左右边界，确保菜单完整显示
+    const minLeft = margin;
+    const maxLeft = viewportWidth - menuWidth - margin;
+    left = Math.max(minLeft, Math.min(left, maxLeft));
+
+    // 如果菜单下边界会超出视窗，向上调整
+    if (top + menuHeight > viewportHeight - margin) {
+        top = e.clientY - menuHeight;
+    }
+
+    // 使用 Math.max 和 Math.min 同时约束上下边界，确保菜单完整显示
+    const minTop = margin;
+    const maxTop = viewportHeight - menuHeight - margin;
+    top = Math.max(minTop, Math.min(top, maxTop));
+
+    contextMenu.left = left;
+    contextMenu.top = top;
 
     // 阻止默认右键菜单
     e.preventDefault();
@@ -941,6 +1020,11 @@ const selectedNodeInfo = ref<SelectedNodeInfo>({
 const isViewTransforming = shallowRef(false);
 const viewTransformTimer = shallowRef<NodeJS.Timeout | null>(null);
 
+// 工具栏尺寸常量
+const TOOLBAR_WIDTH = 1000; // 估算工具栏宽度
+const TOOLBAR_HEIGHT = 50; // 估算工具栏高度
+const TOOLBAR_MARGIN = 20; // 边距，确保工具栏不会紧贴视口边界
+
 // 计算悬浮窗位置
 const nodeFloatPosition = computed(() => {
     if (!selectedNodeInfo.value.node || selectedNodeInfo.value.node.length === 0)
@@ -955,8 +1039,24 @@ const nodeFloatPosition = computed(() => {
         const rectInSvg = node.getRectInSvg ? node.getRectInSvg() : null;
         if (rectInSvg) {
             // 直接使用 SVG 坐标（这些坐标已经考虑了缩放和位移）
-            const top = rectInSvg.top - rectInSvg.height;
-            const left = rectInSvg.left + rectInSvg.width / 2;
+            // 工具栏使用 translate(-50%, -100%)，所以 left 是中心点，top 是底部位置
+            let top = rectInSvg.top - rectInSvg.height;
+            let left = rectInSvg.left + rectInSvg.width / 2;
+
+            // 边界约束：确保工具栏不会超出视口
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            // 使用 Math.max 和 Math.min 同时约束左右边界，确保工具栏完整显示
+            const minLeft = TOOLBAR_WIDTH / 2 + TOOLBAR_MARGIN;
+            const maxLeft = viewportWidth - TOOLBAR_WIDTH / 2 - TOOLBAR_MARGIN;
+            left = Math.max(minLeft, Math.min(left, maxLeft));
+
+            // 使用 Math.max 和 Math.min 同时约束上下边界，确保工具栏完整显示
+            const minTop = TOOLBAR_HEIGHT + TOOLBAR_MARGIN;
+            const maxTop = viewportHeight - TOOLBAR_MARGIN;
+            top = Math.max(minTop, Math.min(top, maxTop));
+
             return { top, left };
         } else {
             return { top: 0, left: 0 };
@@ -990,8 +1090,22 @@ const nodeFloatPosition = computed(() => {
     });
 
     // 悬浮窗显示在选中区域上方中央
-    const top = minY;
-    const left = (minX + maxX) / 2;
+    let top = minY;
+    let left = (minX + maxX) / 2;
+
+    // 边界约束：确保工具栏不会超出视口
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // 使用 Math.max 和 Math.min 同时约束左右边界，确保工具栏完整显示
+    const minLeft = TOOLBAR_WIDTH / 2 + TOOLBAR_MARGIN;
+    const maxLeft = viewportWidth - TOOLBAR_WIDTH / 2 - TOOLBAR_MARGIN;
+    left = Math.max(minLeft, Math.min(left, maxLeft));
+
+    // 使用 Math.max 和 Math.min 同时约束上下边界，确保工具栏完整显示
+    const minTop = TOOLBAR_HEIGHT + TOOLBAR_MARGIN;
+    const maxTop = viewportHeight - TOOLBAR_MARGIN;
+    top = Math.max(minTop, Math.min(top, maxTop));
 
     return { top, left };
 });
@@ -1000,7 +1114,11 @@ const nodeFloatPosition = computed(() => {
 const initializeMindMap = (mindData: MindMapDataNode, layoutType: string) => {
     // 销毁之前的实例
     if (mindMapInstance) {
-        mindMapInstance.destroy();
+        try {
+            mindMapInstance.destroy();
+        } catch (error) {
+            console.warn("销毁思维导图实例时出错:", error);
+        }
         mindMapInstance = null;
     }
 
@@ -1055,16 +1173,21 @@ const initializeMindMap = (mindData: MindMapDataNode, layoutType: string) => {
                       children: [],
                   };
 
-        mindMapInstance = new MindMapConstructor({
-            el: document.getElementById("mindmap-container"),
-            data: validMindData,
-            layout: layoutType,
-            readonly: false,
-            themeConfig,
-            textAutoWrapWidth: 500,
-            fit: true,
-            createNewNodeBehavior: "activeOnly",
-        });
+        try {
+            mindMapInstance = new MindMapConstructor({
+                el: document.getElementById("mindmap-container"),
+                data: validMindData,
+                layout: layoutType,
+                readonly: false,
+                themeConfig,
+                textAutoWrapWidth: 500,
+                fit: true,
+                createNewNodeBehavior: "activeOnly",
+            });
+        } catch (error) {
+            console.error("初始化思维导图失败:", error);
+            return;
+        }
 
         // 监听视图变化事件（滚动、缩放等）
         mindMapInstance.on("view_data_change", () => {
@@ -1088,36 +1211,6 @@ const initializeMindMap = (mindData: MindMapDataNode, layoutType: string) => {
         mindMapInstance.on("node_contextmenu", (e: MouseEvent, node: any) => {
             if (!isAiTyping.value) {
                 showContextMenu(e, "node", node);
-            }
-        });
-
-        // 监听画布鼠标按下事件
-        mindMapInstance.on("svg_mousedown", (e: MouseEvent) => {
-            // 如果不是右键点击直接返回
-            if (e.which !== 3) {
-                return;
-            }
-            mousedownPosition.x = e.clientX;
-            mousedownPosition.y = e.clientY;
-            mousedownPosition.isMousedown = true;
-        });
-
-        // 监听鼠标松开事件
-        mindMapInstance.on("mouseup", (e: MouseEvent) => {
-            if (!mousedownPosition.isMousedown) {
-                return;
-            }
-            mousedownPosition.isMousedown = false;
-            // 如果鼠标松开和按下的距离大于3，则不认为是点击事件
-            if (
-                Math.abs(mousedownPosition.x - e.clientX) > 3 ||
-                Math.abs(mousedownPosition.y - e.clientY) > 3
-            ) {
-                hideContextMenu();
-                return;
-            }
-            if (!isAiTyping.value) {
-                showContextMenu(e, "svg");
             }
         });
 
@@ -1416,6 +1509,11 @@ watch(
     { deep: true },
 );
 
+// 监听AI输入状态变化，动态设置思维导图只读状态
+watch(isAiTyping, (newValue) => {
+    setMindMapReadonly(newValue ? "readonly" : "edit");
+});
+
 // 更改字体大小
 const changeFontSize = (e: string) => {
     if (mindMapInstance && selectedNodeInfo.value.node && selectedNodeInfo.value.node.length > 0) {
@@ -1560,54 +1658,57 @@ const updateNodeFloatPosition = () => {
 
 onMounted(async () => {
     if (import.meta.client) {
-        // 动态导入 simple-mind-map 和插件
-        const MindMapModule = await import("simple-mind-map");
-        const MindMap = MindMapModule.default || MindMapModule;
-
-        // 保存构造函数引用
-        MindMapConstructor = MindMap;
-
-        // 导入Markdown解析器
         try {
-            // @ts-expect-error - 动态导入的模块类型定义不完整
-            markdownParser = (await import("simple-mind-map/src/parse/markdown.js")).default;
-        } catch (e) {
-            console.warn("Markdown解析器加载失败:", e);
-        }
+            // 动态导入 simple-mind-map 和插件
+            const MindMapModule = await import("simple-mind-map");
+            const MindMap = MindMapModule.default || MindMapModule;
 
-        try {
-            // 注册插件
-            // @ts-expect-error - 动态导入的插件模块类型定义不完整
-            const Export = (await import("simple-mind-map/src/plugins/Export")).default;
-            // @ts-expect-error - 动态导入的插件模块类型定义不完整
-            const Drag = (await import("simple-mind-map/src/plugins/Drag")).default;
-            // @ts-expect-error - 动态导入的插件模块类型定义不完整
-            const Select = (await import("simple-mind-map/src/plugins/Select")).default;
+            // 保存构造函数引用
+            MindMapConstructor = MindMap;
 
-            MindMap.usePlugin(Export);
-            MindMap.usePlugin(Drag);
-            MindMap.usePlugin(Select);
-        } catch (e) {
-            console.warn("部分插件加载失败:", e);
-        }
-        // 加载AI配置
-        await loadMindMap();
-        await loadAiConfig();
-        // 加载AI对话记录
-        refresh();
-        document.addEventListener("click", hideContextMenu);
+            // 导入Markdown解析器
+            try {
+                // @ts-expect-error - 动态导入的模块类型定义不完整
+                markdownParser = (await import("simple-mind-map/src/parse/markdown.js")).default;
+            } catch (e) {
+                console.warn("Markdown解析器加载失败:", e);
+            }
 
-        // 监听主题变化并更新思维导图主题
-        watch(colorMode, () => {
-            updateMindMapTheme();
-        });
+            try {
+                // @ts-expect-error - 动态导入的插件模块类型定义不完整
+                const Export = (await import("simple-mind-map/src/plugins/Export")).default;
+                // @ts-expect-error - 动态导入的插件模块类型定义不完整
+                const Drag = (await import("simple-mind-map/src/plugins/Drag")).default;
+                // @ts-expect-error - 动态导入的插件模块类型定义不完整
+                const Select = (await import("simple-mind-map/src/plugins/Select")).default;
 
-        // 监听窗口大小变化，实时调整思维导图大小
-        window.addEventListener("resize", handleResize);
+                MindMap.usePlugin(Export);
+                MindMap.usePlugin(Drag);
+                MindMap.usePlugin(Select);
+            } catch (e) {
+                console.warn("部分插件加载失败:", e);
+            }
+            // 加载AI配置
+            await loadMindMap();
+            await loadAiConfig();
+            // 加载AI对话记录
+            refresh();
+            document.addEventListener("click", hideContextMenu);
 
-        // 监听思维导图的变换事件，更新悬浮窗位置
-        if (mindMapInstance) {
-            mindMapInstance.on("view_data_change", updateNodeFloatPosition);
+            // 监听主题变化并更新思维导图主题
+            watch(colorMode, () => {
+                updateMindMapTheme();
+            });
+
+            // 监听窗口大小变化，实时调整思维导图大小
+            window.addEventListener("resize", handleResize);
+
+            // 监听思维导图的变换事件，更新悬浮窗位置
+            if (mindMapInstance) {
+                mindMapInstance.on("view_data_change", updateNodeFloatPosition);
+            }
+        } catch (error) {
+            console.error("初始化过程中出现错误:", error);
         }
     }
 });
@@ -1626,7 +1727,11 @@ onUnmounted(() => {
         clearTimeout(viewTransformTimer.value);
     }
     if (mindMapInstance) {
-        mindMapInstance.destroy();
+        try {
+            mindMapInstance.destroy();
+        } catch (error) {
+            console.warn("销毁思维导图实例时出错:", error);
+        }
         mindMapInstance = null;
     }
     document.removeEventListener("click", hideContextMenu);
@@ -1636,6 +1741,8 @@ onUnmounted(() => {
 onBeforeUnmount(() => {
     if (isAiTyping.value) {
         stop();
+    }
+    if (mindMapInstance) {
         restoreMindMapState();
     }
 });
@@ -1897,33 +2004,38 @@ onBeforeUnmount(() => {
         >
             <UIcon name="i-lucide-check-circle-2" class="h-7 w-7" />
         </div>
-
         <!-- 右键菜单 -->
         <div
-            v-show="contextMenu.show"
-            class="absolute z-200 min-w-[120px] rounded-md border border-(--border) bg-(--secondary) shadow-lg"
+            v-show="contextMenu.show && !isAiTyping"
+            class="border-default bg-default absolute z-200 min-w-48 rounded-md border shadow-lg"
             :style="{ left: contextMenu.left + 'px', top: contextMenu.top + 'px' }"
         >
-            <button
-                v-if="contextMenu.type === 'node'"
-                class="block w-full px-4 py-2 text-left text-sm hover:bg-(--accent)"
-                @click="copyNode"
-            >
-                {{ t("create.contextMenu.copy") }}
-            </button>
-            <button
-                v-if="contextMenu.type === 'node'"
-                class="block w-full px-4 py-2 text-left text-sm hover:bg-(--accent)"
-                @click="cutNode"
-            >
-                {{ t("create.contextMenu.cut") }}
-            </button>
-            <button
-                class="block w-full px-4 py-2 text-left text-sm hover:bg-(--accent)"
-                @click="pasteNode"
-            >
-                {{ t("create.contextMenu.paste") }}
-            </button>
+            <div class="divide-default divide-y py-1">
+                <button
+                    v-if="contextMenu.type === 'node'"
+                    class="text-default hover:bg-elevated group relative flex w-full items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
+                    @click="copyNode"
+                >
+                    <span>{{ t("create.contextMenu.copy") }}</span>
+                    <UKbd size="sm" class="ml-4">Ctrl+C</UKbd>
+                </button>
+                <button
+                    v-if="contextMenu.type === 'node'"
+                    class="text-default hover:bg-elevated group relative flex w-full items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
+                    @click="cutNode"
+                >
+                    <span>{{ t("create.contextMenu.cut") }}</span>
+                    <UKbd size="sm" class="ml-4">Ctrl+X</UKbd>
+                </button>
+                <button
+                    v-if="contextMenu.type === 'node'"
+                    class="text-default hover:bg-elevated group relative flex w-full items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
+                    @click="pasteNode"
+                >
+                    <span>{{ t("create.contextMenu.paste") }}</span>
+                    <UKbd size="sm" class="ml-4">Ctrl+V</UKbd>
+                </button>
+            </div>
         </div>
 
         <!-- AI对话抽屉 -->

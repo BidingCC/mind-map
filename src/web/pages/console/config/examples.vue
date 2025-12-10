@@ -332,7 +332,7 @@ onMounted(async () => {
                                     <div v-if="loading || saveLoading">
                                         <UIcon name="i-lucide-loader-circle" class="animate-spin" />
                                     </div>
-                                    <div v-else v-html="formData.prologue"></div>
+                                    <div v-else v-dompurify-html="formData.prologue"></div>
                                 </div>
                             </div>
                         </div>

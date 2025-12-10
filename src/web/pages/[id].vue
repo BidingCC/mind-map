@@ -1360,7 +1360,14 @@ const handleAutoSave = () => {
 
 // 保存思维导图数据
 const saveMindMapData = async () => {
-    if (isSaving.value || !mindMapInstance) return;
+    if (
+        isSaving.value ||
+        !mindMapInstance ||
+        mindMapLoadFailed.value ||
+        isLoading.value ||
+        isAiTyping.value
+    )
+        return;
 
     isSaving.value = true;
 
@@ -1658,7 +1665,13 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-plus"
                 @click="addNode"
-                :disabled="!hasSelectedNode || isSelectedRootNode || isAiTyping"
+                :disabled="
+                    !hasSelectedNode ||
+                    isSelectedRootNode ||
+                    isAiTyping ||
+                    isLoading ||
+                    mindMapLoadFailed
+                "
             >
                 <span class="whitespace-nowrap">{{ t("create.toolbar.addSibling") }}</span>
             </UButton>
@@ -1667,7 +1680,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-corner-down-right"
                 @click="addChildNode"
-                :disabled="!hasSelectedNode || isAiTyping"
+                :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
             >
                 <span class="whitespace-nowrap">{{ t("create.toolbar.addChild") }}</span>
             </UButton>
@@ -1676,7 +1689,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-trash"
                 @click="removeNode"
-                :disabled="!hasSelectedNode || isAiTyping"
+                :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
                 :title="t('create.toolbar.delete')"
             >
             </UButton>
@@ -1684,7 +1697,7 @@ onBeforeUnmount(() => {
             <div class="flex items-center gap-2">
                 <USelect
                     @update:model-value="changeFontSize"
-                    :disabled="isAiTyping"
+                    :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                     :model-value="
                         selectedNodeInfo.node &&
                         selectedNodeInfo.node.length > 0 &&
@@ -1707,7 +1720,7 @@ onBeforeUnmount(() => {
                 />
                 <USelect
                     @update:model-value="changeFontFamily"
-                    :disabled="isAiTyping"
+                    :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                     :model-value="getCurrentFontFamilyLabel()"
                     :items="
                         Object.entries(FONT_FAMILY_MAP).map(([label, value]) => ({
@@ -1720,7 +1733,7 @@ onBeforeUnmount(() => {
                 <span class="whitespace-nowrap">{{ t("create.toolbar.backgroundColor") }}</span>
                 <UInput
                     class="w-10"
-                    :disabled="isAiTyping"
+                    :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                     :model-value="
                         selectedNodeInfo.node &&
                         selectedNodeInfo.node.length > 0 &&
@@ -1736,7 +1749,7 @@ onBeforeUnmount(() => {
                 <span class="whitespace-nowrap">{{ t("create.toolbar.borderColor") }}</span>
                 <UInput
                     class="w-10"
-                    :disabled="isAiTyping"
+                    :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                     :model-value="
                         selectedNodeInfo.node &&
                         selectedNodeInfo.node.length > 0 &&
@@ -1752,7 +1765,7 @@ onBeforeUnmount(() => {
                 <span class="whitespace-nowrap">{{ t("create.toolbar.textColor") }}</span>
                 <UInput
                     class="w-10"
-                    :disabled="isAiTyping"
+                    :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                     :model-value="
                         selectedNodeInfo.node &&
                         selectedNodeInfo.node.length > 0 &&
@@ -1785,8 +1798,10 @@ onBeforeUnmount(() => {
                     v-if="!isEditingTitle"
                     @click="!mindMapLoadFailed && startEditingTitle()"
                     :class="{
-                        'cursor-pointer': !mindMapLoadFailed,
-                        'cursor-not-allowed opacity-50': mindMapLoadFailed,
+                        'cursor-pointer':
+                            !mindMapLoadFailed || !isLoading || !isAiTyping || !mindMapLoadFailed,
+                        'pointer-events-none opacity-50':
+                            mindMapLoadFailed || isLoading || isAiTyping || mindMapLoadFailed,
                     }"
                 >
                     {{ pageTitle }}
@@ -1800,14 +1815,14 @@ onBeforeUnmount(() => {
                     ref="titleInput"
                     class="border-b focus:border-(--color-primary) focus:outline-none"
                     type="text"
-                    :disabled="mindMapLoadFailed"
+                    :disabled="mindMapLoadFailed || isLoading || isAiTyping || mindMapLoadFailed"
                 />
             </div>
             <UButton
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-undo"
-                :disabled="isStart || isAiTyping || isLoading"
+                :disabled="isStart || isAiTyping || isLoading || mindMapLoadFailed"
                 @click="handleUndo"
             >
                 {{ t("create.toolbar.undo") }}
@@ -1816,7 +1831,7 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-redo"
-                :disabled="isEnd || isAiTyping || isLoading"
+                :disabled="isEnd || isAiTyping || isLoading || mindMapLoadFailed"
                 @click="handleRedo"
             >
                 {{ t("create.toolbar.redo") }}
@@ -1825,7 +1840,7 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-download"
-                :disabled="isAiTyping || isLoading"
+                :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                 @click="handleDownload"
             >
                 {{ t("create.toolbar.download") }}
@@ -1835,7 +1850,13 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-plus"
                 @click="addNode"
-                :disabled="!hasSelectedNode || isSelectedRootNode || isAiTyping || isLoading"
+                :disabled="
+                    !hasSelectedNode ||
+                    isSelectedRootNode ||
+                    isAiTyping ||
+                    isLoading ||
+                    mindMapLoadFailed
+                "
             >
                 {{ t("create.toolbar.addSibling") }}
             </UButton>
@@ -1844,7 +1865,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-corner-down-right"
                 @click="addChildNode"
-                :disabled="!hasSelectedNode || isAiTyping || isLoading"
+                :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
             >
                 {{ t("create.toolbar.addChild") }}
             </UButton>
@@ -1853,7 +1874,7 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-trash"
                 @click="removeNode"
-                :disabled="!hasSelectedNode || isAiTyping || isLoading"
+                :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
             >
                 {{ t("create.toolbar.delete") }}
             </UButton>
@@ -1861,7 +1882,7 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-maximize"
-                :disabled="isAiTyping || isLoading"
+                :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                 @click="centerRootNode"
             >
                 {{ t("create.toolbar.center") }}
@@ -1958,7 +1979,7 @@ onBeforeUnmount(() => {
                                 <div
                                     class="bg-muted prose prose-neutral dark:prose-invert max-w-none rounded-lg px-3 py-2 text-sm"
                                 >
-                                    <div v-html="aiConfig.prologue"></div>
+                                    <div v-dompurify-html="aiConfig.prologue"></div>
                                 </div>
                             </div>
                         </div>
@@ -2077,8 +2098,14 @@ onBeforeUnmount(() => {
 
                     <!-- 抽屉底部输入区域 -->
                     <div class="t-1 sticky bottom-0 shrink-0 bg-(--background) p-4">
+                        <div v-if="aiConfigLoading" class="mb-4 space-y-2 text-sm">
+                            <UIcon
+                                name="i-lucide-loader-circle"
+                                class="h-6 w-6 animate-spin text-(--color-primary)"
+                            />
+                        </div>
                         <!-- 试一试 -->
-                        <template v-if="aiConfig.enabledTry">
+                        <template v-else-if="!aiConfigLoading && aiConfig.enabledTry">
                             <div class="mb-4 text-sm">
                                 {{ t("create.drawer.try") }}
                             </div>
@@ -2088,7 +2115,11 @@ onBeforeUnmount(() => {
                                     v-for="(item, index) in aiConfig.try"
                                     :key="item.id"
                                     class="w-fit cursor-pointer rounded-lg border border-(--border) p-2 transition-colors hover:border-(--color-primary)"
-                                    @click="selectExample(index + 1)"
+                                    :class="{
+                                        'pointer-events-none opacity-50':
+                                            isLoading || mindMapLoadFailed,
+                                    }"
+                                    @click.stop="selectExample(index + 1)"
                                 >
                                     {{ item.content }}
                                 </div>
@@ -2112,7 +2143,7 @@ onBeforeUnmount(() => {
                             />
                             <div class="pointer-events-none absolute right-2 bottom-2 flex gap-1">
                                 <UButton
-                                    v-if="isLoading"
+                                    v-if="isAiTyping"
                                     color="neutral"
                                     variant="ghost"
                                     class="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full p-0"

@@ -722,6 +722,7 @@ const cancelEditingTitle = () => {
 };
 
 onMounted(async () => {
+    initializeTypeImages();
     // 并行加载配置和列表数据
     await Promise.all([
         loadConfig().catch((error) => {

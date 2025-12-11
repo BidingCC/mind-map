@@ -1346,6 +1346,18 @@ const isSelectedRootNode = computed(() => {
     return selectedNodeInfo.value.isSelectedRootNode;
 });
 
+// 检查选中的是否是一级子节点（second层级）
+const isSelectedSecondLevelNode = computed(() => {
+    if (
+        !selectedNodeInfo.value.node ||
+        selectedNodeInfo.value.node.length === 0 ||
+        isSelectedRootNode.value
+    ) {
+        return false;
+    }
+    return isSecondLevelNode(selectedNodeInfo.value.node[0]);
+});
+
 // 撤销操作
 const handleUndo = () => {
     if (mindMapInstance) {
@@ -1576,6 +1588,173 @@ const getCurrentFontFamilyLabel = () => {
     // 如果没有匹配项，尝试提取第一个字体作为显示名称
     const firstFont = firstNodeFontFamily.split(",")[0].trim();
     return firstFont || "微软雅黑";
+};
+
+// 检查节点是否是一级子节点（second层级）
+const isSecondLevelNode = (node: any): boolean => {
+    if (!node || !mindMapInstance) return false;
+
+    try {
+        // 获取节点的 uid
+        const nodeUid = node.uid;
+        if (!nodeUid) return false;
+
+        // 获取根节点
+        const rootNode = mindMapInstance.renderer.root;
+        if (!rootNode) return false;
+
+        // 方法1：尝试通过节点对象的 parent 属性判断
+        const parent = node.parent || node.parentNode;
+        if (parent) {
+            if (parent.uid === rootNode.uid) {
+                return true;
+            }
+        }
+
+        // 方法2：通过数据树查找节点的父节点
+        const fullData = mindMapInstance.getData(true);
+        const findNodeParent = (data: any, targetUid: string): any => {
+            if (!data || !data.data) return null;
+
+            // 检查子节点中是否包含目标节点
+            if (data.children && Array.isArray(data.children)) {
+                for (const child of data.children) {
+                    if (child.data && child.data.uid === targetUid) {
+                        return data; // 返回父节点
+                    }
+                    // 递归查找
+                    const found = findNodeParent(child, targetUid);
+                    if (found) return found;
+                }
+            }
+
+            return null;
+        };
+
+        const parentData = findNodeParent(fullData, nodeUid);
+        if (parentData && parentData.data && parentData.data.uid === rootNode.uid) {
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        console.warn("检查节点层级失败:", error);
+        return false;
+    }
+};
+
+// 获取节点背景颜色
+const getNodeFillColor = (node: any): string => {
+    if (!node || !mindMapInstance) return "#ffffff";
+
+    try {
+        // 检查是否是根节点
+        const rootData = mindMapInstance.getData();
+        const isRootNode = rootData && rootData.data && rootData.data.uid === node.uid;
+
+        // 如果是根节点，直接使用 getStyle 获取实际显示的颜色值
+        if (isRootNode) {
+            if (typeof node.getStyle === "function") {
+                const styleValue = node.getStyle("fillColor", true);
+                // 如果 getStyle 返回了有效值，直接使用
+                if (styleValue && typeof styleValue === "string" && styleValue.trim() !== "") {
+                    return styleValue;
+                }
+            }
+            // 根节点使用主题默认的蓝色
+            return "#4E47F6";
+        }
+
+        // 对于子节点，使用 getStyle 获取实际显示的颜色值
+        // 传入 false 表示不是根节点
+        if (typeof node.getStyle === "function") {
+            const styleValue = node.getStyle("fillColor", false);
+            // 如果 getStyle 返回了有效值
+            if (styleValue && typeof styleValue === "string" && styleValue.trim() !== "") {
+                const normalizedValue = styleValue.trim().toLowerCase();
+                // 一级子节点默认返回 #fff，其他子节点默认返回 transparent
+                // 这两种情况都表示没有设置颜色，应该返回白色
+                if (
+                    normalizedValue === "transparent" ||
+                    normalizedValue === "#fff" ||
+                    normalizedValue === "#ffffff" ||
+                    normalizedValue === "white"
+                ) {
+                    return "#ffffff";
+                }
+                // 如果返回的是其他颜色值，说明用户设置了颜色，直接使用
+                return styleValue;
+            }
+        }
+
+        // 子节点默认使用白色
+        return "#ffffff";
+    } catch (error) {
+        console.warn("获取节点背景颜色失败:", error);
+        return "#ffffff";
+    }
+};
+
+// 获取节点字体颜色
+const getNodeFontColor = (node: any): string => {
+    if (!node || !mindMapInstance) return "#000000";
+
+    try {
+        // 检查是否是根节点
+        const rootData = mindMapInstance.getData();
+        const isRootNode = rootData && rootData.data && rootData.data.uid === node.uid;
+
+        // 直接使用 getStyle 获取实际显示的颜色值
+        // getStyle 需要传入 root 参数来正确获取根节点的样式
+        // getStyle 会返回节点实际显示的颜色，包括用户设置的颜色和主题默认颜色
+        if (typeof node.getStyle === "function") {
+            const styleValue = node.getStyle("color", isRootNode);
+            // 如果 getStyle 返回了有效值，直接使用
+            if (styleValue && typeof styleValue === "string" && styleValue.trim() !== "") {
+                return styleValue;
+            }
+        }
+
+        // 如果 getStyle 没有返回值，使用默认值
+        if (isRootNode) {
+            // 根节点默认字体是白色（因为背景是蓝色）
+            return "#ffffff";
+        } else {
+            // 子节点默认字体是黑色
+            return "#000000";
+        }
+    } catch (error) {
+        console.warn("获取节点字体颜色失败:", error);
+        return "#000000";
+    }
+};
+
+// 获取节点边框颜色
+const getNodeBorderColor = (node: any): string => {
+    if (!node || !mindMapInstance) return "#000000";
+
+    try {
+        // 检查是否是根节点
+        const rootData = mindMapInstance.getData();
+        const isRootNode = rootData && rootData.data && rootData.data.uid === node.uid;
+
+        // 直接使用 getStyle 获取实际显示的颜色值
+        // getStyle 需要传入 root 参数来正确获取根节点的样式
+        // getStyle 会返回节点实际显示的颜色，包括用户设置的颜色和主题默认颜色
+        if (typeof node.getStyle === "function") {
+            const styleValue = node.getStyle("borderColor", isRootNode);
+            // 如果 getStyle 返回了有效值，直接使用
+            if (styleValue && typeof styleValue === "string" && styleValue.trim() !== "") {
+                return styleValue;
+            }
+        }
+
+        // 如果 getStyle 没有返回值，使用黑色作为后备
+        return "#000000";
+    } catch (error) {
+        console.warn("获取节点边框颜色失败:", error);
+        return "#000000";
+    }
 };
 
 // 更改背景色
@@ -1828,11 +2007,8 @@ onBeforeUnmount(() => {
                     class="w-10"
                     :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                     :model-value="
-                        selectedNodeInfo.node &&
-                        selectedNodeInfo.node.length > 0 &&
-                        selectedNodeInfo.node[0] &&
-                        typeof selectedNodeInfo.node[0].getStyle === 'function'
-                            ? selectedNodeInfo.node[0].getStyle('fillColor') || '#ffffff'
+                        selectedNodeInfo.node && selectedNodeInfo.node.length > 0
+                            ? getNodeFillColor(selectedNodeInfo.node[0])
                             : '#ffffff'
                     "
                     @update:model-value="changeBackgroundColor"
@@ -1842,13 +2018,24 @@ onBeforeUnmount(() => {
                 <span class="whitespace-nowrap">{{ t("create.toolbar.borderColor") }}</span>
                 <UInput
                     class="w-10"
-                    :disabled="isAiTyping || isLoading || mindMapLoadFailed"
+                    :class="{
+                        'cursor-not-allowed opacity-50':
+                            isAiTyping ||
+                            isLoading ||
+                            mindMapLoadFailed ||
+                            isSelectedRootNode ||
+                            !isSelectedSecondLevelNode,
+                    }"
+                    :disabled="
+                        isAiTyping ||
+                        isLoading ||
+                        mindMapLoadFailed ||
+                        isSelectedRootNode ||
+                        !isSelectedSecondLevelNode
+                    "
                     :model-value="
-                        selectedNodeInfo.node &&
-                        selectedNodeInfo.node.length > 0 &&
-                        selectedNodeInfo.node[0] &&
-                        typeof selectedNodeInfo.node[0].getStyle === 'function'
-                            ? selectedNodeInfo.node[0].getStyle('borderColor') || '#000000'
+                        selectedNodeInfo.node && selectedNodeInfo.node.length > 0
+                            ? getNodeBorderColor(selectedNodeInfo.node[0])
                             : '#000000'
                     "
                     @update:model-value="changeBorderColor"
@@ -1860,11 +2047,8 @@ onBeforeUnmount(() => {
                     class="w-10"
                     :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                     :model-value="
-                        selectedNodeInfo.node &&
-                        selectedNodeInfo.node.length > 0 &&
-                        selectedNodeInfo.node[0] &&
-                        typeof selectedNodeInfo.node[0].getStyle === 'function'
-                            ? selectedNodeInfo.node[0].getStyle('color') || '#000000'
+                        selectedNodeInfo.node && selectedNodeInfo.node.length > 0
+                            ? getNodeFontColor(selectedNodeInfo.node[0])
                             : '#000000'
                     "
                     @update:model-value="changeFontColor"

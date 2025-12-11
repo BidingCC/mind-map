@@ -250,21 +250,6 @@ const sendPrompt = async () => {
     }
 };
 
-const handleStop = () => {
-    // 停止AI流式响应
-    stop();
-    isAiTyping.value = false;
-    // 恢复思维导图编辑功能
-    setMindMapReadonly("edit");
-    // 清理所有相关的缓冲区状态，防止继续处理不完整的数据
-    inTemplateBlock = false;
-    templateBuffer = "";
-    contentBuffer = "";
-    lastProcessedContent = "";
-    lastProcessedLine = "";
-    isFirstData = true;
-};
-
 const {
     data: messagesData,
     pending: loading,
@@ -2260,7 +2245,7 @@ onBeforeUnmount(() => {
                                     color="neutral"
                                     variant="ghost"
                                     class="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full p-0"
-                                    @click.stop="handleStop"
+                                    disabled
                                 >
                                     <UIcon name="i-lucide-stop-circle" class="h-4 w-4" />
                                 </UButton>

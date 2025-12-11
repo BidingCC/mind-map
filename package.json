@@ -1,6 +1,6 @@
 {
     "name": "buildingai-mind-map",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "可以AI生成思维导图",
     "author": "BuildingAI Teams-dserha",
     "private": true,

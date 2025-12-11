@@ -1643,9 +1643,18 @@ const isSecondLevelNode = (node: any): boolean => {
     }
 };
 
+// 获取当前主题的默认背景色
+const getDefaultBackgroundColor = (): string => {
+    const isDarkMode =
+        colorMode.value === "dark" ||
+        (colorMode.value === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    // 暗黑模式返回深色背景，亮色模式返回白色
+    return isDarkMode ? "#0D0D0D" : "#ffffff";
+};
+
 // 获取节点背景颜色
 const getNodeFillColor = (node: any): string => {
-    if (!node || !mindMapInstance) return "#ffffff";
+    if (!node || !mindMapInstance) return getDefaultBackgroundColor();
 
     try {
         // 检查是否是根节点
@@ -1673,9 +1682,12 @@ const getNodeFillColor = (node: any): string => {
             if (styleValue && typeof styleValue === "string" && styleValue.trim() !== "") {
                 const normalizedValue = styleValue.trim().toLowerCase();
                 // 一级子节点默认返回 #fff，其他子节点默认返回 transparent
-                // 这两种情况都表示没有设置颜色，应该返回白色
+                // transparent 表示没有背景色，需要根据当前主题返回对应的背景色
+                if (normalizedValue === "transparent") {
+                    return getDefaultBackgroundColor();
+                }
+                // #fff 或 white 表示白色背景
                 if (
-                    normalizedValue === "transparent" ||
                     normalizedValue === "#fff" ||
                     normalizedValue === "#ffffff" ||
                     normalizedValue === "white"
@@ -1687,11 +1699,11 @@ const getNodeFillColor = (node: any): string => {
             }
         }
 
-        // 子节点默认使用白色
-        return "#ffffff";
+        // 子节点默认使用当前主题的背景色
+        return getDefaultBackgroundColor();
     } catch (error) {
         console.warn("获取节点背景颜色失败:", error);
-        return "#ffffff";
+        return getDefaultBackgroundColor();
     }
 };
 

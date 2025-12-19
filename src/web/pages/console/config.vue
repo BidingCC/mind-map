@@ -96,7 +96,11 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
             bindModelId: selectedModelId.value,
         };
 
-        await apiSaveMindMapConfig(updateData, formData.id);
+        const result = await apiSaveMindMapConfig(updateData, formData.id);
+        if (result == null) {
+            toast.error(t("console.config.saveFailed"));
+            return;
+        }
         toast.success(t("console.config.saveSuccess"));
     } catch (error) {
         console.error("更新配置失败:", error);

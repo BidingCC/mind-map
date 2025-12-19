@@ -62,7 +62,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
             return config;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get config.");
+            throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 
@@ -84,7 +84,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
                             contentLength: item.content.length,
                         });
                         throw HttpErrorFactory.badRequest(
-                            `Example content cannot exceed 35 characters. Current length: ${item.content.length}`,
+                            `示例内容不能超过35个字符，当前长度：${item.content.length}`,
                         );
                     }
                 }
@@ -94,7 +94,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
                 this.logger.warn("[MindMapExtension] 对话文本超过20个字符", {
                     contentLength: data.dialogText.length,
                 });
-                throw HttpErrorFactory.badRequest(`Dialog text cannot exceed 20 characters.`);
+                throw HttpErrorFactory.badRequest("对话文本不能超过20个字符");
             }
 
             // 查找现有配置
@@ -107,7 +107,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
 
             if (!config) {
                 this.logger.warn("[MindMapExtension] 示例配置未找到");
-                throw HttpErrorFactory.notFound("Congfig not found.");
+                throw HttpErrorFactory.notFound("配置不存在");
             }
 
             // 更新配置字段
@@ -117,12 +117,15 @@ export class ExamplesService extends BaseService<MindMapExample> {
             if (data.enabledTry !== undefined) config.enabledTry = data.enabledTry;
             if (data.enabledDialog !== undefined) config.enabledDialog = data.enabledDialog;
 
-            const result = await this.mindMapExampleRepository.save(config);
+            const saved = await this.mindMapExampleRepository.save(config);
             this.logger.debug("[MindMapExtension] 示例配置保存成功");
-            return result;
+            return saved;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 保存配置失败: ${error}`);
-            throw HttpErrorFactory.internal("Failed to save config.");
+            this.logger.error(
+                `[MindMapExtension] 保存配置失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("保存配置失败");
         }
     }
 
@@ -146,9 +149,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
 
             if (!config) {
                 this.logger.warn("[MindMapExtension] 用户示例配置未找到");
-                throw HttpErrorFactory.notFound(
-                    "Congfig not found, please contact the administrator.",
-                );
+                throw HttpErrorFactory.notFound("配置不存在，请联系管理员");
             }
 
             this.logger.debug("[MindMapExtension] 获取用户示例配置成功");
@@ -161,7 +162,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
             };
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get config.");
+            throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 }

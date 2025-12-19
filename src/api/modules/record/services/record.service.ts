@@ -32,7 +32,7 @@ export class RecordService extends BaseService<MindMapRecord> {
      * @param id 思维导图记录ID
      * @returns 是否成功
      */
-    async delete(id: string): Promise<void> {
+    async deleteRecord(id: string): Promise<boolean> {
         try {
             const mindMapRecord = await this.MindMapRecordRepository.findOne({
                 where: {
@@ -41,14 +41,18 @@ export class RecordService extends BaseService<MindMapRecord> {
             });
             if (!mindMapRecord) {
                 this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id });
-                throw HttpErrorFactory.notFound("The mind map record does not exist");
+                throw HttpErrorFactory.notFound("思维导图记录不存在");
             }
 
-            await this.MindMapRecordRepository.delete(id);
+            const result = await this.MindMapRecordRepository.delete(id);
             this.logger.debug("[MindMapExtension] 思维导图记录删除成功", { id });
+            return (result.affected ?? 0) > 0;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 删除思维导图记录时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to delete mind map record.");
+            this.logger.error(
+                `[MindMapExtension] 删除思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("删除思维导图记录失败");
         }
     }
 
@@ -57,7 +61,7 @@ export class RecordService extends BaseService<MindMapRecord> {
      * @param batchDeleteDto 批量删除DTO
      * @returns 是否成功
      */
-    async deleteBatch(dto: BatchDeleteMindMapRecordDto): Promise<void> {
+    async deleteBatch(dto: BatchDeleteMindMapRecordDto): Promise<boolean> {
         try {
             const { ids } = dto;
             const records = await this.MindMapRecordRepository.find({
@@ -68,14 +72,18 @@ export class RecordService extends BaseService<MindMapRecord> {
                     requestIds: ids,
                     foundRecords: records.length,
                 });
-                throw HttpErrorFactory.notFound("Some mind map records do not exist");
+                throw HttpErrorFactory.notFound("部分思维导图记录不存在");
             }
 
-            await this.MindMapRecordRepository.delete(ids);
+            const result = await this.MindMapRecordRepository.delete(ids);
             this.logger.debug("[MindMapExtension] 批量删除思维导图记录成功", { count: ids.length });
+            return (result.affected ?? 0) > 0;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 批量删除思维导图记录时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to delete mind map records.");
+            this.logger.error(
+                `[MindMapExtension] 批量删除思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("批量删除思维导图记录失败");
         }
     }
 
@@ -162,7 +170,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             };
         } catch (error) {
             this.logger.error(`[MindMapExtension] 搜索思维导图记录时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get mind map records.");
+            throw HttpErrorFactory.internal("获取思维导图记录失败");
         }
     }
 
@@ -258,7 +266,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             return rs.id;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 创建思维导图记录时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to create mind map record.");
+            throw HttpErrorFactory.internal("创建思维导图记录失败");
         }
     }
 
@@ -322,7 +330,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             };
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取思维导图记录列表时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get mind map records.");
+            throw HttpErrorFactory.internal("获取思维导图记录失败");
         }
     }
 
@@ -341,20 +349,23 @@ export class RecordService extends BaseService<MindMapRecord> {
             });
             if (!mindMapRecord) {
                 this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id });
-                throw HttpErrorFactory.notFound("The mind map record does not exist");
+                throw HttpErrorFactory.notFound("思维导图记录不存在");
             }
 
             if (userId && mindMapRecord.userId !== userId) {
                 this.logger.warn("[MindMapExtension] 无权限删除该记录", { id, userId });
-                throw HttpErrorFactory.forbidden("No permission to delete this record");
+                throw HttpErrorFactory.forbidden("无权限删除该记录");
             }
 
             const result = await this.MindMapRecordRepository.delete(id);
             this.logger.debug("[MindMapExtension] 用户删除思维导图记录成功", { id, userId });
             return (result.affected ?? 0) > 0;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 删除思维导图记录时出错: ${error}`);
-            throw HttpErrorFactory.internal("Delete mind map record failed");
+            this.logger.error(
+                `[MindMapExtension] 删除思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("删除思维导图记录失败");
         }
     }
 
@@ -363,9 +374,9 @@ export class RecordService extends BaseService<MindMapRecord> {
      * @param id 思维导图ID
      * @param title 新名称
      * @param userId 当前用户ID
-     * @returns 是否成功
+     * @returns 更新后的思维导图记录，如果不存在或无权限则返回 null
      */
-    async updateTitle(id: string, title: string, userId?: string): Promise<boolean> {
+    async updateTitle(id: string, title: string, userId?: string): Promise<MindMapRecord | null> {
         try {
             const mindMapRecord = await this.MindMapRecordRepository.findOne({
                 where: { id },
@@ -373,22 +384,25 @@ export class RecordService extends BaseService<MindMapRecord> {
 
             if (!mindMapRecord) {
                 this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id });
-                throw HttpErrorFactory.notFound("The mind map record does not exist");
+                return null;
             }
 
             // 如果提供了userId，则验证当前用户是否为记录创建者
             if (userId && mindMapRecord.userId !== userId) {
                 this.logger.warn("[MindMapExtension] 无权限修改该记录", { id, userId });
-                throw HttpErrorFactory.forbidden("No permission to modify this record");
+                return null;
             }
 
             mindMapRecord.description = title;
-            const result = await this.MindMapRecordRepository.save(mindMapRecord);
+            const saved = await this.MindMapRecordRepository.save(mindMapRecord);
             this.logger.debug("[MindMapExtension] 更新思维导图名称成功", { id, title });
-            return result !== null;
+            return saved;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 更新思维导图名称时出错: ${error}`);
-            throw HttpErrorFactory.internal("Update mind map record failed");
+            this.logger.error(
+                `[MindMapExtension] 更新思维导图名称时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("更新思维导图记录失败");
         }
     }
 }

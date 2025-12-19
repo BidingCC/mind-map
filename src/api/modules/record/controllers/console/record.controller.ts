@@ -19,7 +19,7 @@ export class RecordController {
      */
     @Delete("delete/:id")
     async deleteMindMapRecord(@Param("id", UUIDValidationPipe) id: string) {
-        return await this.recordService.delete(id);
+        return await this.recordService.deleteRecord(id);
     }
 
     /**

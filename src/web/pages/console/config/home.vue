@@ -150,8 +150,11 @@ const saveHomeConfig = useDebounceFn(async () => {
             enabledDescription: formData.value.enabledDescription,
         };
 
-        await apiSaveMindMapHomeConfig(saveData);
-
+        const result = await apiSaveMindMapHomeConfig(saveData);
+        if (result == null) {
+            toast.error(t("console.home.saveFailed"));
+            return;
+        }
         toast.success(t("console.home.saveSuccess"));
         console.log("保存首页配置成功");
     } catch (error) {

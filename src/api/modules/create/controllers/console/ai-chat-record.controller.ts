@@ -52,6 +52,5 @@ export class AiChatRecordConsoleController {
     @Delete(":id")
     async deleteConversation(@Param("id", UUIDValidationPipe) conversationId: string) {
         await this.createService.deleteConversation(conversationId);
-        return { message: "对话删除成功" };
     }
 }

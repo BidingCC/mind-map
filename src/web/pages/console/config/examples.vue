@@ -83,8 +83,11 @@ const batchSaveExamples = useDebounceFn(async () => {
             enabledDialog: dialogValue.value,
         };
 
-        await apiSaveMindMapExamples(saveData);
-
+        const result = await apiSaveMindMapExamples(saveData);
+        if (result == null) {
+            toast.error(t("console.examples.saveFailed"));
+            return;
+        }
         toast.success(t("console.examples.saveSuccess"));
         console.log("保存示例成功");
     } catch (error) {

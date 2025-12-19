@@ -332,8 +332,8 @@ const handlePreviewModalOpen = async () => {
         imageAlt: t("console.records.mindMap"),
     });
 
-    const reslut = await instance.result;
-    if (reslut) {
+    const result = await instance.result;
+    if (result) {
         isOpen.value = false;
     }
 };
@@ -449,9 +449,17 @@ const confirmDelete = async () => {
             const item = paging.items.find(
                 (item: MindMapRecord) => item.id === deletingRecordId.value,
             );
-            await apiDeleteMindMapConsole(deletingRecordId.value);
+            const result = await apiDeleteMindMapConsole(deletingRecordId.value);
+            if (result === false) {
+                toast.error(t("console.records.deleteFailed"));
+                return;
+            }
             if (item?.aiChatRecordId) {
-                await apiDeleteAiConversationConsole(item?.aiChatRecordId);
+                try {
+                    await apiDeleteAiConversationConsole(item?.aiChatRecordId);
+                } catch (error) {
+                    console.error("删除对话失败:", error);
+                }
             }
             toast.success(t("console.records.deleteSuccess"));
         } else if (isBatchDelete.value && selectedRows.value.length > 0) {
@@ -461,7 +469,11 @@ const confirmDelete = async () => {
                 .map((row) => row.aiChatRecordId)
                 .filter((id): id is string => id != null);
 
-            await apiBatchDeleteMindMapConsole(ids);
+            const result = await apiBatchDeleteMindMapConsole(ids);
+            if (result === false) {
+                toast.error(t("console.records.deleteFailed"));
+                return;
+            }
             if (aiChatRecordIds.length > 0) {
                 await apiDeleteAiConversationConsoles(aiChatRecordIds);
             }

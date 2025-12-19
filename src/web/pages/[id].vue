@@ -198,11 +198,12 @@ const saveTitle = async () => {
         try {
             isEditingTitle.value = false;
             const result = await apiUpdateMindMapTitle(mindMapId, editableTitle.value);
-            if (result) {
-                pageTitle.value = editableTitle.value;
-            } else {
+            if (result == null) {
                 toast.error(t("create.drawer.saveTitleError"));
+                return;
             }
+            pageTitle.value = editableTitle.value;
+            toast.success(t("create.drawer.saveTitleSuccess"));
         } catch (error) {
             console.error(error);
             toast.error(t("create.drawer.saveTitleError"));
@@ -1527,23 +1528,23 @@ const saveMindMapData = async () => {
             mindMapData: fullData,
             updatedAt: new Date(),
         });
-        if (res) {
-            // 显示保存成功提示
-            showSaveIndicator.value = true;
-
-            // 清理之前的定时器（如果存在）
-            if (saveIndicatorTimer.value) {
-                clearTimeout(saveIndicatorTimer.value);
-            }
-
-            // 设置新的定时器
-            saveIndicatorTimer.value = setTimeout(() => {
-                showSaveIndicator.value = false;
-                saveIndicatorTimer.value = null;
-            }, 2000);
-        } else {
+        if (res == null) {
             toast.error(t("create.drawer.saveError"));
+            return;
         }
+        // 显示保存成功提示
+        showSaveIndicator.value = true;
+
+        // 清理之前的定时器（如果存在）
+        if (saveIndicatorTimer.value) {
+            clearTimeout(saveIndicatorTimer.value);
+        }
+
+        // 设置新的定时器
+        saveIndicatorTimer.value = setTimeout(() => {
+            showSaveIndicator.value = false;
+            saveIndicatorTimer.value = null;
+        }, 2000);
     } catch (error) {
         console.error("保存思维导图时出错:", error);
         toast.error(t("create.drawer.saveError"));

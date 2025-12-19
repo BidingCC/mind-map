@@ -73,7 +73,7 @@ export class AiChatMessageController extends BaseController {
         });
 
         if (!userInfo) {
-            throw HttpErrorFactory.notFound("User not found.");
+            throw HttpErrorFactory.notFound("用户不存在");
         }
 
         // 标记客户端是否已断开连接
@@ -97,9 +97,7 @@ export class AiChatMessageController extends BaseController {
             (pluginConfig.billingType !== 2 &&
                 (pluginConfig.billingSetting === undefined || pluginConfig.billingSetting === null))
         ) {
-            throw HttpErrorFactory.internal(
-                "Extension configuration error. Please contact the administrator.",
-            );
+            throw HttpErrorFactory.internal("配置错误，请联系管理员");
         }
         const providerSecret = await this.aiModelService.getProviderConfig(
             pluginConfig.bindModelId,
@@ -118,9 +116,7 @@ export class AiChatMessageController extends BaseController {
         );
 
         if (!hasSufficientPower) {
-            throw HttpErrorFactory.badRequest(
-                "Insufficient balance. Please recharge and try again.",
-            );
+            throw HttpErrorFactory.badRequest("积分不足，请充值后重试");
         }
 
         try {
@@ -209,7 +205,7 @@ export class AiChatMessageController extends BaseController {
                         `[MindMapExtension] 获取思维导图数据失败: ${error.message}`,
                         error.stack ? error.stack : "",
                     );
-                    throw HttpErrorFactory.internal("Failed to obtain the mind map data.");
+                    throw HttpErrorFactory.internal("获取思维导图数据失败");
                 }
             }
 
@@ -633,65 +629,32 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
             try {
                 if (!isClientDisconnected) {
                     // 根据错误类型确定发送给用户的消息
-                    let userFriendlyMessage =
-                        "An unexpected error occurred. Please try again later.";
+                    let userFriendlyMessage = "发生意外错误，请稍后重试";
                     let errorCode = error.code || "INTERNAL_ERROR";
 
-                    // 检查错误消息内容以确定错误类型
-                    if (error.message) {
+                    if (error instanceof Error && error.message) {
                         const errorMsg = error.message.toLowerCase();
 
-                        // 账户欠费或访问被拒绝（包括阿里云百炼平台的欠费情况）
+                        // 账户余额不足
                         if (
-                            errorMsg.includes("access denied") ||
-                            errorMsg.includes("unauthorized") ||
-                            errorMsg.includes("forbidden") ||
+                            errorMsg.includes("arrearage") ||
                             (errorMsg.includes("good standing") && errorMsg.includes("payment")) ||
-                            errorMsg.includes("arrearage")
+                            errorMsg.includes("insufficient balance") ||
+                            errorMsg.includes("insufficient funds") ||
+                            errorMsg.includes("quota exceeded") ||
+                            errorMsg.includes("balance")
                         ) {
                             userFriendlyMessage =
-                                "AI service is currently unavailable due to account issues. Please contact the administrator.";
+                                "AI服务因管理员账户余额不足暂时不可用，请联系管理员";
                             errorCode = "ACCOUNT_ACCESS_DENIED";
-                        }
-                        // 模型相关错误
-                        else if (
+                        } else if (
                             errorMsg.includes("model") &&
                             (errorMsg.includes("not found") ||
                                 errorMsg.includes("invalid") ||
                                 errorMsg.includes("unsupported"))
                         ) {
-                            userFriendlyMessage =
-                                "The AI model is currently unavailable. Please contact administrator or try again later.";
+                            userFriendlyMessage = "AI模型暂时不可用，请联系管理员或稍后重试";
                             errorCode = "MODEL_UNAVAILABLE";
-                        }
-                        // 配额耗尽
-                        else if (
-                            errorMsg.includes("quota") ||
-                            errorMsg.includes("rate limit") ||
-                            errorMsg.includes("too many requests")
-                        ) {
-                            userFriendlyMessage =
-                                "Service quota exceeded. Please try again later or upgrade your plan.";
-                            errorCode = "QUOTA_EXCEEDED";
-                        }
-                        // 内容审核被拒绝
-                        else if (
-                            errorMsg.includes("content policy") ||
-                            errorMsg.includes("content filter") ||
-                            errorMsg.includes("blocked")
-                        ) {
-                            userFriendlyMessage =
-                                "Your request was blocked by content policy. Please modify your query and try again.";
-                            errorCode = "CONTENT_POLICY_VIOLATION";
-                        }
-                        // 上下文长度超限
-                        else if (
-                            errorMsg.includes("context length") ||
-                            errorMsg.includes("maximum context")
-                        ) {
-                            userFriendlyMessage =
-                                "The conversation is too long. Please start a new conversation or reduce the content length.";
-                            errorCode = "CONTEXT_LENGTH_EXCEEDED";
                         }
                     }
 
@@ -732,9 +695,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                 );
                 // 如果无法发送SSE错误，再抛出异常
                 // 使用通用的用户友好错误消息
-                const userFriendlyError = HttpErrorFactory.badRequest(
-                    "An unexpected error occurred. Please try again later.",
-                );
+                const userFriendlyError = HttpErrorFactory.badRequest("发生意外错误，请稍后重试");
                 throw userFriendlyError;
             }
         }

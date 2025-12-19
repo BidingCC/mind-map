@@ -48,7 +48,7 @@ export class HomeService extends BaseService<MindMapHome> {
             return config;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get config.");
+            throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 
@@ -64,18 +64,14 @@ export class HomeService extends BaseService<MindMapHome> {
                 this.logger.warn("[MindMapExtension] 插件显示名称超过15个字符", {
                     nameLength: data.name.length,
                 });
-                throw HttpErrorFactory.badRequest(
-                    `Plugin display name cannot exceed 15 characters.`,
-                );
+                throw HttpErrorFactory.badRequest("插件显示名称不能超过15个字符");
             }
 
             if (data.description !== undefined && data.description.length > 25) {
                 this.logger.warn("[MindMapExtension] 插件描述超过25个字符", {
                     descriptionLength: data.description.length,
                 });
-                throw HttpErrorFactory.badRequest(
-                    `Plugin description cannot exceed 25 characters.`,
-                );
+                throw HttpErrorFactory.badRequest("插件描述不能超过25个字符");
             }
 
             // 校验宣传语文案内容是否超过四行
@@ -92,9 +88,7 @@ export class HomeService extends BaseService<MindMapHome> {
 
                 if (lineCount > 4) {
                     this.logger.warn("[MindMapExtension] 宣传语文案超过四行", { lineCount });
-                    throw HttpErrorFactory.badRequest(
-                        `The number of lines in the slogan cannot exceed four.`,
-                    );
+                    throw HttpErrorFactory.badRequest("宣传语文案行数不能超过四行");
                 }
             }
 
@@ -108,7 +102,7 @@ export class HomeService extends BaseService<MindMapHome> {
 
             if (!config) {
                 this.logger.warn("[MindMapExtension] 首页配置未找到");
-                throw HttpErrorFactory.notFound("Config not found");
+                throw HttpErrorFactory.notFound("配置不存在");
             }
 
             // 更新配置字段
@@ -118,12 +112,15 @@ export class HomeService extends BaseService<MindMapHome> {
             if (data.enabledDescription !== undefined)
                 config.enabledDescription = data.enabledDescription;
 
-            const result = await this.mindMapHomeRepository.save(config);
+            const saved = await this.mindMapHomeRepository.save(config);
             this.logger.debug("[MindMapExtension] 首页配置保存成功");
-            return result;
+            return saved;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 保存配置失败: ${error}`);
-            throw HttpErrorFactory.internal("Failed to save config.");
+            this.logger.error(
+                `[MindMapExtension] 保存配置失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("保存配置失败");
         }
     }
 
@@ -147,9 +144,7 @@ export class HomeService extends BaseService<MindMapHome> {
 
             if (!config) {
                 this.logger.warn("[MindMapExtension] 用户首页配置未找到");
-                throw HttpErrorFactory.notFound(
-                    "Config not found, please contact the administrator.",
-                );
+                throw HttpErrorFactory.notFound("配置不存在，请联系管理员");
             }
 
             this.logger.debug("[MindMapExtension] 获取用户首页配置成功");
@@ -161,7 +156,7 @@ export class HomeService extends BaseService<MindMapHome> {
             };
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get config.");
+            throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 }

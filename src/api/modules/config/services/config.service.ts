@@ -48,7 +48,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
             return config;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取思维导图插件配置时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get mind map config.");
+            throw HttpErrorFactory.internal("获取思维导图配置失败");
         }
     }
 
@@ -69,7 +69,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
 
             if (!config) {
                 this.logger.warn(`[MindMapExtension] 配置未找到: ${id}`);
-                throw HttpErrorFactory.notFound("Config not found");
+                throw HttpErrorFactory.notFound("配置不存在");
             }
 
             // 更新配置字段
@@ -83,7 +83,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
             return result;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 保存配置失败: ${error}`);
-            throw HttpErrorFactory.internal("Failed to save mind map config.");
+            throw HttpErrorFactory.internal("保存思维导图配置失败");
         }
     }
 
@@ -106,16 +106,14 @@ export class ConfigService extends BaseService<MindMapConfig> {
 
             if (!config) {
                 this.logger.warn("[MindMapExtension] 用户配置未找到");
-                throw HttpErrorFactory.notFound(
-                    "Config not found, please contact the administrator.",
-                );
+                throw HttpErrorFactory.notFound("配置不存在，请联系管理员");
             }
 
             this.logger.debug("[MindMapExtension] 获取用户配置成功");
             return new MindMapConfigUserDto(config);
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取思维导图插件配置时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get config.");
+            throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 }

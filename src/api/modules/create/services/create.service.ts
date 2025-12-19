@@ -44,7 +44,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             return await this.configService.getConfig();
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取插件配置时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get config.");
+            throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 
@@ -63,11 +63,11 @@ export class CreateService extends BaseService<MindMapRecord> {
                 });
 
                 if (!mindMapRecord) {
-                    throw HttpErrorFactory.notFound("The mind map record does not exist");
+                    throw HttpErrorFactory.notFound("思维导图记录不存在");
                 }
 
                 if (mindMapRecord.userId !== userId) {
-                    throw HttpErrorFactory.forbidden("No permission to save this record");
+                    throw HttpErrorFactory.forbidden("无权限保存该记录");
                 }
             }
 
@@ -75,7 +75,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             return result !== null;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 保存思维导图记录时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to save mind map record.");
+            throw HttpErrorFactory.internal("保存思维导图记录失败");
         }
     }
 
@@ -92,12 +92,12 @@ export class CreateService extends BaseService<MindMapRecord> {
             });
 
             if (!mindMapRecord) {
-                throw HttpErrorFactory.notFound("The mind map record does not exist");
+                throw HttpErrorFactory.notFound("思维导图记录不存在");
             }
 
             // 检查当前用户是否为思维导图的创建者
             if (mindMapRecord.userId !== userId) {
-                throw HttpErrorFactory.forbidden("There is no permission to view this mind map");
+                throw HttpErrorFactory.forbidden("无权限查看该思维导图");
             }
 
             // 返回公开接口数据结构
@@ -111,7 +111,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             };
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取思维导图详情时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get mind map record.");
+            throw HttpErrorFactory.internal("获取思维导图记录失败");
         }
     }
 
@@ -120,9 +120,9 @@ export class CreateService extends BaseService<MindMapRecord> {
      * @param id 思维导图ID
      * @param title 新名称
      * @param userId 当前用户ID
-     * @returns 更新后的思维导图记录
+     * @returns 更新后的思维导图记录，如果不存在或无权限则返回 null
      */
-    async updateTitle(id: string, title: string, userId?: string): Promise<MindMapRecord> {
+    async updateTitle(id: string, title: string, userId?: string): Promise<MindMapRecord | null> {
         try {
             // 如果提供了userId，则验证当前用户是否为记录创建者
             if (userId) {
@@ -131,22 +131,29 @@ export class CreateService extends BaseService<MindMapRecord> {
                 });
 
                 if (!mindMapRecord) {
-                    throw HttpErrorFactory.notFound("The mind map record does not exist");
+                    this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id, userId });
+                    return null;
                 }
 
                 if (mindMapRecord.userId !== userId) {
-                    throw HttpErrorFactory.forbidden("No permission to modify this record");
+                    this.logger.warn("[MindMapExtension] 无权限修改该记录", { id, userId });
+                    return null;
                 }
             }
 
             if (!title) {
-                throw HttpErrorFactory.paramError("The title cannot be empty");
+                throw HttpErrorFactory.paramError("标题不能为空");
             }
 
-            return await this.updateById(id, { description: title });
+            const saved = await this.updateById(id, { description: title });
+            this.logger.debug("[MindMapExtension] 更新思维导图名称成功", { id, title });
+            return saved;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 更新思维导图名称时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to update mind map record.");
+            this.logger.error(
+                `[MindMapExtension] 更新思维导图名称时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("更新思维导图记录失败");
         }
     }
 
@@ -166,13 +173,13 @@ export class CreateService extends BaseService<MindMapRecord> {
             });
 
             if (!mindMapRecord) {
-                throw HttpErrorFactory.notFound("The mind map record does not exist");
+                throw HttpErrorFactory.notFound("思维导图记录不存在");
             }
 
             return await this.updateById(mindMapRecord.id, updates);
         } catch (error) {
             this.logger.error(`[MindMapExtension] 通过对话ID更新思维导图记录时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to update mind map record.");
+            throw HttpErrorFactory.internal("更新思维导图记录失败");
         }
     }
 
@@ -189,7 +196,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             });
 
             if (!mindMapRecord) {
-                throw HttpErrorFactory.notFound("The mind map record does not exist");
+                throw HttpErrorFactory.notFound("思维导图记录不存在");
             }
 
             // 累加积分消耗
@@ -197,7 +204,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             return await this.updateById(id, { powerUsed: updatedPowerUsed });
         } catch (error) {
             this.logger.error(`[MindMapExtension] 思维导图记录的积分消耗时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to update mind map record.");
+            throw HttpErrorFactory.internal("更新思维导图记录失败");
         }
     }
 
@@ -241,7 +248,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             return result;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 创建对话失败: ${error.message}`, error.stack);
-            throw HttpErrorFactory.internal("Failed to create conversation.");
+            throw HttpErrorFactory.internal("创建对话失败");
         }
     }
 
@@ -268,7 +275,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             return result;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取对话详情失败: ${error.message}`, error.stack);
-            throw HttpErrorFactory.internal("Failed to get conversation detail.");
+            throw HttpErrorFactory.internal("获取对话详情失败");
         }
     }
 
@@ -302,7 +309,7 @@ export class CreateService extends BaseService<MindMapRecord> {
 
             if (!record) {
                 this.logger.warn(`[MindMapExtension] 对话记录不存在: ${conversationId}`);
-                throw HttpErrorFactory.notFound("The conversation record does not exist");
+                throw HttpErrorFactory.notFound("对话记录不存在");
             }
 
             // 更新字段
@@ -313,7 +320,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             return result;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 更新对话信息失败: ${error.message}`, error.stack);
-            throw HttpErrorFactory.internal("Failed to update conversation.");
+            throw HttpErrorFactory.internal("更新对话失败");
         }
     }
 
@@ -339,7 +346,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 对话删除成功", { conversationId });
         } catch (error) {
             this.logger.error(`[MindMapExtension] 删除对话失败: ${error.message}`, error.stack);
-            throw HttpErrorFactory.internal("Failed to delete conversation.");
+            throw HttpErrorFactory.internal("删除对话失败");
         }
     }
 
@@ -347,39 +354,43 @@ export class CreateService extends BaseService<MindMapRecord> {
      * 前台用户删除对话（带权限验证）
      * @param conversationId 对话ID
      * @param userId 当前用户ID
+     * @returns 是否删除成功
      */
-    async deleteUserConversation(conversationId: string, userId: string): Promise<void> {
-        if (!conversationId) {
-            this.logger.warn("[MindMapExtension] 删除对话失败:对话ID为空", { userId });
-            return;
-        }
-
-        // 先检查对话是否存在并属于当前用户
-        const conversation = await this.conversationRepository.findOne({
-            where: {
-                id: conversationId,
-                userId: userId,
-            },
-        });
-
-        if (!conversation) {
-            this.logger.warn("[MindMapExtension] 删除对话失败:对话不存在或用户无权限", {
-                conversationId,
-                userId,
-            });
-            return;
-        }
-
+    async deleteUserConversation(conversationId: string, userId: string): Promise<boolean> {
         try {
-            await this.conversationRepository.delete({
+            if (!conversationId) {
+                this.logger.warn("[MindMapExtension] 删除对话失败:对话ID为空", { userId });
+                return false;
+            }
+
+            // 先检查对话是否存在并属于当前用户
+            const conversation = await this.conversationRepository.findOne({
+                where: {
+                    id: conversationId,
+                    userId: userId,
+                },
+            });
+
+            if (!conversation) {
+                this.logger.warn("[MindMapExtension] 删除对话失败:对话不存在或用户无权限", {
+                    conversationId,
+                    userId,
+                });
+                return false;
+            }
+
+            const result = await this.conversationRepository.delete({
                 id: conversationId,
                 userId: userId,
             });
             this.logger.debug("[MindMapExtension] 用户对话删除成功", { conversationId, userId });
+            return (result.affected ?? 0) > 0;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 删除对话失败: ${error.message}`, error.stack);
-            // 不向用户暴露数据库错误详情
-            return;
+            this.logger.error(
+                `[MindMapExtension] 删除对话失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
+            throw HttpErrorFactory.internal("删除对话失败");
         }
     }
 
@@ -405,7 +416,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 批量删除对话成功", { count: ids.length });
         } catch (error) {
             this.logger.error(`[MindMapExtension] 批量删除对话失败: ${error.message}`, error.stack);
-            throw HttpErrorFactory.internal("Failed to batch delete conversations.");
+            throw HttpErrorFactory.internal("批量删除对话失败");
         }
     }
 
@@ -472,7 +483,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             return result;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 创建消息失败: ${error.message}`, error.stack);
-            throw HttpErrorFactory.internal("Failed to create message.");
+            throw HttpErrorFactory.internal("创建消息失败");
         }
     }
 
@@ -516,7 +527,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             };
         } catch (error) {
             this.logger.error(`[MindMapExtension] 分页查询消息时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get messages.");
+            throw HttpErrorFactory.internal("获取消息失败");
         }
     }
 
@@ -529,14 +540,14 @@ export class CreateService extends BaseService<MindMapRecord> {
         try {
             if (!conversationId) {
                 this.logger.warn("[MindMapExtension] 获取对话消息失败:对话ID为空");
-                throw HttpErrorFactory.notFound("The conversation does not exist.");
+                throw HttpErrorFactory.notFound("对话不存在");
             }
             const result = await this.findMessages(paginationDto, { conversationId });
             this.logger.debug("[MindMapExtension] 获取对话消息成功", { conversationId });
             return result;
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取对话的消息列表时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get messages.");
+            throw HttpErrorFactory.internal("获取消息失败");
         }
     }
 
@@ -554,7 +565,7 @@ export class CreateService extends BaseService<MindMapRecord> {
         try {
             if (!conversationId) {
                 this.logger.warn("[MindMapExtension] 获取对话消息失败:对话ID为空");
-                throw HttpErrorFactory.notFound("The conversation does not exist.");
+                throw HttpErrorFactory.notFound("对话不存在");
             }
 
             // 检查对话是否属于当前用户
@@ -565,9 +576,7 @@ export class CreateService extends BaseService<MindMapRecord> {
                     conversationId,
                     userId,
                 });
-                throw HttpErrorFactory.badRequest(
-                    "The conversation does not exist or is not accessible",
-                );
+                throw HttpErrorFactory.badRequest("对话不存在或无权访问");
             }
 
             // 获取原始分页数据
@@ -595,7 +604,7 @@ export class CreateService extends BaseService<MindMapRecord> {
             };
         } catch (error) {
             this.logger.error(`[MindMapExtension] 获取对话的消息列表时出错: ${error}`);
-            throw HttpErrorFactory.internal("Failed to get messages.");
+            throw HttpErrorFactory.internal("获取消息失败");
         }
     }
 
@@ -748,9 +757,9 @@ export class CreateService extends BaseService<MindMapRecord> {
                 }
 
                 // 获取这些消息关联的对话ID
-                const conversationIds = [
-                    ...new Set(sendingMessages.map((msg) => msg.conversationId)),
-                ];
+                const conversationIds = Array.from(
+                    new Set(sendingMessages.map((msg) => msg.conversationId)),
+                );
 
                 // 更新对话状态为failed
                 await this.conversationRepository.update(

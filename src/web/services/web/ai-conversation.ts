@@ -7,7 +7,7 @@ import type { ChatStreamConfig } from "@buildingai/types";
  * @param id 记录ID
  * @returns 删除结果
  */
-export function apiDeleteAiConversation(id: string): Promise<void> {
+export function apiDeleteAiConversation(id: string): Promise<boolean> {
     return usePluginWebDelete(`/ai-chat-record/${id}`);
 }
 

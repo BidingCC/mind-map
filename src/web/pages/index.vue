@@ -932,7 +932,7 @@ onUnmounted(() => {
                                             },
                                         ],
                                     ]"
-                                    class="absolute top-0 right-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                                    class="absolute top-0 right-0 cursor-pointer opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                                 >
                                     <UButton
                                         color="neutral"
@@ -1020,7 +1020,7 @@ onUnmounted(() => {
                 color="primary"
                 icon="i-lucide-arrow-up-to-line"
                 size="lg"
-                class="group aspect-square rounded-full shadow-lg transition-all duration-300 hover:shadow-xl"
+                class="group aspect-square cursor-pointer rounded-full shadow-lg transition-all duration-300 hover:shadow-xl"
                 @click="scrollToTop"
             >
                 <span

@@ -18,6 +18,9 @@ import {
     apiUpdateMindMapTitle,
 } from "../services/web/create";
 
+// 导入退出确认弹窗组件
+const ExitConfirmModal = defineAsyncComponent(() => import("../components/ExitConfirmModal.vue"));
+
 defineOptions({
     name: "MindMapCreatePage",
 });
@@ -32,7 +35,11 @@ const route = useRoute();
 const router = useRouter();
 
 const toast = useMessage();
+const overlay = useOverlay();
 const titleInput = shallowRef<HTMLInputElement | null>(null);
+
+// 退出确认模态框实例
+const exitConfirmModalInstance = shallowRef<{ close: () => void } | null>(null);
 
 const isDrawerOpen = shallowRef(true);
 const isEditingTitle = shallowRef(false);
@@ -207,6 +214,56 @@ const saveTitle = async () => {
 const cancelEditingTitle = () => {
     isEditingTitle.value = false;
     editableTitle.value = "";
+};
+
+/**
+ * 处理返回操作
+ * 如果正在生成中，显示确认模态框；否则直接返回
+ */
+const handleBack = async () => {
+    // 如果正在生成中，显示确认模态框
+    if (isAiTyping.value) {
+        const modal = overlay.create(ExitConfirmModal);
+        exitConfirmModalInstance.value = modal;
+        const instance = modal.open();
+
+        // 创建一个 Promise，当生成完毕时自动 resolve 为 false
+        const autoClosePromise = new Promise<boolean>((resolve) => {
+            // 监听 isAiTyping 变化，如果生成完毕则自动关闭
+            const unwatch = watch(
+                () => isAiTyping.value,
+                (newValue) => {
+                    if (!newValue && exitConfirmModalInstance.value) {
+                        // 生成完毕，关闭模态框并 resolve 为 false（不退出页面）
+                        unwatch();
+                        try {
+                            exitConfirmModalInstance.value.close();
+                        } catch (error) {
+                            console.warn("关闭退出确认模态框失败:", error);
+                        }
+                        exitConfirmModalInstance.value = null;
+                        resolve(false);
+                    }
+                },
+            );
+
+            // 如果 instance.result 先 resolve，也要清理 watch
+            instance.result.finally(() => {
+                unwatch();
+            });
+        });
+
+        // 使用 Promise.race 等待用户操作或生成完毕
+        const shouldExit = await Promise.race([instance.result, autoClosePromise]);
+        exitConfirmModalInstance.value = null;
+        // 只有用户明确点击"确认退出"时才退出页面
+        if (shouldExit) {
+            router.back();
+        }
+    } else {
+        // 如果不在生成中，直接返回
+        router.back();
+    }
 };
 
 // 将promptText与input同步
@@ -1949,6 +2006,9 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-plus"
                 @click="addNode"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
                 :disabled="
                     !hasSelectedNode ||
                     isSelectedRootNode ||
@@ -1964,6 +2024,9 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-corner-down-right"
                 @click="addChildNode"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
                 :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
             >
                 <span class="whitespace-nowrap">{{ t("create.toolbar.addChild") }}</span>
@@ -1973,6 +2036,9 @@ onBeforeUnmount(() => {
                 variant="ghost"
                 icon="i-lucide-trash"
                 @click="removeNode"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
                 :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
                 :title="t('create.toolbar.delete')"
             >
@@ -2025,7 +2091,7 @@ onBeforeUnmount(() => {
                     "
                     @update:model-value="changeBackgroundColor"
                     type="color"
-                    :ui="{ base: 'px-1 py-0' }"
+                    :ui="{ base: 'px-1 py-0 cursor-pointer' }"
                 />
                 <span class="whitespace-nowrap">{{ t("create.toolbar.borderColor") }}</span>
                 <UInput
@@ -2052,7 +2118,7 @@ onBeforeUnmount(() => {
                     "
                     @update:model-value="changeBorderColor"
                     type="color"
-                    :ui="{ base: 'px-1 py-0' }"
+                    :ui="{ base: 'px-1 py-0 cursor-pointer' }"
                 />
                 <span class="whitespace-nowrap">{{ t("create.toolbar.textColor") }}</span>
                 <UInput
@@ -2065,7 +2131,7 @@ onBeforeUnmount(() => {
                     "
                     @update:model-value="changeFontColor"
                     type="color"
-                    :ui="{ base: 'px-1 py-0' }"
+                    :ui="{ base: 'px-1 py-0 cursor-pointer' }"
                 />
             </div>
         </div>
@@ -2078,7 +2144,10 @@ onBeforeUnmount(() => {
                 color="neutral"
                 variant="ghost"
                 icon="i-lucide-arrow-left"
-                @click="router.back()"
+                @click="handleBack"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.back") }}
             </UButton>
@@ -2113,6 +2182,9 @@ onBeforeUnmount(() => {
                 icon="i-lucide-undo"
                 :disabled="isStart || isAiTyping || isLoading || mindMapLoadFailed"
                 @click="handleUndo"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.undo") }}
             </UButton>
@@ -2122,6 +2194,9 @@ onBeforeUnmount(() => {
                 icon="i-lucide-redo"
                 :disabled="isEnd || isAiTyping || isLoading || mindMapLoadFailed"
                 @click="handleRedo"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.redo") }}
             </UButton>
@@ -2131,6 +2206,9 @@ onBeforeUnmount(() => {
                 icon="i-lucide-download"
                 :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                 @click="handleDownload"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.download") }}
             </UButton>
@@ -2146,6 +2224,9 @@ onBeforeUnmount(() => {
                     isLoading ||
                     mindMapLoadFailed
                 "
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.addSibling") }}
             </UButton>
@@ -2155,6 +2236,9 @@ onBeforeUnmount(() => {
                 icon="i-lucide-corner-down-right"
                 @click="addChildNode"
                 :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.addChild") }}
             </UButton>
@@ -2164,6 +2248,9 @@ onBeforeUnmount(() => {
                 icon="i-lucide-trash"
                 @click="removeNode"
                 :disabled="!hasSelectedNode || isAiTyping || isLoading || mindMapLoadFailed"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.delete") }}
             </UButton>
@@ -2173,6 +2260,9 @@ onBeforeUnmount(() => {
                 icon="i-lucide-maximize"
                 :disabled="isAiTyping || isLoading || mindMapLoadFailed"
                 @click="centerRootNode"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
             >
                 {{ t("create.toolbar.center") }}
             </UButton>
@@ -2194,7 +2284,7 @@ onBeforeUnmount(() => {
             <div class="divide-default divide-y py-1">
                 <button
                     v-if="contextMenu.type === 'node'"
-                    class="text-default hover:bg-elevated group relative flex w-full items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
+                    class="text-default hover:bg-elevated group relative flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
                     @click="copyNode"
                 >
                     <span>{{ t("create.contextMenu.copy") }}</span>
@@ -2202,7 +2292,7 @@ onBeforeUnmount(() => {
                 </button>
                 <button
                     v-if="contextMenu.type === 'node'"
-                    class="text-default hover:bg-elevated group relative flex w-full items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
+                    class="text-default hover:bg-elevated group relative flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
                     @click="cutNode"
                 >
                     <span>{{ t("create.contextMenu.cut") }}</span>
@@ -2210,7 +2300,7 @@ onBeforeUnmount(() => {
                 </button>
                 <button
                     v-if="contextMenu.type === 'node'"
-                    class="text-default hover:bg-elevated group relative flex w-full items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
+                    class="text-default hover:bg-elevated group relative flex w-full cursor-pointer items-center justify-between px-3 py-1.5 text-left text-sm transition-colors"
                     @click="pasteNode"
                 >
                     <span>{{ t("create.contextMenu.paste") }}</span>
@@ -2243,6 +2333,9 @@ onBeforeUnmount(() => {
                         variant="ghost"
                         icon="i-lucide-x"
                         @click="toggleDrawer"
+                        :ui="{
+                            base: 'cursor-pointer',
+                        }"
                     />
                 </div>
 
@@ -2288,6 +2381,9 @@ onBeforeUnmount(() => {
                                     @click="loadMoreMessages"
                                     :loading="loading || messagesLoading"
                                     :disabled="isLoading"
+                                    :ui="{
+                                        base: 'cursor-pointer',
+                                    }"
                                 >
                                     {{ t("create.drawer.review") }}
                                 </UButton>
@@ -2449,7 +2545,7 @@ onBeforeUnmount(() => {
                                     v-else
                                     color="primary"
                                     variant="solid"
-                                    class="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full p-0"
+                                    class="pointer-events-auto flex h-8 w-8 cursor-pointer items-center justify-center rounded-full p-0"
                                     @click.stop="sendPrompt"
                                     :disabled="isLoading || mindMapLoadFailed"
                                 >
@@ -2472,6 +2568,9 @@ onBeforeUnmount(() => {
                 variant="solid"
                 icon="i-lucide-message-circle"
                 @click="toggleDrawer"
+                :ui="{
+                    base: 'cursor-pointer',
+                }"
                 :title="t('create.drawer.title')"
             />
         </div>

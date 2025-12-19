@@ -1,45 +1,33 @@
 <script setup lang="ts">
-withDefaults(
-    defineProps<{
-        isBatch?: boolean;
-        count?: number;
-        message?: string;
-        batchMessage?: string;
-        warning?: string;
-    }>(),
-    {
-        isBatch: false,
-        count: 0,
-        message: "",
-        batchMessage: "",
-        warning: "",
-    },
-);
-
 const emits = defineEmits<{
     close: [boolean];
 }>();
 
 const { t } = useI18n();
+
+/**
+ * 自动关闭模态框
+ * 通过 expose 暴露给外部调用
+ */
+const autoClose = () => {
+    emits("close", false);
+};
+
+// 暴露方法给外部调用
+defineExpose({
+    autoClose,
+});
 </script>
 
 <template>
     <BdModal
-        :title="t('console.records.confirm_delete.title')"
+        :title="t('create.exitConfirm.title')"
         :ui="{ content: 'max-w-xl' }"
         @close="emits('close', false)"
     >
         <div class="space-y-4">
             <p class="text-muted-foreground">
-                {{
-                    !isBatch
-                        ? message || t("console.records.confirm_delete.single_message")
-                        : batchMessage ||
-                          t("console.records.confirm_delete.batch_message", {
-                              count: count,
-                          })
-                }}
-                {{ warning || t("console.records.confirm_delete.warning") }}
+                {{ t("create.exitConfirm.message") }}
             </p>
         </div>
 
@@ -54,7 +42,7 @@ const { t } = useI18n();
                 @click="emits('close', true)"
                 class="cursor-pointer rounded-lg bg-red-500 px-4 py-2 font-medium text-white transition-colors hover:bg-red-600"
             >
-                {{ t("console.records.confirm_delete.confirm") }}
+                {{ t("create.exitConfirm.confirm") }}
             </button>
         </div>
     </BdModal>

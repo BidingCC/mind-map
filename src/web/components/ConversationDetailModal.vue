@@ -287,7 +287,14 @@ function formatMessageContent(message: MessageLike): string {
 
         <template #footer>
             <div class="flex justify-end">
-                <UButton color="neutral" variant="soft" @click="emits('close')">
+                <UButton
+                    color="neutral"
+                    variant="soft"
+                    @click="emits('close')"
+                    :ui="{
+                        base: 'cursor-pointer',
+                    }"
+                >
                     {{ t("console.common.close") }}
                 </UButton>
             </div>

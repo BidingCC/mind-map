@@ -36,5 +36,10 @@
         "loadMindMapFailed": "获取思维导图失败",
         "loadMoreFailed": "加载更多失败",
         "loadInitMindMapFailed": "初始化思维导图失败"
+    },
+    "exitConfirm": {
+        "title": "确认退出",
+        "message": "当前正在生成中，如果现在退出，此次生成记录将不会被保存。确定要退出吗？",
+        "confirm": "确认退出"
     }
 }

@@ -97,6 +97,9 @@ const columns: TableColumn<MindMapRecord>[] = [
                     selectedRows.value.length > 0 &&
                     selectedRows.value.length < paging.items.length,
                 ariaLabel: "Select all",
+                ui: {
+                    base: "cursor-pointer",
+                },
             }),
         cell: ({ row }) =>
             h(UCheckbox, {
@@ -113,6 +116,9 @@ const columns: TableColumn<MindMapRecord>[] = [
                     }
                 },
                 ariaLabel: "Select row",
+                ui: {
+                    base: "cursor-pointer",
+                },
             }),
     },
     {
@@ -165,7 +171,7 @@ const columns: TableColumn<MindMapRecord>[] = [
                         ? "i-lucide-arrow-up-narrow-wide"
                         : "i-lucide-arrow-down-wide-narrow"
                     : "i-lucide-arrow-up-down",
-                class: "-mx-2.5 whitespace-nowrap",
+                class: "-mx-2.5 whitespace-nowrap cursor-pointer",
                 onClick: () => column.toggleSorting(column.getIsSorted() === "asc"),
             });
         },
@@ -224,6 +230,9 @@ const columns: TableColumn<MindMapRecord>[] = [
                     color: "neutral",
                     variant: "ghost",
                     class: "ml-auto",
+                    ui: {
+                        base: "cursor-pointer",
+                    },
                 });
             });
         },
@@ -723,6 +732,9 @@ onUnmounted(() => {
             <div class="flex flex-1 justify-end gap-2">
                 <UButton
                     class="whitespace-nowrap"
+                    :ui="{
+                        base: 'cursor-pointer',
+                    }"
                     @click="handleBatchDelete"
                     color="error"
                     variant="subtle"

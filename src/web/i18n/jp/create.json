@@ -36,5 +36,10 @@
         "loadMindMapFailed": "マインドマップの取得に失敗しました",
         "loadMoreFailed": "さらに読み込みに失敗しました",
         "loadInitMindMapFailed": "マインドマップの初期化に失敗しました"
+    },
+    "exitConfirm": {
+        "title": "終了の確認",
+        "message": "現在生成中です。今終了すると、この生成記録は保存されません。終了してもよろしいですか？",
+        "confirm": "終了を確認"
     }
 }

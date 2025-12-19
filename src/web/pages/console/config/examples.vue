@@ -157,6 +157,9 @@ onMounted(async () => {
                                         :disabled="loading"
                                         :loading="saveLoading"
                                         v-model="tryValue"
+                                        :ui="{
+                                            base: 'cursor-pointer',
+                                        }"
                                     />
                                 </div>
                             </div>
@@ -169,6 +172,9 @@ onMounted(async () => {
                                         size="xs"
                                         :disabled="trys.length >= 5 || loading || saveLoading"
                                         @click="addExample"
+                                        :ui="{
+                                            base: 'cursor-pointer',
+                                        }"
                                     >
                                         {{ t("console.examples.addExample") }}
                                     </UButton>
@@ -211,6 +217,9 @@ onMounted(async () => {
                                                             variant="ghost"
                                                             size="xs"
                                                             :disabled="loading || saveLoading"
+                                                            :ui="{
+                                                                base: 'cursor-pointer',
+                                                            }"
                                                             @click="saveEditing(element)"
                                                         />
                                                         <UButton
@@ -219,6 +228,9 @@ onMounted(async () => {
                                                             variant="ghost"
                                                             size="xs"
                                                             :disabled="loading || saveLoading"
+                                                            :ui="{
+                                                                base: 'cursor-pointer',
+                                                            }"
                                                             @click="cancelEditing"
                                                         />
                                                     </div>
@@ -239,7 +251,7 @@ onMounted(async () => {
                                                             size="xs"
                                                             :disabled="loading || saveLoading"
                                                             @click="startEditing(element)"
-                                                            class="opacity-0 transition-opacity group-hover:opacity-100"
+                                                            class="cursor-pointer opacity-0 transition-opacity group-hover:opacity-100"
                                                         />
                                                     </div>
                                                 </div>
@@ -251,6 +263,9 @@ onMounted(async () => {
                                                         size="xs"
                                                         :disabled="loading || saveLoading"
                                                         @click="removeExample(index)"
+                                                        :ui="{
+                                                            base: 'cursor-pointer',
+                                                        }"
                                                     />
                                                     <UButton
                                                         icon="i-lucide-grip-vertical"
@@ -259,6 +274,9 @@ onMounted(async () => {
                                                         size="xs"
                                                         class="drag-handle cursor-move"
                                                         :disabled="loading || saveLoading"
+                                                        :ui="{
+                                                            base: 'cursor-pointer',
+                                                        }"
                                                     />
                                                 </div>
                                             </div>
@@ -269,8 +287,8 @@ onMounted(async () => {
                         </div>
 
                         <div>
-                            <div class="mb-1 flex items-center justify-between">
-                                <div class="mb-1 text-sm">
+                            <div class="mb-2 flex items-center justify-between">
+                                <div class="text-sm">
                                     {{ t("console.examples.dialogText") }}
                                 </div>
                                 <div>
@@ -278,6 +296,9 @@ onMounted(async () => {
                                         :disabled="loading"
                                         :loading="saveLoading"
                                         v-model="dialogValue"
+                                        :ui="{
+                                            base: 'cursor-pointer',
+                                        }"
                                     />
                                 </div>
                             </div>
@@ -395,6 +416,9 @@ onMounted(async () => {
                 :disabled="loading"
                 @click="batchSaveExamples"
                 class="mb-4"
+                :ui="{
+                    base: 'cursor-pointer whitespace-nowrap',
+                }"
             >
                 {{ t("console.examples.save") }}
             </UButton>

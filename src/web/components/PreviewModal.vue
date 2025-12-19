@@ -35,7 +35,14 @@ const openImagePreview = (imageUrl: string) => {
 
         <template #footer>
             <div class="flex justify-end">
-                <UButton color="neutral" variant="soft" @click="emits('close', true)">
+                <UButton
+                    color="neutral"
+                    variant="soft"
+                    @click="emits('close', true)"
+                    :ui="{
+                        base: 'cursor-pointer',
+                    }"
+                >
                     {{ t("console.common.close") }}
                 </UButton>
             </div>

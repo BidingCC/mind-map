@@ -271,6 +271,9 @@ onMounted(async () => {
                                 <USwitch
                                     v-model="formData.enabledDescription"
                                     :disabled="loading || saveLoading"
+                                    :ui="{
+                                        base: 'cursor-pointer',
+                                    }"
                                 />
                             </div>
                         </div>
@@ -297,6 +300,9 @@ onMounted(async () => {
                         :loading="saveLoading"
                         :disabled="loading || saveLoading"
                         @click="saveHomeConfig"
+                        :ui="{
+                            base: 'cursor-pointer',
+                        }"
                     >
                         {{ t("console.home.save") }}
                     </UButton>

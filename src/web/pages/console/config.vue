@@ -165,7 +165,7 @@ onMounted(() => {
                     :help="t('console.config.selectModelDescription')"
                     name="selectModel"
                     required
-                    class="w-xl whitespace-nowrap"
+                    class="mb-2 w-xl whitespace-nowrap"
                 >
                     <ModelSelect
                         v-model="selectedModelId"
@@ -187,7 +187,7 @@ onMounted(() => {
                     required
                     :disabled="detailLoading || isLock"
                     :loading="isLock"
-                    class="w-sm whitespace-nowrap"
+                    class="mb-2 w-sm whitespace-nowrap"
                 >
                     <URadioGroup
                         orientation="horizontal"
@@ -203,6 +203,9 @@ onMounted(() => {
                             },
                         ]"
                         v-model="formData.billingType"
+                        :ui="{
+                            base: 'cursor-pointer',
+                        }"
                     />
                     <div v-if="formData.billingType === 1" class="mt-2 flex items-center">
                         <UInput
@@ -235,6 +238,9 @@ onMounted(() => {
                         type="submit"
                         :loading="isLock"
                         :disabled="detailLoading"
+                        :ui="{
+                            base: 'cursor-pointer',
+                        }"
                     >
                         {{ isLock ? t("console.config.saving") : t("console.config.save") }}
                     </UButton>

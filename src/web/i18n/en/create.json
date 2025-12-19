@@ -36,5 +36,10 @@
         "loadMindMapFailed": "Failed to fetch mind map",
         "loadMoreFailed": "Failed to load more",
         "loadInitMindMapFailed": "Failed to initialize mind map"
+    },
+    "exitConfirm": {
+        "title": "Confirm Exit",
+        "message": "Generation is in progress. If you exit now, this generation record will not be saved. Are you sure you want to exit?",
+        "confirm": "Confirm Exit"
     }
 }

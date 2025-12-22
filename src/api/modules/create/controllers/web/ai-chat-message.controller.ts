@@ -427,7 +427,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                                         {
                                             userId: user.id,
                                             amount: userConsumedPower,
-                                            remark: `Mind mapping dialogue consumption.`,
+                                            remark: `思维导图对话消耗`,
                                         },
                                         entityManager,
                                     );

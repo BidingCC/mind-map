@@ -47,7 +47,19 @@ export class ConfigService extends BaseService<MindMapConfig> {
             this.logger.debug("[MindMapExtension] 获取插件配置成功");
             return config;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取思维导图插件配置时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取思维导图插件配置时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取思维导图配置失败");
         }
     }
@@ -82,7 +94,19 @@ export class ConfigService extends BaseService<MindMapConfig> {
             this.logger.debug(`[MindMapExtension] 配置保存成功: ${id}`);
             return result;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 保存配置失败: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 保存配置失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("保存思维导图配置失败");
         }
     }
@@ -112,7 +136,19 @@ export class ConfigService extends BaseService<MindMapConfig> {
             this.logger.debug("[MindMapExtension] 获取用户配置成功");
             return new MindMapConfigUserDto(config);
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取思维导图插件配置时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取思维导图插件配置时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取配置失败");
         }
     }

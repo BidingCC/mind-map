@@ -5,6 +5,7 @@ import { HttpErrorFactory } from "@buildingai/errors";
 import { Injectable } from "@nestjs/common";
 
 import { MindMapExample } from "../../../db/entities/mind-map-example.entity";
+import { SaveExamplesConfigDto } from "../dto/save-examples-config.dto";
 import { MindMapExampleResponse } from "../interfaces/mind-map-example.interface";
 
 @Injectable()
@@ -61,42 +62,30 @@ export class ExamplesService extends BaseService<MindMapExample> {
             this.logger.debug("[MindMapExtension] 获取示例配置成功");
             return config;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取配置失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 
     /**
      * 保存思维导图示例配置
-     * @param data 配置数据
+     * @param dto 配置数据
      * @returns 保存后的配置
      */
-    async saveConfig(data: Partial<MindMapExample>): Promise<MindMapExample> {
+    async saveConfig(dto: SaveExamplesConfigDto): Promise<MindMapExample> {
         try {
-            if (data.try && Array.isArray(data.try)) {
-                for (const item of data.try) {
-                    if (
-                        item.content &&
-                        typeof item.content === "string" &&
-                        item.content.length > 35
-                    ) {
-                        this.logger.warn("[MindMapExtension] 示例内容超过35个字符", {
-                            contentLength: item.content.length,
-                        });
-                        throw HttpErrorFactory.badRequest(
-                            `示例内容不能超过35个字符，当前长度：${item.content.length}`,
-                        );
-                    }
-                }
-            }
-
-            if (data.dialogText !== undefined && data.dialogText.length > 20) {
-                this.logger.warn("[MindMapExtension] 对话文本超过20个字符", {
-                    contentLength: data.dialogText.length,
-                });
-                throw HttpErrorFactory.badRequest("对话文本不能超过20个字符");
-            }
-
             // 查找现有配置
             const config = await this.mindMapExampleRepository.findOne({
                 where: {},
@@ -111,16 +100,25 @@ export class ExamplesService extends BaseService<MindMapExample> {
             }
 
             // 更新配置字段
-            if (data.prologue !== undefined) config.prologue = data.prologue;
-            if (data.dialogText !== undefined) config.dialogText = data.dialogText;
-            if (data.try !== undefined) config.try = data.try;
-            if (data.enabledTry !== undefined) config.enabledTry = data.enabledTry;
-            if (data.enabledDialog !== undefined) config.enabledDialog = data.enabledDialog;
+            if (dto.prologue !== undefined) config.prologue = dto.prologue;
+            if (dto.dialogText !== undefined) config.dialogText = dto.dialogText;
+            if (dto.try !== undefined) config.try = dto.try;
+            if (dto.enabledTry !== undefined) config.enabledTry = dto.enabledTry;
+            if (dto.enabledDialog !== undefined) config.enabledDialog = dto.enabledDialog;
 
             const saved = await this.mindMapExampleRepository.save(config);
             this.logger.debug("[MindMapExtension] 示例配置保存成功");
             return saved;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 保存配置失败: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
@@ -161,7 +159,19 @@ export class ExamplesService extends BaseService<MindMapExample> {
                 enabledDialog: config.enabledDialog,
             };
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取配置失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取配置失败");
         }
     }

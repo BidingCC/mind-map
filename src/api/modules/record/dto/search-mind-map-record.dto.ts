@@ -1,7 +1,6 @@
+import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { Type } from "class-transformer";
 import { IsDate, IsOptional, IsString } from "class-validator";
-
-import { PaginationDto } from "./pagination.dto";
 
 /**
  * 搜索思维导图记录DTO

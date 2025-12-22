@@ -43,7 +43,19 @@ export class CreateService extends BaseService<MindMapRecord> {
         try {
             return await this.configService.getConfig();
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取插件配置时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取插件配置时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取配置失败");
         }
     }
@@ -74,7 +86,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             const result = await this.updateById(saveMindMapDto.id, saveMindMapDto);
             return result !== null;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 保存思维导图记录时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 保存思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("保存思维导图记录失败");
         }
     }
@@ -110,7 +134,19 @@ export class CreateService extends BaseService<MindMapRecord> {
                 aiChatRecordId: mindMapRecord.aiChatRecordId,
             };
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取思维导图详情时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取思维导图详情时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取思维导图记录失败");
         }
     }
@@ -149,6 +185,15 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 更新思维导图名称成功", { id, title });
             return saved;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 更新思维导图名称时出错: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
@@ -178,7 +223,19 @@ export class CreateService extends BaseService<MindMapRecord> {
 
             return await this.updateById(mindMapRecord.id, updates);
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 通过对话ID更新思维导图记录时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 通过对话ID更新思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("更新思维导图记录失败");
         }
     }
@@ -203,7 +260,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             const updatedPowerUsed = mindMapRecord.powerUsed + powerUsed;
             return await this.updateById(id, { powerUsed: updatedPowerUsed });
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 思维导图记录的积分消耗时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 思维导图记录的积分消耗时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("更新思维导图记录失败");
         }
     }
@@ -247,7 +316,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 成功创建对话:", { conversationId: result.id });
             return result;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 创建对话失败: ${error.message}`, error.stack);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 创建对话失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("创建对话失败");
         }
     }
@@ -274,7 +355,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 获取对话详情成功", { conversationId });
             return result;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取对话详情失败: ${error.message}`, error.stack);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取对话详情失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取对话详情失败");
         }
     }
@@ -319,7 +412,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 对话更新成功", { conversationId });
             return result;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 更新对话信息失败: ${error.message}`, error.stack);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 更新对话信息失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("更新对话失败");
         }
     }
@@ -345,7 +450,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             await queryBuilder.execute();
             this.logger.debug("[MindMapExtension] 对话删除成功", { conversationId });
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 删除对话失败: ${error.message}`, error.stack);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 删除对话失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("删除对话失败");
         }
     }
@@ -386,6 +503,15 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 用户对话删除成功", { conversationId, userId });
             return (result.affected ?? 0) > 0;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 删除对话失败: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
@@ -415,7 +541,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             await queryBuilder.execute();
             this.logger.debug("[MindMapExtension] 批量删除对话成功", { count: ids.length });
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 批量删除对话失败: ${error.message}`, error.stack);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 批量删除对话失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("批量删除对话失败");
         }
     }
@@ -482,7 +620,19 @@ export class CreateService extends BaseService<MindMapRecord> {
 
             return result;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 创建消息失败: ${error.message}`, error.stack);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 创建消息失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("创建消息失败");
         }
     }
@@ -526,7 +676,19 @@ export class CreateService extends BaseService<MindMapRecord> {
                 totalPages,
             };
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 分页查询消息时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 分页查询消息时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取消息失败");
         }
     }
@@ -546,7 +708,19 @@ export class CreateService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 获取对话消息成功", { conversationId });
             return result;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取对话的消息列表时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取对话的消息列表时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取消息失败");
         }
     }
@@ -603,7 +777,19 @@ export class CreateService extends BaseService<MindMapRecord> {
                 totalPages: result.totalPages,
             };
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取对话的消息列表时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取对话的消息列表时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取消息失败");
         }
     }

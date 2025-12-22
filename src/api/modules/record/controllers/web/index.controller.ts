@@ -1,11 +1,11 @@
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import type { UserPlayground } from "@buildingai/db";
 import { Playground } from "@buildingai/decorators/playground.decorator";
+import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { UUIDValidationPipe } from "@buildingai/pipe/param-validate.pipe";
 import { Body, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
 
 import { CreateMindMapDto } from "../../dto/create-mind-map.dto";
-import { PaginationDto } from "../../dto/pagination.dto";
 import { UpdateTitleDto } from "../../dto/update-title.dto";
 import { MindMapRecordPublicInterface } from "../../interfaces/mind-map-record.interface";
 import { PaginationResult } from "../../interfaces/pagination-result.interface";

@@ -3,13 +3,13 @@ import type { UserPlayground } from "@buildingai/db";
 import { InjectRepository } from "@buildingai/db/@nestjs/typeorm";
 import { User } from "@buildingai/db/entities";
 import { Brackets, In, Repository } from "@buildingai/db/typeorm";
+import { PaginationDto } from "@buildingai/dto/pagination.dto";
 import { HttpErrorFactory } from "@buildingai/errors";
 import { Injectable } from "@nestjs/common";
 
 import { MindMapRecord } from "../../../db/entities/mind-map-record.entity";
 import { CreateMindMapDto } from "../dto/create-mind-map.dto";
 import { BatchDeleteMindMapRecordDto } from "../dto/delete-mind-map-record.dto";
-import { PaginationDto } from "../dto/pagination.dto";
 import { SearchMindMapRecordDto } from "../dto/search-mind-map-record.dto";
 import { MindMapRecordPublicInterface } from "../interfaces/mind-map-record.interface";
 import { PaginationResult } from "../interfaces/pagination-result.interface";
@@ -48,6 +48,15 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 思维导图记录删除成功", { id });
             return (result.affected ?? 0) > 0;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 删除思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
@@ -79,6 +88,15 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 批量删除思维导图记录成功", { count: ids.length });
             return (result.affected ?? 0) > 0;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 批量删除思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
@@ -169,7 +187,19 @@ export class RecordService extends BaseService<MindMapRecord> {
                 totalPages: totalPages,
             };
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 搜索思维导图记录时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 搜索思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取思维导图记录失败");
         }
     }
@@ -265,7 +295,19 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 创建思维导图记录成功", { id: rs.id });
             return rs.id;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 创建思维导图记录时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 创建思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("创建思维导图记录失败");
         }
     }
@@ -329,7 +371,19 @@ export class RecordService extends BaseService<MindMapRecord> {
                 totalPages,
             };
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取思维导图记录列表时出错: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取思维导图记录列表时出错: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取思维导图记录失败");
         }
     }
@@ -361,6 +415,15 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 用户删除思维导图记录成功", { id, userId });
             return (result.affected ?? 0) > 0;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 删除思维导图记录时出错: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
@@ -398,6 +461,15 @@ export class RecordService extends BaseService<MindMapRecord> {
             this.logger.debug("[MindMapExtension] 更新思维导图名称成功", { id, title });
             return saved;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 更新思维导图名称时出错: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,

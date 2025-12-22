@@ -5,6 +5,7 @@ import { HttpErrorFactory } from "@buildingai/errors";
 import { Injectable } from "@nestjs/common";
 
 import { MindMapHome } from "../../../db/entities/mind-map-home.entity";
+import { SaveHomeConfigDto } from "../dto/save-home-config.dto";
 import { MindMapHomePublicInterface } from "../interface/mind-map-home.interface";
 
 @Injectable()
@@ -47,42 +48,39 @@ export class HomeService extends BaseService<MindMapHome> {
             this.logger.debug("[MindMapExtension] 获取首页配置成功");
             return config;
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取配置失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取配置失败");
         }
     }
 
     /**
      * 保存思维导图首页配置
-     * @param data 配置数据
+     * @param dto 配置数据
      * @returns 保存后的配置
      */
-    async saveHomeConfig(data: Partial<MindMapHome>): Promise<MindMapHome> {
+    async saveHomeConfig(dto: SaveHomeConfigDto): Promise<MindMapHome> {
         try {
-            // 校验字段长度
-            if (data.name !== undefined && data.name.length > 15) {
-                this.logger.warn("[MindMapExtension] 插件显示名称超过15个字符", {
-                    nameLength: data.name.length,
-                });
-                throw HttpErrorFactory.badRequest("插件显示名称不能超过15个字符");
-            }
-
-            if (data.description !== undefined && data.description.length > 25) {
-                this.logger.warn("[MindMapExtension] 插件描述超过25个字符", {
-                    descriptionLength: data.description.length,
-                });
-                throw HttpErrorFactory.badRequest("插件描述不能超过25个字符");
-            }
-
             // 校验宣传语文案内容是否超过四行
-            if (data.publicLanguage !== undefined) {
-                const blockElementMatches = data.publicLanguage.match(
+            if (dto.publicLanguage !== undefined) {
+                const blockElementMatches = dto.publicLanguage.match(
                     /<(p|h[1-6]|div|li|blockquote)\b[^>]*>/gi,
                 );
                 let lineCount = blockElementMatches ? blockElementMatches.length : 0;
 
                 // 如果没有任何块级元素但有内容，则至少算作一行
-                if (lineCount === 0 && data.publicLanguage.trim()) {
+                if (lineCount === 0 && dto.publicLanguage.trim()) {
                     lineCount = 1;
                 }
 
@@ -106,16 +104,25 @@ export class HomeService extends BaseService<MindMapHome> {
             }
 
             // 更新配置字段
-            if (data.name !== undefined) config.name = data.name;
-            if (data.publicLanguage !== undefined) config.publicLanguage = data.publicLanguage;
-            if (data.description !== undefined) config.description = data.description;
-            if (data.enabledDescription !== undefined)
-                config.enabledDescription = data.enabledDescription;
+            if (dto.name !== undefined) config.name = dto.name;
+            if (dto.publicLanguage !== undefined) config.publicLanguage = dto.publicLanguage;
+            if (dto.description !== undefined) config.description = dto.description;
+            if (dto.enabledDescription !== undefined)
+                config.enabledDescription = dto.enabledDescription;
 
             const saved = await this.mindMapHomeRepository.save(config);
             this.logger.debug("[MindMapExtension] 首页配置保存成功");
             return saved;
         } catch (error) {
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
             this.logger.error(
                 `[MindMapExtension] 保存配置失败: ${error instanceof Error ? error.message : String(error)}`,
                 error instanceof Error ? error.stack : undefined,
@@ -155,7 +162,19 @@ export class HomeService extends BaseService<MindMapHome> {
                 enabledDescription: config.enabledDescription,
             };
         } catch (error) {
-            this.logger.error(`[MindMapExtension] 获取配置失败: ${error}`);
+            // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
+            if (
+                error &&
+                typeof error === "object" &&
+                ("httpStatus" in error || "businessCode" in error)
+            ) {
+                throw error;
+            }
+            // 系统错误才包装成内部错误
+            this.logger.error(
+                `[MindMapExtension] 获取配置失败: ${error instanceof Error ? error.message : String(error)}`,
+                error instanceof Error ? error.stack : undefined,
+            );
             throw HttpErrorFactory.internal("获取配置失败");
         }
     }

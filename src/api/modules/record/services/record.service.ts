@@ -437,9 +437,9 @@ export class RecordService extends BaseService<MindMapRecord> {
      * @param id 思维导图ID
      * @param title 新名称
      * @param userId 当前用户ID
-     * @returns 更新后的思维导图记录，如果不存在或无权限则返回 null
+     * @returns 更新是否成功
      */
-    async updateTitle(id: string, title: string, userId?: string): Promise<MindMapRecord | null> {
+    async updateTitle(id: string, title: string, userId?: string): Promise<boolean> {
         try {
             const mindMapRecord = await this.MindMapRecordRepository.findOne({
                 where: { id },
@@ -447,19 +447,19 @@ export class RecordService extends BaseService<MindMapRecord> {
 
             if (!mindMapRecord) {
                 this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id });
-                return null;
+                return false;
             }
 
             // 如果提供了userId，则验证当前用户是否为记录创建者
             if (userId && mindMapRecord.userId !== userId) {
                 this.logger.warn("[MindMapExtension] 无权限修改该记录", { id, userId });
-                return null;
+                return false;
             }
 
             mindMapRecord.description = title;
             const saved = await this.MindMapRecordRepository.save(mindMapRecord);
             this.logger.debug("[MindMapExtension] 更新思维导图名称成功", { id, title });
-            return saved;
+            return !!saved.id;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
             if (

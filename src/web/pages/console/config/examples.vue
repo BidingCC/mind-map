@@ -84,7 +84,7 @@ const batchSaveExamples = useDebounceFn(async () => {
         };
 
         const result = await apiSaveMindMapExamples(saveData);
-        if (result == null) {
+        if (result === false) {
             toast.error(t("console.examples.saveFailed"));
             return;
         }

@@ -68,9 +68,9 @@ export class HomeService extends BaseService<MindMapHome> {
     /**
      * 保存思维导图首页配置
      * @param dto 配置数据
-     * @returns 保存后的配置
+     * @returns 保存是否成功
      */
-    async saveHomeConfig(dto: SaveHomeConfigDto): Promise<MindMapHome> {
+    async saveHomeConfig(dto: SaveHomeConfigDto): Promise<boolean> {
         try {
             // 校验宣传语文案内容是否超过四行
             if (dto.publicLanguage !== undefined) {
@@ -112,7 +112,7 @@ export class HomeService extends BaseService<MindMapHome> {
 
             const saved = await this.mindMapHomeRepository.save(config);
             this.logger.debug("[MindMapExtension] 首页配置保存成功");
-            return saved;
+            return !!saved.id;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
             if (

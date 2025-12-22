@@ -21,10 +21,10 @@ export class HomeConsoleController {
     /**
      * 保存思维导图首页配置
      * @param dto 配置数据
-     * @returns 保存后的配置
+     * @returns 保存是否成功
      */
     @Post("save")
-    async saveHomeConfig(@Body() dto: SaveHomeConfigDto): Promise<MindMapHome> {
+    async saveHomeConfig(@Body() dto: SaveHomeConfigDto): Promise<boolean> {
         return await this.homeService.saveHomeConfig(dto);
     }
 }

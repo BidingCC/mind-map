@@ -702,7 +702,7 @@ const saveTitle = async (item: MindMapRecord) => {
         const newTitle = editableTitle.value.trim();
         try {
             const result = await apiUpdateMindMapTitle(item.id, newTitle);
-            if (result == null) {
+            if (result === false) {
                 toast.error(t("index.toast.updateTitleError"));
                 return;
             }

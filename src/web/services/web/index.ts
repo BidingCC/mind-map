@@ -58,10 +58,10 @@ export const apiCreateMindMap = (data: CreateMindMapDto) => {
  * 修改思维导图名称
  * @param id 思维导图ID
  * @param title 新的思维导图名称
- * @returns 更新后的思维导图
+ * @returns 更新是否成功（布尔值）
  */
 export const apiUpdateMindMapTitle = (id: string, title: string) => {
-    return usePluginWebPatch(`/index/update-title/${id}`, { title });
+    return usePluginWebPatch<boolean>(`/index/update-title/${id}`, { title });
 };
 
 /**

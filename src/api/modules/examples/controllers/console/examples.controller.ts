@@ -21,10 +21,10 @@ export class ExamplesConsoleController {
     /**
      * 保存思维导图示例配置
      * @param dto 配置数据
-     * @returns 保存后的配置
+     * @returns 保存是否成功
      */
     @Post("save")
-    async saveConfig(@Body() dto: SaveExamplesConfigDto): Promise<MindMapExample> {
+    async saveConfig(@Body() dto: SaveExamplesConfigDto): Promise<boolean> {
         return await this.examplesService.saveConfig(dto);
     }
 }

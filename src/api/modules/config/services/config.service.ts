@@ -68,9 +68,9 @@ export class ConfigService extends BaseService<MindMapConfig> {
      * 保存思维导图插件配置
      * @param id 配置ID
      * @param data 配置数据
-     * @returns 保存后的配置
+     * @returns 保存是否成功
      */
-    async saveConfig(id: string, data: Partial<MindMapConfig>): Promise<MindMapConfig> {
+    async saveConfig(id: string, data: Partial<MindMapConfig>): Promise<boolean> {
         try {
             // 查找现有配置或创建新配置
             const config = await this.mindMapConfigRepository.findOne({
@@ -92,7 +92,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
 
             const result = await this.mindMapConfigRepository.save(config);
             this.logger.debug(`[MindMapExtension] 配置保存成功: ${id}`);
-            return result;
+            return !!result.id;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
             if (

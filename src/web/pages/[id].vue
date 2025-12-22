@@ -198,7 +198,7 @@ const saveTitle = async () => {
         try {
             isEditingTitle.value = false;
             const result = await apiUpdateMindMapTitle(mindMapId, editableTitle.value);
-            if (result == null) {
+            if (result === false) {
                 toast.error(t("create.drawer.saveTitleError"));
                 return;
             }

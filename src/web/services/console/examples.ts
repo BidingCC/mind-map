@@ -15,8 +15,8 @@ export const apiGetMindMapExamples = () => {
 /**
  * 保存思维导图示例配置
  * @param data 配置数据
- * @returns 保存结果
+ * @returns 保存是否成功（布尔值）
  */
 export const apiSaveMindMapExamples = (data: MindMapExampleConfig) => {
-    return usePluginConsolePost("/examples/save", data);
+    return usePluginConsolePost<boolean>("/examples/save", data);
 };

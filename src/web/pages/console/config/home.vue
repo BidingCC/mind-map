@@ -151,7 +151,7 @@ const saveHomeConfig = useDebounceFn(async () => {
         };
 
         const result = await apiSaveMindMapHomeConfig(saveData);
-        if (result == null) {
+        if (result === false) {
             toast.error(t("console.home.saveFailed"));
             return;
         }

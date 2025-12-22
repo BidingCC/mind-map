@@ -22,13 +22,13 @@ export class ConfigConsoleController {
      * 保存思维导图插件配置
      * @param id 配置ID
      * @param data 配置数据
-     * @returns 保存后的配置
+     * @returns 保存是否成功
      */
     @Post("save-plugin/:id")
     async saveConfig(
         @Param("id", UUIDValidationPipe) id: string,
         @Body() data: Partial<MindMapConfig>,
-    ): Promise<MindMapConfig> {
+    ): Promise<boolean> {
         return await this.configService.saveConfig(id, data);
     }
 }

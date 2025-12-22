@@ -82,9 +82,9 @@ export class ExamplesService extends BaseService<MindMapExample> {
     /**
      * 保存思维导图示例配置
      * @param dto 配置数据
-     * @returns 保存后的配置
+     * @returns 保存是否成功
      */
-    async saveConfig(dto: SaveExamplesConfigDto): Promise<MindMapExample> {
+    async saveConfig(dto: SaveExamplesConfigDto): Promise<boolean> {
         try {
             // 查找现有配置
             const config = await this.mindMapExampleRepository.findOne({
@@ -108,7 +108,7 @@ export class ExamplesService extends BaseService<MindMapExample> {
 
             const saved = await this.mindMapExampleRepository.save(config);
             this.logger.debug("[MindMapExtension] 示例配置保存成功");
-            return saved;
+            return !!saved.id;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
             if (

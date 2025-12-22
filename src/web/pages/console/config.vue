@@ -97,7 +97,7 @@ const { lockFn: submitForm, isLock } = useLockFn(async () => {
         };
 
         const result = await apiSaveMindMapConfig(updateData, formData.id);
-        if (result == null) {
+        if (result === false) {
             toast.error(t("console.config.saveFailed"));
             return;
         }

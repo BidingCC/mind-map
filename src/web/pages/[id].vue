@@ -355,27 +355,9 @@ const { messages, input, handleSubmit, stop, status } = useChat({
         },
     },
     onError(err) {
-        let message = err.message;
-
-        // 尝试解析错误信息，如果解析失败则使用原始错误信息
-        try {
-            const errorObj = JSON.parse(err.message);
-            if (errorObj && errorObj.message) {
-                message = errorObj.message;
-
-                // 针对第三方服务的账户欠费错误提供通用提示
-                if (message.includes("Access denied") && message.includes("good standing")) {
-                    message =
-                        "AI service is currently unavailable. Please contact the administrator.";
-                }
-            }
-        } catch (parseError) {
-            // 如果解析失败，保持原始错误信息
-            console.warn(parseError);
-        }
-
+        const message = err.message || t("create.toast.sendError");
         console.error("聊天错误:", message);
-        toast.error(t("create.toast.sendError") + ": " + message);
+        toast.error(message);
         // 隐藏AI正在输入状态
         isAiTyping.value = false;
         // AI生成结束后启用思维导图编辑

@@ -181,6 +181,7 @@ onMounted(() => {
                         }"
                         :supported-model-types="['llm']"
                         :default-selected="false"
+                        console
                         @change="handleModelChange"
                     />
                 </UFormField>

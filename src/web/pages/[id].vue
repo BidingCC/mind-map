@@ -203,7 +203,6 @@ const saveTitle = async () => {
                 return;
             }
             pageTitle.value = editableTitle.value;
-            toast.success(t("create.drawer.saveTitleSuccess"));
         } catch (error) {
             console.error(error);
             toast.error(t("create.drawer.saveTitleError"));

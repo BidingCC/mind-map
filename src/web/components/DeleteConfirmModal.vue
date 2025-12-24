@@ -44,18 +44,20 @@ const { t } = useI18n();
         </div>
 
         <div class="flex justify-end space-x-4 pt-4">
-            <button
+            <UButton
                 @click="emits('close', false)"
-                class="bg-secondary text-secondary-foreground hover:bg-secondary/80 cursor-pointer rounded-lg px-4 py-2 transition-colors"
+                color="secondary"
+                class="text-secondary-foreground cursor-pointer rounded-lg px-4 py-2 whitespace-nowrap"
             >
                 {{ t("console.common.cancel") }}
-            </button>
-            <button
+            </UButton>
+            <UButton
                 @click="emits('close', true)"
-                class="cursor-pointer rounded-lg bg-red-500 px-4 py-2 font-medium text-white transition-colors hover:bg-red-600"
+                color="error"
+                class="text-background cursor-pointer rounded-lg px-4 py-2 whitespace-nowrap transition-colors"
             >
                 {{ t("console.records.confirm_delete.confirm") }}
-            </button>
+            </UButton>
         </div>
     </BdModal>
 </template>

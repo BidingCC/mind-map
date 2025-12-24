@@ -2391,10 +2391,8 @@ onBeforeUnmount(() => {
                                     <div
                                         class="rounded-lg px-3 py-2 text-sm break-all"
                                         :class="{
-                                            'bg-primary text-primary-foreground':
-                                                message.role === 'user',
+                                            'bg-primary text-background': message.role === 'user',
                                             'bg-muted': message.role !== 'user',
-                                            'text-white': message.role === 'user',
                                             'border border-red-200 bg-red-100 text-red-800':
                                                 message.status === 'failed',
                                         }"

@@ -955,11 +955,7 @@ onUnmounted(() => {
                                 <div class="flex flex-col gap-2">
                                     <!-- 修改标题显示部分，支持内联编辑 -->
                                     <div class="truncate text-sm font-medium">
-                                        <span
-                                            v-if="editingItemId !== item.id"
-                                            @dblclick.stop="startEditingTitle(item)"
-                                            class="cursor-pointer"
-                                        >
+                                        <span v-if="editingItemId !== item.id">
                                             {{ item.description }}
                                         </span>
                                         <input

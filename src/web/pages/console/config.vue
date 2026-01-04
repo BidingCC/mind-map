@@ -31,8 +31,6 @@ const providersCache = ref<any[]>([]);
 // KeyPoolSelect 组件的 key，用于强制更新
 const keyPoolSelectKey = shallowRef(0);
 
-const mindMapConfigContainerRef = shallowRef<HTMLElement | null>(null);
-
 /** 获取插件配置详情 */
 const { lockFn: getPluginConfig, isLock: detailLoading } = useLockFn(async () => {
     try {
@@ -127,7 +125,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div ref="mindMapConfigContainerRef" class="relative pb-8">
+    <div class="relative pb-8">
         <UForm :state="formData" class="space-y-6" @submit="submitForm">
             <div class="space-y-4">
                 <div class="flex items-center gap-2">
@@ -135,31 +133,29 @@ onMounted(() => {
                         {{ t("console.config.title") }}
                     </h3>
                     <AdaptiveTooltip
-                        :teleport-target="mindMapConfigContainerRef"
                         :trigger-label="t('console.config.description')"
+                        :modal-title="t('console.config.descriptionContent')"
                     >
                         <template #content>
-                            <div class="wrap-break-word whitespace-pre-wrap">
-                                {{ t("console.config.forExample") }}
-                                <a
-                                    href="https://www.kimi.com/"
-                                    target="_blank"
-                                    class="text-blue-300 hover:underline"
-                                >
-                                    https://www.kimi.com/
-                                </a>
-                                <br />
-                                {{ t("console.config.ifCannotOpenOfficial") }}
-                                (
-                                <a
-                                    href="https://llm.aipg.work/"
-                                    target="_blank"
-                                    class="text-blue-300 hover:underline"
-                                >
-                                    https://llm.aipg.work/
-                                </a>
-                                )
-                            </div>
+                            {{ t("console.config.forExample") }}
+                            <a
+                                href="https://www.kimi.com/"
+                                target="_blank"
+                                class="text-blue-300 hover:underline"
+                            >
+                                https://www.kimi.com/
+                            </a>
+                            <br />
+                            {{ t("console.config.ifCannotOpenOfficial") }}
+                            (
+                            <a
+                                href="https://llm.aipg.work/"
+                                target="_blank"
+                                class="text-blue-300 hover:underline"
+                            >
+                                https://llm.aipg.work/
+                            </a>
+                            )
                         </template>
                     </AdaptiveTooltip>
                 </div>

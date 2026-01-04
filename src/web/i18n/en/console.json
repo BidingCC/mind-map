@@ -46,6 +46,7 @@
     "config": {
         "title": "Billing Configuration",
         "description": "Configuration Instructions",
+        "descriptionContent": "Billing Configuration Instructions",
         "selectModel": "Select Model",
         "selectModelDescription": "Select the model for generating mind maps",
         "billing": "Billing Settings",

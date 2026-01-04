@@ -46,6 +46,7 @@
     "config": {
         "title": "課金設定",
         "description": "設定説明",
+        "descriptionContent": "課金設定説明",
         "selectModel": "モデル選択",
         "selectModelDescription": "マインドマップ生成のモデルを選択",
         "billing": "課金設定",

@@ -46,6 +46,7 @@
     "config": {
         "title": "计费配置",
         "description": "配置说明",
+        "descriptionContent": "计费配置说明",
         "selectModel": "选择模型",
         "selectModelDescription": "选择生成思维导图的模型",
         "billing": "计费设置",

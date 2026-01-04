@@ -1,9 +1,6 @@
 <script setup lang="ts">
-import { useEventListener } from "@vueuse/core";
-
 /**
- * AdaptiveTooltip 组件：将触发元素与提示内容解耦，
- * 并允许根据指定容器动态计算弹窗位置，适配窄屏布局。
+ * AdaptiveTooltip 组件：点击触发器后通过模态框显示内容。
  */
 defineOptions({
     name: "AdaptiveTooltip",
@@ -11,142 +8,49 @@ defineOptions({
 
 const props = withDefaults(
     defineProps<{
-        teleportTarget?: HTMLElement | null;
-        horizontalPadding?: number;
-        verticalGap?: number;
         triggerClass?: string | Record<string, boolean> | Array<string>;
         triggerLabel?: string;
-        hideDelay?: number;
+        modalTitle?: string;
     }>(),
     {
-        teleportTarget: null,
-        horizontalPadding: 8,
-        verticalGap: 8,
-        hideDelay: 300,
         triggerClass: () => [
             "group",
             "flex",
-            "cursor-help",
+            "cursor-pointer",
             "items-center",
             "gap-1",
             "whitespace-nowrap",
         ],
         triggerLabel: "",
+        modalTitle: "",
     },
 );
 
-const triggerRef = shallowRef<HTMLElement | null>(null);
-const tooltipRef = shallowRef<HTMLElement | null>(null);
-const tooltipVisible = shallowRef(false);
-const tooltipStyle = reactive<{ left: string; top: string }>({ left: "0px", top: "0px" });
 const slots = useSlots();
 const hasDefaultTriggerSlot = computed(() => Boolean(slots.default));
-
-// 添加定时器引用
-let hideTimer: ReturnType<typeof setTimeout> | null = null;
+const modalOpen = shallowRef(false);
 
 /**
- * 计算并更新弹窗样式，使其沿着容器边界自动调整。
+ * 点击触发器时打开模态框
  */
-const updateTooltipPosition = () => {
-    const container = props.teleportTarget ?? triggerRef.value?.offsetParent ?? document.body;
-    const trigger = triggerRef.value;
-    const tooltip = tooltipRef.value;
-
-    if (!container || !trigger || !tooltip) {
-        return;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const triggerRect = trigger.getBoundingClientRect();
-    const tooltipRect = tooltip.getBoundingClientRect();
-
-    let left = triggerRect.left - containerRect.left;
-    if (left + tooltipRect.width > containerRect.width - props.horizontalPadding) {
-        left = Math.max(
-            props.horizontalPadding,
-            containerRect.width - tooltipRect.width - props.horizontalPadding,
-        );
-    } else {
-        left = Math.max(props.horizontalPadding, left);
-    }
-
-    const top = triggerRect.bottom - containerRect.top + props.verticalGap;
-
-    tooltipStyle.left = `${left}px`;
-    tooltipStyle.top = `${top}px`;
+const handleClick = () => {
+    modalOpen.value = true;
 };
 
 /**
- * 鼠标移入触发器时展示提示，并在下一帧计算位置。
+ * 关闭模态框
  */
-const handleMouseEnter = () => {
-    // 清除隐藏定时器
-    if (hideTimer) {
-        clearTimeout(hideTimer);
-        hideTimer = null;
-    }
-    tooltipVisible.value = true;
-    nextTick(updateTooltipPosition);
+const handleClose = () => {
+    modalOpen.value = false;
 };
-
-/**
- * 鼠标移出触发器或提示层时延迟隐藏提示。
- */
-const handleMouseLeave = () => {
-    // 设置隐藏定时器
-    if (hideTimer) {
-        clearTimeout(hideTimer);
-    }
-    hideTimer = setTimeout(() => {
-        tooltipVisible.value = false;
-        hideTimer = null;
-    }, props.hideDelay);
-};
-
-useEventListener(window, "resize", () => {
-    if (tooltipVisible.value) {
-        nextTick(updateTooltipPosition);
-    }
-});
-
-useEventListener(window, "scroll", () => {
-    if (tooltipVisible.value) {
-        updateTooltipPosition();
-    }
-});
-
-watch(
-    () => props.teleportTarget,
-    () => {
-        if (tooltipVisible.value) {
-            nextTick(updateTooltipPosition);
-        }
-    },
-);
-
-// 组件卸载时清除定时器
-onUnmounted(() => {
-    if (hideTimer) {
-        clearTimeout(hideTimer);
-    }
-});
-
-defineExpose({ updateTooltipPosition });
 </script>
 
 <template>
-    <div
-        ref="triggerRef"
-        class="inline-flex"
-        :class="props.triggerClass"
-        @mouseenter="handleMouseEnter"
-        @mouseleave="handleMouseLeave"
-    >
+    <div class="inline-flex" :class="props.triggerClass" @click="handleClick">
         <slot v-if="hasDefaultTriggerSlot" />
         <div v-else class="flex items-center gap-1 whitespace-nowrap">
             <svg
-                class="text-muted-foreground group-hover:text-foreground ml-1 h-4 w-4 cursor-help transition-colors"
+                class="text-muted-foreground group-hover:text-foreground ml-1 h-4 w-4 cursor-pointer transition-colors"
                 viewBox="0 0 1024 1024"
                 version="1.1"
                 xmlns="http://www.w3.org/2000/svg"
@@ -174,27 +78,14 @@ defineExpose({ updateTooltipPosition });
         </div>
     </div>
 
-    <Teleport v-if="props.teleportTarget" :to="props.teleportTarget">
-        <div
-            v-if="tooltipVisible"
-            ref="tooltipRef"
-            class="absolute z-100 w-76 rounded-xl bg-(--secondary-foreground) p-2 text-sm text-(--background) opacity-95 shadow-lg"
-            :style="tooltipStyle"
-            @mouseenter="handleMouseEnter"
-            @mouseleave="handleMouseLeave"
-        >
+    <BdModal
+        v-model:open="modalOpen"
+        :title="props.modalTitle"
+        :ui="{ content: 'max-w-2xl' }"
+        @close="handleClose"
+    >
+        <div class="wrap-break-word whitespace-pre-wrap">
             <slot name="content" />
         </div>
-    </Teleport>
-
-    <div
-        v-else-if="tooltipVisible"
-        ref="tooltipRef"
-        class="absolute z-100 w-76 rounded-xl bg-(--secondary-foreground) p-2 text-sm text-(--background) opacity-95 shadow-lg"
-        :style="tooltipStyle"
-        @mouseenter="handleMouseEnter"
-        @mouseleave="handleMouseLeave"
-    >
-        <slot name="content" />
-    </div>
+    </BdModal>
 </template>

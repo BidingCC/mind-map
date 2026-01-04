@@ -133,6 +133,7 @@ onMounted(() => {
                         {{ t("console.config.title") }}
                     </h3>
                     <AdaptiveTooltip
+                        mode="modal"
                         :trigger-label="t('console.config.description')"
                         :modal-title="t('console.config.descriptionContent')"
                     >

@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { useEventListener } from "@vueuse/core";
+
 /**
- * AdaptiveTooltip 组件：点击触发器后通过模态框显示内容。
+ * AdaptiveTooltip 组件：支持两种交互模式
+ * - hover: 鼠标悬停显示提示（模式一）
+ * - modal: 点击触发器后通过模态框显示内容（模式二）
  */
 defineOptions({
     name: "AdaptiveTooltip",
@@ -8,19 +12,46 @@ defineOptions({
 
 const props = withDefaults(
     defineProps<{
+        /**
+         * 交互模式：hover（悬停显示）或 modal（点击模态框）
+         */
+        mode?: "hover" | "modal";
+        /**
+         * 悬停模式：指定容器元素，用于计算弹窗位置
+         */
+        teleportTarget?: HTMLElement | null;
+        /**
+         * 悬停模式：水平内边距
+         */
+        horizontalPadding?: number;
+        /**
+         * 悬停模式：垂直间距
+         */
+        verticalGap?: number;
+        /**
+         * 悬停模式：隐藏延迟时间（毫秒）
+         */
+        hideDelay?: number;
+        /**
+         * 触发器样式类
+         */
         triggerClass?: string | Record<string, boolean> | Array<string>;
+        /**
+         * 触发器标签文本
+         */
         triggerLabel?: string;
+        /**
+         * 模态框模式：模态框标题
+         */
         modalTitle?: string;
     }>(),
     {
-        triggerClass: () => [
-            "group",
-            "flex",
-            "cursor-pointer",
-            "items-center",
-            "gap-1",
-            "whitespace-nowrap",
-        ],
+        mode: "hover",
+        teleportTarget: null,
+        horizontalPadding: 8,
+        verticalGap: 8,
+        hideDelay: 300,
+        triggerClass: () => ["group", "flex", "items-center", "gap-1", "whitespace-nowrap"],
         triggerLabel: "",
         modalTitle: "",
     },
@@ -28,29 +59,145 @@ const props = withDefaults(
 
 const slots = useSlots();
 const hasDefaultTriggerSlot = computed(() => Boolean(slots.default));
+
+// 模态框模式相关
 const modalOpen = shallowRef(false);
 
+// 悬停模式相关
+const triggerRef = shallowRef<HTMLElement | null>(null);
+const tooltipRef = shallowRef<HTMLElement | null>(null);
+const tooltipVisible = shallowRef(false);
+const tooltipStyle = reactive<{ left: string; top: string }>({ left: "0px", top: "0px" });
+let hideTimer: ReturnType<typeof setTimeout> | null = null;
+
 /**
- * 点击触发器时打开模态框
+ * 计算并更新弹窗样式，使其沿着容器边界自动调整（悬停模式）
+ */
+const updateTooltipPosition = () => {
+    const container = props.teleportTarget ?? triggerRef.value?.offsetParent ?? document.body;
+    const trigger = triggerRef.value;
+    const tooltip = tooltipRef.value;
+
+    if (!container || !trigger || !tooltip) {
+        return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const triggerRect = trigger.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+
+    let left = triggerRect.left - containerRect.left;
+    if (left + tooltipRect.width > containerRect.width - props.horizontalPadding) {
+        left = Math.max(
+            props.horizontalPadding,
+            containerRect.width - tooltipRect.width - props.horizontalPadding,
+        );
+    } else {
+        left = Math.max(props.horizontalPadding, left);
+    }
+
+    const top = triggerRect.bottom - containerRect.top + props.verticalGap;
+
+    tooltipStyle.left = `${left}px`;
+    tooltipStyle.top = `${top}px`;
+};
+
+/**
+ * 鼠标移入触发器时展示提示，并在下一帧计算位置（悬停模式）
+ */
+const handleMouseEnter = () => {
+    if (props.mode !== "hover") return;
+
+    // 清除隐藏定时器
+    if (hideTimer) {
+        clearTimeout(hideTimer);
+        hideTimer = null;
+    }
+    tooltipVisible.value = true;
+    nextTick(updateTooltipPosition);
+};
+
+/**
+ * 鼠标移出触发器或提示层时延迟隐藏提示（悬停模式）
+ */
+const handleMouseLeave = () => {
+    if (props.mode !== "hover") return;
+
+    // 设置隐藏定时器
+    if (hideTimer) {
+        clearTimeout(hideTimer);
+    }
+    hideTimer = setTimeout(() => {
+        tooltipVisible.value = false;
+        hideTimer = null;
+    }, props.hideDelay);
+};
+
+/**
+ * 点击触发器时打开模态框（模态框模式）
  */
 const handleClick = () => {
+    if (props.mode !== "modal") return;
     modalOpen.value = true;
 };
 
 /**
- * 关闭模态框
+ * 关闭模态框（模态框模式）
  */
 const handleClose = () => {
     modalOpen.value = false;
 };
+
+// 悬停模式：监听窗口大小变化和滚动
+useEventListener(window, "resize", () => {
+    if (props.mode === "hover" && tooltipVisible.value) {
+        nextTick(updateTooltipPosition);
+    }
+});
+
+useEventListener(window, "scroll", () => {
+    if (props.mode === "hover" && tooltipVisible.value) {
+        updateTooltipPosition();
+    }
+});
+
+// 悬停模式：监听 teleportTarget 变化
+watch(
+    () => props.teleportTarget,
+    () => {
+        if (props.mode === "hover" && tooltipVisible.value) {
+            nextTick(updateTooltipPosition);
+        }
+    },
+);
+
+// 组件卸载时清除定时器
+onUnmounted(() => {
+    if (hideTimer) {
+        clearTimeout(hideTimer);
+    }
+});
+
+defineExpose({ updateTooltipPosition });
 </script>
 
 <template>
-    <div class="inline-flex" :class="props.triggerClass" @click="handleClick">
+    <!-- 触发器 -->
+    <div
+        ref="triggerRef"
+        class="inline-flex"
+        :class="[props.triggerClass, props.mode === 'modal' ? 'cursor-pointer' : 'cursor-help']"
+        @click="handleClick"
+        @mouseenter="handleMouseEnter"
+        @mouseleave="handleMouseLeave"
+    >
         <slot v-if="hasDefaultTriggerSlot" />
         <div v-else class="flex items-center gap-1 whitespace-nowrap">
             <svg
-                class="text-muted-foreground group-hover:text-foreground ml-1 h-4 w-4 cursor-pointer transition-colors"
+                :class="[
+                    'text-muted-foreground group-hover:text-foreground ml-1 h-4 w-4 transition-colors',
+                    props.mode === 'modal' ? 'cursor-pointer' : 'cursor-help',
+                ]"
                 viewBox="0 0 1024 1024"
                 version="1.1"
                 xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +225,34 @@ const handleClose = () => {
         </div>
     </div>
 
+    <!-- 悬停模式：提示框 -->
+    <Teleport v-if="props.mode === 'hover' && props.teleportTarget" :to="props.teleportTarget">
+        <div
+            v-if="tooltipVisible"
+            ref="tooltipRef"
+            class="absolute z-100 w-76 rounded-xl bg-(--secondary-foreground) p-2 text-sm text-(--background) opacity-95 shadow-lg"
+            :style="tooltipStyle"
+            @mouseenter="handleMouseEnter"
+            @mouseleave="handleMouseLeave"
+        >
+            <slot name="content" />
+        </div>
+    </Teleport>
+
+    <div
+        v-else-if="props.mode === 'hover' && tooltipVisible"
+        ref="tooltipRef"
+        class="absolute z-100 w-76 rounded-xl bg-(--secondary-foreground) p-2 text-sm text-(--background) opacity-95 shadow-lg"
+        :style="tooltipStyle"
+        @mouseenter="handleMouseEnter"
+        @mouseleave="handleMouseLeave"
+    >
+        <slot name="content" />
+    </div>
+
+    <!-- 模态框模式：模态框 -->
     <BdModal
+        v-if="props.mode === 'modal'"
         v-model:open="modalOpen"
         :title="props.modalTitle"
         :ui="{ content: 'max-w-2xl' }"

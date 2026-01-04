@@ -165,7 +165,7 @@ onMounted(() => {
                     :help="t('console.config.selectModelDescription')"
                     name="selectModel"
                     required
-                    class="mb-2 w-xl whitespace-nowrap"
+                    class="mb-4 max-w-xl min-w-fit whitespace-nowrap"
                 >
                     <ModelSelect
                         v-model="selectedModelId"
@@ -173,7 +173,7 @@ onMounted(() => {
                         :button-ui="{
                             variant: 'outline',
                             color: 'neutral',
-                            class: 'bg-background w-sm',
+                            class: 'bg-background w-full',
                         }"
                         :supported-model-types="['llm']"
                         :default-selected="false"
@@ -188,7 +188,7 @@ onMounted(() => {
                     required
                     :disabled="detailLoading || isLock"
                     :loading="isLock"
-                    class="mb-2 w-sm whitespace-nowrap"
+                    class="mb-2 max-w-xl min-w-fit whitespace-nowrap"
                 >
                     <URadioGroup
                         orientation="horizontal"
@@ -214,7 +214,7 @@ onMounted(() => {
                             :placeholder="t('console.config.timesPlaceholder')"
                             type="number"
                             :min="1"
-                            class="w-125"
+                            class="w-full min-w-[60px]"
                             style="
                                 border-top-right-radius: 0 !important;
                                 border-bottom-right-radius: 0 !important;

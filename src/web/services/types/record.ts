@@ -187,13 +187,13 @@ export interface MindMapRecord {
     /** 生成时间 */
     createdAt: string | Date;
     /** 思维导图数据 */
-    mindMapData: MindMapData;
+    mindMapData: MindMapData | null;
     /** 消耗积分 */
     powerUsed: number;
     /** 对话次数 */
     conversationTimes: number;
     /** 关联的AI对话记录ID */
-    aiChatRecordId?: string;
+    aiChatRecordId?: string | null;
     /** 更新时间 */
     updatedAt: string | Date;
     /** 用户头像 */
@@ -265,7 +265,7 @@ export interface MindMapConfig {
     /** 绑定的模型名称 */
     bindModel?: string;
     /** 绑定的模型ID */
-    bindModelId?: string;
+    bindModelId?: string | null;
     /** 计费类型 1-按次数 2-免费 3-按字数 */
     billingType: number;
     /** 计费设置 */
@@ -281,11 +281,11 @@ export interface MindMapConfig {
  */
 export interface MindMapExampleConfig {
     /** 开场白 */
-    prologue: string;
+    prologue: string | null;
     /** 对话框文字 */
-    dialogText: string;
+    dialogText: string | null;
     /** 试一试选项列表 */
-    try: Array<{ id: string; content: string }>;
+    try: Array<{ id: string; content: string }> | null;
     /** 是否启用试一试 */
     enabledTry: boolean;
     /** 是否启用对话框文字 */
@@ -297,11 +297,11 @@ export interface MindMapExampleConfig {
  */
 export interface MindMapHomeConfig {
     /** 插件显示名称 */
-    name: string;
+    name: string | null;
     /** 宣传语文案 */
-    publicLanguage: string;
+    publicLanguage: string | null;
     /** 宣传语副标题 */
-    description: string;
+    description: string | null;
     /** 是否启用副标题 */
     enabledDescription: boolean;
 }

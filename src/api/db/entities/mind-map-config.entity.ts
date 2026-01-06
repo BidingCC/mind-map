@@ -36,7 +36,7 @@ export class MindMapConfig {
         comment: "绑定的模型ID",
         nullable: true,
     })
-    bindModelId: string;
+    bindModelId: string | null;
 
     /**
      * 计费类型  1、按字数 2、免费

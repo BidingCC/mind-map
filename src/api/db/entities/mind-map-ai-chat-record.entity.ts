@@ -38,7 +38,7 @@ export class MindMapAiChatRecord {
         comment: "对话标题",
         nullable: true,
     })
-    title: string;
+    title: string | null;
 
     /**
      * 用户ID
@@ -59,7 +59,7 @@ export class MindMapAiChatRecord {
         nullable: true,
     })
     @Index()
-    mindMapId?: string;
+    mindMapId?: string | null;
 
     /**
      * AI模型ID
@@ -69,7 +69,7 @@ export class MindMapAiChatRecord {
         nullable: true,
         comment: "使用的AI模型ID",
     })
-    modelId?: string;
+    modelId?: string | null;
 
     /**
      * 对话摘要
@@ -79,7 +79,7 @@ export class MindMapAiChatRecord {
         nullable: true,
         comment: "对话摘要",
     })
-    summary?: string;
+    summary?: string | null;
 
     /**
      * 消息总数
@@ -142,7 +142,7 @@ export class MindMapAiChatRecord {
         nullable: true,
         comment: "扩展数据字段",
     })
-    metadata?: Record<string, any>;
+    metadata?: Record<string, any> | null;
 
     /**
      * 创建时间

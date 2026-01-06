@@ -1462,7 +1462,12 @@ const loadMindMap = async () => {
         mindMapLoadFailed.value = false;
         record.value = await apiGetMindMapDetailUser(mindMapId);
         pageTitle.value = record.value.description;
-        initializeMindMap(record.value.mindMapData.root, record.value.mindMapData.layout as string);
+        if (record.value.mindMapData) {
+            initializeMindMap(
+                record.value.mindMapData.root,
+                record.value.mindMapData.layout as string,
+            );
+        }
     } catch (e) {
         toast.error(t("create.toast.loadMindMapFailed"));
         console.warn("获取思维导图详情失败:", e);

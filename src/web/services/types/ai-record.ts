@@ -10,7 +10,7 @@ export interface AiChatRecord {
     /**
      * 对话标题
      */
-    title: string;
+    title: string | null;
     /**
      * 用户ID
      */
@@ -18,15 +18,15 @@ export interface AiChatRecord {
     /**
      * 关联的思维导图ID
      */
-    mindMapId?: string;
+    mindMapId?: string | null;
     /**
      * AI模型ID
      */
-    modelId?: string;
+    modelId?: string | null;
     /**
      * 对话摘要
      */
-    summary?: string;
+    summary?: string | null;
     /**
      * 消息总数
      */
@@ -51,7 +51,7 @@ export interface AiChatRecord {
     /**
      * 扩展数据
      */
-    metadata?: Record<string, any>;
+    metadata?: Record<string, any> | null;
     /**
      * 创建时间
      */

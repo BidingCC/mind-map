@@ -5,17 +5,17 @@ export interface MindMapExampleResponse {
     /**
      * 开场白
      */
-    prologue: string;
+    prologue: string | null;
 
     /**
      * 试一试选项列表
      */
-    try: any[];
+    try: any[] | null;
 
     /**
      * 对话框文字
      */
-    dialogText: string;
+    dialogText: string | null;
 
     /**
      * 是否启用试一试功能

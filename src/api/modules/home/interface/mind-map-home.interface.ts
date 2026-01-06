@@ -6,17 +6,17 @@ export interface MindMapHomePublicInterface {
     /**
      * 插件显示名称
      */
-    name: string;
+    name: string | null;
 
     /**
      * 宣传语文案
      */
-    publicLanguage: string;
+    publicLanguage: string | null;
 
     /**
      * 宣传语副标题
      */
-    description: string;
+    description: string | null;
 
     /**
      * 是否启用副标题

@@ -347,7 +347,7 @@ export class RecordService extends BaseService<MindMapRecord> {
             // 计算总页数
             const totalPages = Math.ceil(total / pageSize);
 
-            const publicItems = items.map((item) => ({
+            const publicItems: MindMapRecordPublicInterface[] = items.map((item) => ({
                 id: item.id,
                 createdAt: item.createdAt,
                 updatedAt: item.updatedAt,

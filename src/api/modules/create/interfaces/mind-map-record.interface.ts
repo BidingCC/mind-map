@@ -21,7 +21,7 @@ export interface MindMapRecordPublicInterface {
     /**
      * 思维导图数据
      */
-    mindMapData: any;
+    mindMapData: any | null;
 
     /**
      * 更新时间
@@ -31,5 +31,5 @@ export interface MindMapRecordPublicInterface {
     /**
      * AI聊天记录ID
      */
-    aiChatRecordId?: string;
+    aiChatRecordId?: string | null;
 }

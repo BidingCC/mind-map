@@ -369,8 +369,8 @@ const generatePreviewImage = async (item: MindMapRecord) => {
 
         const mindMapInstance = new MindMap({
             el: container,
-            data: item.mindMapData.root,
-            layout: item.mindMapData.layout,
+            data: item.mindMapData?.root,
+            layout: item.mindMapData?.layout,
             readonly: true,
             themeConfig,
             textAutoWrapWidth: 500,
@@ -647,8 +647,8 @@ const downloadMindMap = async (item: MindMapRecord) => {
 
         const mindMapInstance = new MindMap({
             el: container,
-            data: item.mindMapData.root,
-            layout: item.mindMapData.layout,
+            data: item.mindMapData?.root,
+            layout: item.mindMapData?.layout,
             readonly: true,
             themeConfig,
             textAutoWrapWidth: 500,

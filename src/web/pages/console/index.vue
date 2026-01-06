@@ -139,7 +139,7 @@ const columns: TableColumn<MindMapRecord>[] = [
                     ? h("img", {
                           src: row.original.avatar,
                           alt: "用户头像",
-                          class: "h-8 w-8 rounded-full object-cover flex-shrink-0",
+                          class: "h-8 w-8 rounded-full object-cover flex-shrink-0 select-none",
                       })
                     : h(
                           "div",
@@ -582,8 +582,8 @@ const generatePreviewImage = async (item: MindMapRecord) => {
 
         const mindMapInstance = new MindMap({
             el: container,
-            data: item.mindMapData.root,
-            layout: item.mindMapData.layout,
+            data: item.mindMapData?.root,
+            layout: item.mindMapData?.layout,
             readonly: true,
             themeConfig,
             textAutoWrapWidth: 500,

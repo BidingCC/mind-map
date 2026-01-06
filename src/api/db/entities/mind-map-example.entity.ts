@@ -22,7 +22,7 @@ export class MindMapExample {
         comment: "开场白",
         nullable: true,
     })
-    prologue: string;
+    prologue: string | null;
 
     /**
      * 试一试
@@ -32,7 +32,7 @@ export class MindMapExample {
         comment: "试一试",
         nullable: true,
     })
-    try: any[];
+    try: any[] | null;
 
     /**
      * 对话框文字
@@ -42,7 +42,7 @@ export class MindMapExample {
         comment: "对话框文字",
         nullable: true,
     })
-    dialogText: string;
+    dialogText: string | null;
 
     /**
      * 是否启用试一试

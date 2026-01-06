@@ -385,7 +385,11 @@ export class CreateService extends BaseService<MindMapRecord> {
     ): Promise<MindMapAiChatRecord> {
         try {
             // 构建 where 条件
-            const whereCondition: Partial<MindMapAiChatRecord> = {
+            const whereCondition: {
+                id: string;
+                isDeleted: boolean;
+                userId?: string;
+            } = {
                 id: conversationId,
                 isDeleted: false,
             };

@@ -22,7 +22,7 @@ export class MindMapHome {
         comment: "插件显示名称",
         nullable: true,
     })
-    name: string;
+    name: string | null;
 
     /**
      * 宣传语文案
@@ -32,7 +32,7 @@ export class MindMapHome {
         comment: "宣传语文案",
         nullable: true,
     })
-    publicLanguage: string;
+    publicLanguage: string | null;
 
     /**
      * 宣传语副标题
@@ -42,7 +42,7 @@ export class MindMapHome {
         comment: "宣传语副标题",
         nullable: true,
     })
-    description: string;
+    description: string | null;
 
     /**
      * 是否启用副标题

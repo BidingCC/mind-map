@@ -45,7 +45,7 @@ export class MindMapAiChatMessage {
         nullable: true,
     })
     @Index()
-    modelId: string;
+    modelId: string | null;
 
     /**
      * 消息角色
@@ -90,7 +90,7 @@ export class MindMapAiChatMessage {
         prompt_tokens?: number;
         completion_tokens?: number;
         total_tokens?: number;
-    };
+    } | null;
 
     /**
      * 用户算力消耗
@@ -100,7 +100,7 @@ export class MindMapAiChatMessage {
         nullable: true,
         comment: "用户算力消耗",
     })
-    userConsumedPower?: number;
+    userConsumedPower?: number | null;
 
     /**
      * 消息状态
@@ -121,7 +121,7 @@ export class MindMapAiChatMessage {
         nullable: true,
         comment: "错误信息（当状态为failed时）",
     })
-    errorMessage?: string;
+    errorMessage?: string | null;
 
     /**
      * 消息序号
@@ -141,7 +141,7 @@ export class MindMapAiChatMessage {
         nullable: true,
         comment: "AI处理该消息的时长（毫秒）",
     })
-    processingTime?: number;
+    processingTime?: number | null;
 
     /**
      * 模型响应的原始数据
@@ -151,7 +151,7 @@ export class MindMapAiChatMessage {
         nullable: true,
         comment: "模型响应的原始数据",
     })
-    rawResponse?: Record<string, any>;
+    rawResponse?: Record<string, any> | null;
 
     /**
      * 扩展数据
@@ -161,7 +161,7 @@ export class MindMapAiChatMessage {
         nullable: true,
         comment: "扩展数据字段",
     })
-    metadata?: Record<string, any>;
+    metadata?: Record<string, any> | null;
 
     /**
      * 创建时间

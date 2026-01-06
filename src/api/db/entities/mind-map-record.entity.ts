@@ -57,7 +57,7 @@ export class MindMapRecord {
         comment: "思维导图数据",
         nullable: true,
     })
-    mindMapData: any;
+    mindMapData: any | null;
 
     /**
      * 消耗积分
@@ -76,7 +76,7 @@ export class MindMapRecord {
         comment: "关联的AI对话记录ID",
         nullable: true,
     })
-    aiChatRecordId?: string;
+    aiChatRecordId?: string | null;
 
     /**
      * 更新时间

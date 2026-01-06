@@ -43,7 +43,7 @@ export class ConfigSeeder extends BaseSeeder {
         const configDataList = await this.loadConfig<
             Array<{
                 bindModel: string;
-                bindModelId: string;
+                bindModelId?: string | null;
                 billingType: number;
                 billingSetting: number;
             }>
@@ -54,7 +54,7 @@ export class ConfigSeeder extends BaseSeeder {
         for (const configData of configDataList) {
             const config = repository.create({
                 bindModel: configData.bindModel,
-                bindModelId: configData.bindModelId,
+                bindModelId: configData.bindModelId || null,
                 billingType: configData.billingType,
                 billingSetting: configData.billingSetting,
             });

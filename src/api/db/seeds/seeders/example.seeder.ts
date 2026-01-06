@@ -42,9 +42,9 @@ export class ExampleSeeder extends BaseSeeder {
         // Load default example configuration from data file
         const exampleDataList = await this.loadConfig<
             Array<{
-                prologue: string;
-                try: string[];
-                dialogText: string;
+                prologue?: string | null;
+                try?: any[] | null;
+                dialogText?: string | null;
                 enabledTry: boolean;
                 enabledDialog: boolean;
             }>
@@ -56,9 +56,9 @@ export class ExampleSeeder extends BaseSeeder {
 
         for (const exampleData of exampleDataList) {
             const example = repository.create({
-                prologue: exampleData.prologue,
-                try: exampleData.try,
-                dialogText: exampleData.dialogText,
+                prologue: exampleData.prologue ?? null,
+                try: exampleData.try ?? null,
+                dialogText: exampleData.dialogText ?? null,
                 enabledTry: exampleData.enabledTry,
                 enabledDialog: exampleData.enabledDialog,
             });

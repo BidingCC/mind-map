@@ -42,9 +42,9 @@ export class HomeSeeder extends BaseSeeder {
         // Load default home configuration from data file
         const homeDataList = await this.loadConfig<
             Array<{
-                name: string;
-                publicLanguage: string;
-                description: string;
+                name?: string | null;
+                publicLanguage?: string | null;
+                description?: string | null;
                 enabledDescription: boolean;
             }>
         >("mind-map-home.json");
@@ -53,9 +53,9 @@ export class HomeSeeder extends BaseSeeder {
 
         for (const homeData of homeDataList) {
             const home = repository.create({
-                name: homeData.name,
-                publicLanguage: homeData.publicLanguage,
-                description: homeData.description,
+                name: homeData.name ?? null,
+                publicLanguage: homeData.publicLanguage ?? null,
+                description: homeData.description ?? null,
                 enabledDescription: homeData.enabledDescription,
             });
 

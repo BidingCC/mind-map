@@ -42,10 +42,9 @@ export class HomeService extends BaseService<MindMapHome> {
                 config.description = "";
                 config.enabledDescription = true;
                 await this.mindMapHomeRepository.save(config);
-                this.logger.debug("[MindMapExtension] 创建默认首页配置");
+                console.log("[MindMapExtension] 创建默认首页配置");
             }
 
-            this.logger.debug("[MindMapExtension] 获取首页配置成功");
             return config;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -85,7 +84,9 @@ export class HomeService extends BaseService<MindMapHome> {
                 }
 
                 if (lineCount > 4) {
-                    this.logger.warn("[MindMapExtension] 宣传语文案超过四行", { lineCount });
+                    this.logger.warn(
+                        `[MindMapExtension] 宣传语文案超过四行: lineCount=${lineCount}`,
+                    );
                     throw HttpErrorFactory.badRequest("宣传语文案行数不能超过四行");
                 }
             }
@@ -154,7 +155,6 @@ export class HomeService extends BaseService<MindMapHome> {
                 throw HttpErrorFactory.notFound("配置不存在，请联系管理员");
             }
 
-            this.logger.debug("[MindMapExtension] 获取用户首页配置成功");
             return {
                 name: config.name,
                 publicLanguage: config.publicLanguage,

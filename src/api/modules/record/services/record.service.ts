@@ -40,12 +40,12 @@ export class RecordService extends BaseService<MindMapRecord> {
                 },
             });
             if (!mindMapRecord) {
-                this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id });
+                this.logger.warn(`[MindMapExtension] 思维导图记录不存在: id=${id}`);
                 throw HttpErrorFactory.notFound("思维导图记录不存在");
             }
 
             const result = await this.MindMapRecordRepository.delete(id);
-            this.logger.debug("[MindMapExtension] 思维导图记录删除成功", { id });
+            this.logger.debug(`[MindMapExtension] 思维导图记录删除成功: id=${id}`);
             return (result.affected ?? 0) > 0;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -77,15 +77,14 @@ export class RecordService extends BaseService<MindMapRecord> {
                 where: { id: In(ids) },
             });
             if (records.length !== ids.length) {
-                this.logger.warn("[MindMapExtension] 部分思维导图记录不存在", {
-                    requestIds: ids,
-                    foundRecords: records.length,
-                });
+                this.logger.warn(
+                    `[MindMapExtension] 部分思维导图记录不存在: requestIds=${ids.join(", ")}, foundRecords=${records.length}`,
+                );
                 throw HttpErrorFactory.notFound("部分思维导图记录不存在");
             }
 
             const result = await this.MindMapRecordRepository.delete(ids);
-            this.logger.debug("[MindMapExtension] 批量删除思维导图记录成功", { count: ids.length });
+            this.logger.debug(`[MindMapExtension] 批量删除思维导图记录成功: count=${ids.length}`);
             return (result.affected ?? 0) > 0;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -177,7 +176,6 @@ export class RecordService extends BaseService<MindMapRecord> {
             // 计算总页数
             const totalPages = Math.ceil(total / pageSize);
 
-            this.logger.debug("[MindMapExtension] 搜索思维导图记录成功", { total, page, pageSize });
             // 返回统一格式的对象
             return {
                 items: data,
@@ -292,7 +290,7 @@ export class RecordService extends BaseService<MindMapRecord> {
 
             // 保存并返回创建的记录
             const rs = await this.MindMapRecordRepository.save(mindMapRecord);
-            this.logger.debug("[MindMapExtension] 创建思维导图记录成功", { id: rs.id });
+            this.logger.debug(`[MindMapExtension] 创建思维导图记录成功: id=${rs.id}`);
             return rs.id;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -356,12 +354,6 @@ export class RecordService extends BaseService<MindMapRecord> {
                 aiChatRecordId: item.aiChatRecordId,
             }));
 
-            this.logger.debug("[MindMapExtension] 获取思维导图记录列表成功", {
-                userId: user.id,
-                total,
-                page,
-                pageSize,
-            });
             // 返回分页结果
             return {
                 items: publicItems,
@@ -402,17 +394,19 @@ export class RecordService extends BaseService<MindMapRecord> {
                 },
             });
             if (!mindMapRecord) {
-                this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id });
+                this.logger.warn(`[MindMapExtension] 思维导图记录不存在: id=${id}`);
                 throw HttpErrorFactory.notFound("思维导图记录不存在");
             }
 
             if (userId && mindMapRecord.userId !== userId) {
-                this.logger.warn("[MindMapExtension] 无权限删除该记录", { id, userId });
+                this.logger.warn(`[MindMapExtension] 无权限删除该记录: id=${id}, userId=${userId}`);
                 throw HttpErrorFactory.forbidden("无权限删除该记录");
             }
 
             const result = await this.MindMapRecordRepository.delete(id);
-            this.logger.debug("[MindMapExtension] 用户删除思维导图记录成功", { id, userId });
+            this.logger.debug(
+                `[MindMapExtension] 用户删除思维导图记录成功: id=${id}, userId=${userId}`,
+            );
             return (result.affected ?? 0) > 0;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -446,19 +440,19 @@ export class RecordService extends BaseService<MindMapRecord> {
             });
 
             if (!mindMapRecord) {
-                this.logger.warn("[MindMapExtension] 思维导图记录不存在", { id });
+                this.logger.warn(`[MindMapExtension] 思维导图记录不存在: id=${id}`);
                 return false;
             }
 
             // 如果提供了userId，则验证当前用户是否为记录创建者
             if (userId && mindMapRecord.userId !== userId) {
-                this.logger.warn("[MindMapExtension] 无权限修改该记录", { id, userId });
+                this.logger.warn(`[MindMapExtension] 无权限修改该记录: id=${id}, userId=${userId}`);
                 return false;
             }
 
             mindMapRecord.description = title;
             const saved = await this.MindMapRecordRepository.save(mindMapRecord);
-            this.logger.debug("[MindMapExtension] 更新思维导图名称成功", { id, title });
+            this.logger.debug(`[MindMapExtension] 更新思维导图名称成功: id=${id}`);
             return !!saved.id;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出

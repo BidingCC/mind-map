@@ -56,10 +56,9 @@ export class ExamplesService extends BaseService<MindMapExample> {
                 config.enabledTry = true;
                 config.enabledDialog = true;
                 await this.mindMapExampleRepository.save(config);
-                this.logger.debug("[MindMapExtension] 创建默认示例配置");
+                console.log("[MindMapExtension] 创建默认示例配置");
             }
 
-            this.logger.debug("[MindMapExtension] 获取示例配置成功");
             return config;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -150,7 +149,6 @@ export class ExamplesService extends BaseService<MindMapExample> {
                 throw HttpErrorFactory.notFound("配置不存在，请联系管理员");
             }
 
-            this.logger.debug("[MindMapExtension] 获取用户示例配置成功");
             return {
                 prologue: config.prologue,
                 dialogText: config.dialogText,

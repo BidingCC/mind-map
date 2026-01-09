@@ -41,10 +41,9 @@ export class ConfigService extends BaseService<MindMapConfig> {
                 config.billingType = 2;
                 config.billingSetting = 0;
                 await this.mindMapConfigRepository.save(config);
-                this.logger.debug("[MindMapExtension] 创建默认配置");
+                console.log("[MindMapExtension] 创建默认配置");
             }
 
-            this.logger.debug("[MindMapExtension] 获取插件配置成功");
             return config;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -91,7 +90,7 @@ export class ConfigService extends BaseService<MindMapConfig> {
             if (data.billingSetting !== undefined) config.billingSetting = data.billingSetting;
 
             const result = await this.mindMapConfigRepository.save(config);
-            this.logger.debug(`[MindMapExtension] 配置保存成功: ${id}`);
+            this.logger.debug(`[MindMapExtension] 配置保存成功: id=${id}`);
             return !!result.id;
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出
@@ -133,7 +132,6 @@ export class ConfigService extends BaseService<MindMapConfig> {
                 throw HttpErrorFactory.notFound("配置不存在，请联系管理员");
             }
 
-            this.logger.debug("[MindMapExtension] 获取用户配置成功");
             return new MindMapConfigUserDto(config);
         } catch (error) {
             // 如果是业务错误（HttpErrorFactory 抛出的），直接重新抛出

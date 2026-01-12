@@ -18,6 +18,7 @@ export class MindMapRecord {
      * 用户ID
      */
     @Column({
+        type: "varchar",
         comment: "用户ID",
     })
     userId: string;

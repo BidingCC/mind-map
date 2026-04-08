@@ -1,4 +1,10 @@
-import { TextGenerator } from "@buildingai/ai-sdk";
+import {
+    generateText,
+    getReasoningOptions,
+    streamText,
+    type LanguageModelUsage,
+    type ModelMessage,
+} from "@buildingai/ai-sdk";
 import { BaseController } from "@buildingai/base";
 import { ExtensionWebController } from "@buildingai/core/decorators";
 import type { UserPlayground } from "@buildingai/db";
@@ -11,11 +17,6 @@ import { ExtensionBillingService, PublicAiModelService } from "@buildingai/exten
 import { getProviderSecret } from "@buildingai/utils";
 import { Body, Post, Res } from "@nestjs/common";
 import type { Response } from "express";
-import type {
-    ChatCompletion,
-    ChatCompletionCreateParams,
-    ChatCompletionMessageParam,
-} from "openai/resources/index";
 
 import { ChatRequestDto } from "../../dto/ai-chat-message.dto";
 import { ConversationStatus, MessageRole, MessageType } from "../../dto/ai-chat-record.dto";
@@ -78,10 +79,12 @@ export class AiChatMessageController extends BaseController {
 
         // 标记客户端是否已断开连接
         let isClientDisconnected = false;
+        const abortController = new AbortController();
 
         // 监听客户端断开连接事件
         res.on("close", () => {
             isClientDisconnected = true;
+            abortController.abort();
             this.logger.debug("[MindMapExtension] 客户端已断开连接");
         });
 
@@ -99,16 +102,7 @@ export class AiChatMessageController extends BaseController {
         ) {
             throw HttpErrorFactory.internal("配置错误，请联系管理员");
         }
-        const providerSecret = await this.aiModelService.getProviderConfig(
-            pluginConfig.bindModelId,
-        );
-
-        const provider = await this.aiModelService.getProviderAdapter(pluginConfig.bindModelId, {
-            apiKey: getProviderSecret("apiKey", providerSecret),
-            baseURL: getProviderSecret("baseUrl", providerSecret),
-        });
-
-        const model = await this.aiModelService.getModelInfo(pluginConfig.bindModelId);
+        const { languageModel, providerId } = await this.getLanguageModel(pluginConfig.bindModelId);
 
         const hasSufficientPower = await this.extensionBillingService.hasSufficientPower(
             user.id,
@@ -209,8 +203,6 @@ export class AiChatMessageController extends BaseController {
                 }
             }
 
-            const client = new TextGenerator(provider);
-
             // 如果需要保存对话记录，先创建一个sending状态的AI消息
             if (dto.saveConversation !== false && conversationId) {
                 const aiMessage = await this.createService.createMessage({
@@ -304,10 +296,10 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
             };
 
             // 限制上下文数量
-            let limitedMessages = [...dto.messages] as Array<ChatCompletionMessageParam>;
+            let limitedMessages = [...dto.messages] as Array<{ role?: string; content: string }>;
 
             // 在消息列表开头添加系统消息
-            limitedMessages.unshift(systemMessage as ChatCompletionMessageParam);
+            limitedMessages.unshift(systemMessage);
 
             const MAX_CONTEXT_LIMIT = 20;
 
@@ -343,57 +335,80 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
 
             // 初始化消息列表，用于处理工具调用
             const currentMessages = limitedMessages;
-            let finalChatCompletion: ChatCompletion | undefined;
+            let finalChatCompletion:
+                | {
+                      usage: {
+                          prompt_tokens: number;
+                          completion_tokens: number;
+                          total_tokens: number;
+                      };
+                      finishReason?: string;
+                      response?: unknown;
+                      text?: string;
+                      reasoningText?: string;
+                  }
+                | undefined;
             let reasoningContent = ""; // 收集深度思考内容
             let reasoningStartTime: number | null = null; // 深度思考开始时间
             let reasoningEndTime: number | null = null; // 深度思考结束时间
-
-            const chatCompletionCreateParams: ChatCompletionCreateParams = {
-                model: model.model,
-                messages: currentMessages,
-            };
-
-            const stream = await client.chat.stream(chatCompletionCreateParams);
+            const result = streamText({
+                model: languageModel,
+                messages: this.toModelMessages(currentMessages),
+                providerOptions: getReasoningOptions(providerId, { thinking: true }),
+                abortSignal: abortController.signal,
+            });
             // 记录处理开始时间
             const startTime = Date.now();
 
             // 收集流式响应
-            for await (const chunk of stream) {
-                // 检查客户端是否已断开连接
-                if (isClientDisconnected) {
-                    this.logger.debug("[MindMapExtension] 检测到客户端已断开连接，停止流式响应");
-                    break;
-                }
-
-                // 发送SSE格式的数据
-                if (chunk.choices[0].delta.content) {
-                    res.write(
-                        `data: ${JSON.stringify({ type: "chunk", data: chunk.choices[0].delta.content })}\n\n`,
-                    );
-                    fullResponse += chunk.choices[0].delta.content;
-                }
-
-                // 处理 DeepSeek 的 reasoning_content 字段
-                if (chunk.choices[0].delta?.reasoning_content) {
-                    // 记录深度思考开始时间
-                    if (!reasoningStartTime) {
-                        reasoningStartTime = Date.now();
+            try {
+                for await (const chunk of result.fullStream) {
+                    // 检查客户端是否已断开连接
+                    if (isClientDisconnected) {
+                        this.logger.debug(
+                            "[MindMapExtension] 检测到客户端已断开连接，停止流式响应",
+                        );
+                        break;
                     }
-                    // 每次收到 reasoning_content 都更新结束时间
-                    reasoningEndTime = Date.now();
-                    reasoningContent += chunk.choices[0].delta.reasoning_content;
-                    res.write(
-                        `data: ${JSON.stringify({
-                            type: "reasoning",
-                            data: chunk.choices[0].delta.reasoning_content,
-                        })}\n\n`,
-                    );
+
+                    if (chunk.type === "text-delta" && chunk.text) {
+                        res.write(
+                            `data: ${JSON.stringify({ type: "chunk", data: chunk.text })}\n\n`,
+                        );
+                        fullResponse += chunk.text;
+                    }
+
+                    if (chunk.type === "reasoning-delta" && chunk.text) {
+                        if (!reasoningStartTime) {
+                            reasoningStartTime = Date.now();
+                        }
+
+                        reasoningEndTime = Date.now();
+                        reasoningContent += chunk.text;
+                        res.write(
+                            `data: ${JSON.stringify({
+                                type: "reasoning",
+                                data: chunk.text,
+                            })}\n\n`,
+                        );
+                    }
+                }
+            } catch (streamError) {
+                if (!isClientDisconnected && !abortController.signal.aborted) {
+                    throw streamError;
                 }
             }
 
             // 只有在客户端未断开连接时才获取最终响应
             if (!isClientDisconnected) {
-                finalChatCompletion = await stream.finalChatCompletion();
+                const usage = this.normalizeUsage(await result.totalUsage);
+                finalChatCompletion = {
+                    usage,
+                    finishReason: await result.finishReason,
+                    response: await result.response,
+                    text: await result.text,
+                    reasoningText: await result.reasoningText,
+                };
             }
 
             // 只有在客户端未断开连接时才扣除积分和保存数据
@@ -545,8 +560,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                         } else {
                             // 非深度思考模型，使用AI生成标题
                             title = await this.aiGenerateTitle(
-                                model,
-                                dto.messages as Array<ChatCompletionMessageParam>,
+                                dto.messages,
                                 pluginConfig.bindModelId,
                             );
                         }
@@ -702,8 +716,7 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
     }
 
     private async aiGenerateTitle(
-        model,
-        messages: ChatCompletionMessageParam[],
+        messages: Array<{ role?: string; content: string }>,
         bindModelId: string,
     ): Promise<string> {
         const content = messages.find((item) => item.role === "user")?.content as string;
@@ -711,15 +724,10 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
             if (!content) {
                 return "new Chat";
             }
-            const providerSecret = await this.aiModelService.getProviderConfig(bindModelId);
-            const provider = await this.aiModelService.getProviderAdapter(bindModelId, {
-                apiKey: getProviderSecret("apiKey", providerSecret),
-                baseURL: getProviderSecret("baseUrl", providerSecret),
-            });
-            const client = new TextGenerator(provider);
+            const { languageModel, providerId } = await this.getLanguageModel(bindModelId);
 
-            const response = await client.chat.create({
-                model: model.model,
+            const response = await generateText({
+                model: languageModel,
                 messages: [
                     {
                         role: "system",
@@ -731,9 +739,10 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
                         content: content.slice(0, 1000),
                     },
                 ],
+                providerOptions: getReasoningOptions(providerId, { thinking: false }),
             });
 
-            const result = response.choices[0].message.content;
+            const result = response.text;
 
             if (!result) return "";
 
@@ -770,6 +779,91 @@ ${mindMapData ? JSON.stringify(mindMapData, null, 2) : "当前没有思维导图
         }
 
         return `${trimmed.slice(0, maxLength)}... (total ${trimmed.length} chars)`;
+    }
+
+    private resolveProviderCredentials(secretConfig: Record<string, any>) {
+        const hasKeyField = Object.prototype.hasOwnProperty.call(secretConfig, "key");
+        const hasApiKeyField = Object.prototype.hasOwnProperty.call(secretConfig, "apiKey");
+
+        if (!hasKeyField && !hasApiKeyField) {
+            throw new Error("API 密钥字段名错误，请使用 key 或 apiKey");
+        }
+
+        let apiKey = "";
+        let lastError: Error | null = null;
+
+        if (hasKeyField) {
+            try {
+                apiKey = getProviderSecret("key", secretConfig);
+            } catch (error) {
+                lastError = error as Error;
+            }
+        }
+
+        if (!apiKey && hasApiKeyField) {
+            try {
+                apiKey = getProviderSecret("apiKey", secretConfig);
+            } catch (error) {
+                lastError = (lastError ?? error) as Error;
+            }
+        }
+
+        if (!apiKey) {
+            throw lastError ?? new Error("未配置 API 密钥");
+        }
+
+        const baseURL = getProviderSecret("baseUrl", secretConfig) || undefined;
+
+        return {
+            apiKey,
+            baseURL,
+        };
+    }
+
+    private async getLanguageModel(modelId: string) {
+        const providerSecret = await this.aiModelService.getProviderConfig(modelId);
+        const modelInfo = await this.aiModelService.getModelInfo(modelId);
+        const provider = await this.aiModelService.getProviderAdapter(
+            modelId,
+            this.resolveProviderCredentials(providerSecret),
+        );
+
+        return {
+            modelInfo,
+            providerId: modelInfo.provider.provider,
+            languageModel: provider(modelInfo.model).model,
+        };
+    }
+
+    private normalizeUsage(usage?: LanguageModelUsage | null) {
+        return {
+            prompt_tokens: usage?.inputTokens ?? 0,
+            completion_tokens: usage?.outputTokens ?? 0,
+            total_tokens: usage?.totalTokens ?? 0,
+        };
+    }
+
+    private toModelMessages(messages: Array<{ role?: string; content: string }>): ModelMessage[] {
+        return messages.map((message) => {
+            if (message.role === "system") {
+                return {
+                    role: "system",
+                    content: message.content || "",
+                };
+            }
+
+            if (message.role === "assistant") {
+                return {
+                    role: "assistant",
+                    content: message.content || "",
+                };
+            }
+
+            return {
+                role: "user",
+                content: message.content || "",
+            };
+        });
     }
 
     /**

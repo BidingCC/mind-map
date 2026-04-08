@@ -2,7 +2,7 @@
     "identifier": "buildingai-mind-map",
     "name": "思维导图",
     "type": 1,
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "可以AI生成思维导图",
     "homepage": "https://www.buildingai.cc",
     "author": {
@@ -11,6 +11,6 @@
     },
     "changelog": [],
     "engine": {
-        "buildingai": ">=25.1.0"
+        "buildingai": ">=26.0.0"
     }
 }

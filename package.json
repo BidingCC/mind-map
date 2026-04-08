@@ -1,6 +1,6 @@
 {
     "name": "buildingai-mind-map",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "可以AI生成思维导图",
     "author": "BuildingAI Teams-dserha",
     "private": true,
@@ -39,7 +39,6 @@
         "@buildingai/ai-sdk": "workspace:*",
         "@buildingai/constants": "workspace:*",
         "@buildingai/core": "workspace:*",
-        "@buildingai/api": "workspace:*",
         "@buildingai/db": "workspace:*",
         "@buildingai/decorators": "workspace:*",
         "@buildingai/dto": "workspace:*",
@@ -47,25 +46,19 @@
         "@buildingai/extension-sdk": "workspace:*",
         "@buildingai/hooks": "workspace:*",
         "@buildingai/http": "workspace:*",
-        "@buildingai/layouts": "workspace:*",
         "@buildingai/pipe": "workspace:*",
-        "@buildingai/service": "workspace:*",
         "@buildingai/stores": "workspace:*",
         "@buildingai/ui": "workspace:*",
         "@buildingai/utils": "workspace:*",
         "@buildingai/types": "workspace:*",
         "@buildingai/base": "workspace:*",
-        "simple-mind-map": "0.14.0-fix.1",
-        "openai": "^5.13.1",
-        "uuid": "^13.0.0"
+        "simple-mind-map": "0.14.0-fix.1"
     },
     "devDependencies": {
         "@buildingai/eslint-config": "workspace:*",
-        "@buildingai/i18n-config": "workspace:*",
-        "@buildingai/nuxt": "workspace:*",
         "@buildingai/typescript-config": "workspace:*"
     },
     "engine": {
-        "buildingai": ">=25.1.0"
+        "buildingai": ">=26.0.0"
     }
 }

@@ -7,7 +7,7 @@
 <h1 align="center">AI Mind Map Extension (BuildingAI Mind Map)</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.2-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-1.0.3-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/license-BuildingAI-green.svg" alt="License">
   <img src="https://img.shields.io/badge/Nuxt-3-00DC82.svg?logo=nuxt.js&logoColor=white" alt="Nuxt 3">
   <img src="https://img.shields.io/badge/NestJS-E0234E.svg?logo=nestjs&logoColor=white" alt="NestJS">
@@ -338,4 +338,3 @@ This project is released under the BuildingAI License and can only be used and d
 <p align="center">
   <strong>Online mind maps, embrace infinite inspiration.</strong>
 </p>
-
